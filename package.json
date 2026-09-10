@@ -1,0 +1,21 @@
+{
+  "name": "encaixe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Encaixe - marketplace de horarios ociosos para prestadores de servico locais",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "dev": "node --watch src/main.js",
+    "db:migrar": "node scripts/migrar.js",
+    "db:seed": "node scripts/seed.js",
+    "db:reset": "node scripts/reset.js",
+    "test": "node --test",
+    "test:watch": "node --test --watch"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

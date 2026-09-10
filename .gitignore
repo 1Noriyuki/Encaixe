@@ -1,0 +1,9 @@
+node_modules/
+dados/*.db
+dados/*.db-journal
+dados/*.db-wal
+dados/*.db-shm
+.env
+.env.local
+*.log
+.DS_Store
