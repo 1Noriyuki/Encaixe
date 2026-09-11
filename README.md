@@ -15,28 +15,6 @@ efetivamente concluído**.
 
 ---
 
-## Como executar
-
-**Requisito único: Node.js 24 ou superior.** Não há `npm install` obrigatório — o projeto não tem
-dependências de runtime ([ADR-001](docs/adr/ADR-001-stack-tecnica.md)).
-
-```bash
-node --version      # precisa ser >= v24
-npm run db:seed     # cria o banco e popula dados de demonstração
-npm start           # http://localhost:3000
-```
-
-Para recomeçar do zero a qualquer momento:
-
-```bash
-npm run db:reset
-```
-
-Para rodar a suíte de testes:
-
-```bash
-npm test
-```
 
 ### Contas de demonstração
 
