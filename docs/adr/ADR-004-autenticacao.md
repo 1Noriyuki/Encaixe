@@ -32,6 +32,8 @@ Alternativas consideradas:
 
 - Identificador aleatório de 24 bytes (`randomBytes`), sem informação embutida.
 - Cookie `encaixe_sid` com `HttpOnly`, `SameSite=Lax`, `Path=/`, `Max-Age` de 12 h.
+- **Revisado em 2026-10-01:** a sessão expira após **2 h sem uso** e, mesmo em uso, após no máximo **12 h**
+  desde o login. Ver a seção Revisão no fim.
 - A linha em `sessao` guarda `usuario_id`, `csrf`, `criada_em` e `expira_em`. Expirada, é apagada na
   primeira tentativa de uso.
 - Logout apaga a linha — a sessão é **revogável de verdade**, ao contrário de um JWT.
@@ -107,3 +109,18 @@ disso, o perfil público mostra apenas nome de exibição, região, reputação 
 
 Rever se: (a) o sistema for exposto na internet (HTTPS + `Secure` + rate limiting viram obrigatórios);
 (b) surgir cliente móvel ou API pública, quando token deixa de ser complexidade desnecessária.
+
+### Revisão de 2026-10-01 (decisões da SPEC-002)
+
+A versão original definia só o `Max-Age` fixo de 12 h, o que não atendia à RNF-02 ("expiração por
+inatividade"). A equipe aprovou:
+
+| Decisão | Valor | Origem |
+|---|---|---|
+| Expiração por inatividade | **2 h** sem uso. Cada uso renova o prazo; a renovação só é gravada quando já passou algum tempo desde a última, para não escrever no banco a cada requisição | OPEN-12 |
+| Duração máxima absoluta | **12 h** desde o login, mesmo com uso contínuo | OPEN-12 |
+| Conta `SUSPENSO` | não autentica; com a senha certa, recebe a mensagem de que a conta está suspensa (não a genérica, já que a pessoa provou ser a titular); suspender encerra as sessões abertas | OPEN-203, RN-28 |
+| Demais estados | `PENDENTE_APROVACAO`, `REPROVADO`, `EM_REVISAO` e `RESTRITO` autenticam; o que podem fazer é decidido pela autorização | OPEN-202, RF-004 |
+
+**Consequência:** a linha `sessao` passa a precisar do instante do último uso, além de `criada_em` e
+`expira_em`. A implementação atual ainda não segue esta revisão (ver `docs/specs/registro-sdd.md`, etapa 12).

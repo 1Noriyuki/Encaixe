@@ -93,11 +93,17 @@ Revisão de outro integrante antes do merge.
 1. spec.md         define o problema, as regras e os critérios de aceite
 2. ADR             registra a decisão técnica relevante
 3. plan.md         traduz a spec em arquitetura
-4. tasks.md        quebra em tarefas atômicas → issues
-5. branch + teste  implementa com o teste nomeado pela regra
-6. PR + revisão    outro integrante revisa
-7. review/         revisão multidimensional periódica, com achados e ações
+4. specs/          mapa ordenado de Specs, aprovado pela equipe; depois uma Spec por vez, aprovada
+                   antes de ser implementada (roteiro de Spec-Driven Development)
+5. tasks.md        quebra em tarefas atômicas → issues
+6. branch + teste  implementa a Spec aprovada, com o teste nomeado pela regra
+7. PR + revisão    outro integrante revisa
+8. review/         revisão multidimensional periódica, com achados e ações
 ```
+
+Toda etapa desse fluxo fica registrada em `docs/specs/registro-sdd.md`. Conflito entre código, Spec e
+modelagem nunca é resolvido em silêncio: registra-se a divergência e decide-se entre corrigir a
+implementação ou propor alteração da baseline. A decisão é da equipe.
 
 Quando o código revela um erro na especificação, o fluxo **volta ao passo 1**. Não se corrige o código
 para acomodar uma spec errada.

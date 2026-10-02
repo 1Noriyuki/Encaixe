@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Encaixe · Entrar · conta suspensa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3b41c5}a:hover{color:#2b30a0}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #f5f6fa; color: #171a26; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; display: flex; flex-direction: column">
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e0e3ee">
+<a href="#" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: #171a26; text-decoration: none"><span style="width: 30px; height: 30px; border-radius: 8px; background: #3b41c5; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px">E</span>Encaixe</a>
+<a href="#" style="font-size: 15px; font-weight: 600; padding: 12px 4px">Buscar horários</a>
+</header>
+<main style="padding: 32px 16px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-size: 28px; line-height: 1.2">Entrar</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5b6379">Buscar horários não exige conta. Reservar, publicar e administrar, sim.</p>
+</div>
+<div role="alert" style="display: flex; gap: 12px; align-items: flex-start; padding: 16px; background: #fdf1da; border: 1px solid #efd9a8; border-radius: 13px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8f5c09" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><rect x="5" y="11" width="14" height="9" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<strong style="font-size: 15px; color: #6e4606">Esta conta está suspensa</strong>
+<span style="font-size: 14px; line-height: 1.5">A administração da plataforma suspendeu o acesso a esta conta. Os agendamentos já confirmados continuam valendo para a outra parte.</span>
+<span style="font-size: 14px; line-height: 1.5">Para entender o motivo ou pedir revisão, fale com a administração: [CANAL DE CONTATO].</span>
+<span style="align-self: flex-start; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #eaebfb; color: #2b30a0">RN-28</span>
+</div>
+</div>
+<p style="margin: 0; text-align: center; font-size: 14px; color: #5b6379">Você ainda pode <a href="#" style="font-weight: 600">buscar horários</a> sem entrar.</p>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

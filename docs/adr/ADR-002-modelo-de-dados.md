@@ -25,7 +25,7 @@ Três decisões de representação apareceram cedo e afetam tudo:
 
 ### Banco relacional SQLite, esquema explícito em SQL
 
-Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve as 18 tabelas, derivado diretamente da
+Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve as 20 tabelas (as 19 entidades da spec §9.2 e mais `sessao`, do ADR-004), derivado diretamente da
 §9.2 da spec. Sem ORM: as consultas são SQL escrito à mão em `src/infra/repositorios/`, o que mantém
 o mapeamento entre spec e banco visível linha a linha.
 

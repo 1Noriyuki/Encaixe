@@ -7,8 +7,8 @@
 |---|---|
 | Versão | 1.0.0 |
 | Data | 2026-08-21 |
-| Spec de referência | v0.1.3 |
-| ADRs relacionados | [001](adr/ADR-001-stack-tecnica.md) · [002](adr/ADR-002-modelo-de-dados.md) · [003](adr/ADR-003-uso-de-llm.md) · [004](adr/ADR-004-autenticacao.md) · [005](adr/ADR-005-escopo-financeiro.md) |
+| Spec de referência | v0.1.4 |
+| ADRs relacionados | [001](adr/ADR-001-stack-tecnica.md) · [002](adr/ADR-002-modelo-de-dados.md) · [003](adr/ADR-003-uso-de-llm.md) · [004](adr/ADR-004-autenticacao.md) · [005](adr/ADR-005-escopo-financeiro.md) · [006](adr/ADR-006-fonte-da-marca.md) |
 
 ---
 
@@ -20,6 +20,7 @@
 | Persistência | `node:sqlite` (`DatabaseSync`), SQL escrito à mão | ADR-001, ADR-002 |
 | HTTP | `node:http` + roteador próprio | ADR-001 |
 | Interface | HTML renderizado no servidor via *template literals* com escape automático | ADR-001 |
+| Tipografia | Bricolage Grotesque servida de `public/`, sem rede externa | ADR-006 |
 | Autenticação | Sessão opaca em cookie + `scrypt` | ADR-004 |
 | Testes | `node:test` + `node:assert/strict` | ADR-001 |
 | LLM | Interface própria; provedor `simulado` (padrão) ou `anthropic` (`claude-opus-5`) | ADR-003 |
@@ -79,7 +80,9 @@ projeto_modelagem/
 │   ├── spec.md                 # fonte de verdade
 │   ├── plan.md                 # este arquivo
 │   ├── tasks.md                # tarefas atômicas → issues
-│   ├── adr/                    # ADR-001 a ADR-005
+│   ├── adr/                    # ADR-001 a ADR-006
+│   ├── specs/                  # mapa de Specs, Specs individuais e registro do processo SDD
+│   ├── identidade-visual/      # guia de marca e SVGs da logo
 │   └── review/                 # revisão multidimensional
 ├── src/
 │   ├── dominio/                # regras puras — espelha spec §6
@@ -213,7 +216,7 @@ que os testes simulam falha, timeout e baixa confiança.
 
 ## 6. Modelo físico
 
-18 tabelas, derivadas de spec §9.2. Destaques em [ADR-002](adr/ADR-002-modelo-de-dados.md):
+20 tabelas: as 19 entidades da spec §9.2 e mais `sessao` (ADR-004). Destaques em [ADR-002](adr/ADR-002-modelo-de-dados.md):
 
 - dinheiro em **centavos** (`INTEGER`), tempo em **ISO-8601 UTC** (`TEXT`);
 - enums protegidos por `CHECK`, invariantes por `UNIQUE`/`CHECK`/índice parcial;

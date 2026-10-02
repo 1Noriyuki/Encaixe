@@ -7,15 +7,17 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.3 |
-| Data | 2026-08-21 |
+| Versão da spec | 0.1.5 |
+| Data | 2026-10-01 |
 | Status | Em validação com o grupo e com o professor |
-| Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/` |
+| Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
 ### Histórico de versões
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.5 | 2026-10-01 | Equipe | Decisões da SPEC-002: **RN-28**, conta `SUSPENSO` não autentica e tem as sessões encerradas na suspensão (OPEN-203); **RF-004**, todos os estados autenticam exceto `SUSPENSO`, que recebe mensagem específica quando a senha confere (OPEN-202); **RNF-02**, expiração por inatividade com teto absoluto, valores no ADR-004 (OPEN-12) |
+| 0.1.4 | 2026-10-01 | Equipe | Adoção do roteiro de Spec-Driven Development: esta spec passa a ser decomposta em Specs implementáveis em `docs/specs/` (mapa de Specs e SPEC-001, SPEC-002). §13: QA-02 a QA-05 e QA-08 marcadas como resolvidas pelos ADRs e pelo plano já aceitos; novas questões passam a ser registradas como `OPEN-XX` em `docs/specs/`. §15 atualizada. Nenhuma regra, requisito ou estado foi alterado |
 | 0.1.0 | 2026-08-21 | Equipe | Versão inicial: personas, backlog, EARS, domínio e casos de uso |
 | 0.1.3 | 2026-08-21 | Equipe | Máquina de estados do horário: faltavam as transições `OCUPADO → PUBLICADO/EXPIRADO` do cancelamento pelo cliente (lacuna exposta por teste de integração) |
 | 0.1.2 | 2026-08-21 | Equipe | RNF-05: timeout do LLM passa a ser configurável (padrão 15 s) |
@@ -526,7 +528,7 @@ conforme RN-17 e RN-23, e é definitiva no MVP (sem instância de recurso).
 
 **RN-28 — Aprovação e suspensão de contas.** Prestador novo nasce `PENDENTE_APROVACAO` e não aparece na busca
 nem publica horários até ser aprovado. O admin pode suspender qualquer conta com justificativa; conta
-`SUSPENSO` não autentica em funcionalidades de negócio e tem seus horários `PUBLICADO` retirados da busca,
+`SUSPENSO` não autentica (as sessões abertas são encerradas na suspensão) e tem seus horários `PUBLICADO` retirados da busca,
 preservando os agendamentos já `CONFIRMADO`.
 *Rastreio:* RF-008, RF-009, RF-078, RF-079.
 
@@ -582,7 +584,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-001** *(Evento)* — **QUANDO** um visitante submeter o formulário de cadastro com e-mail não utilizado, senha válida e perfil escolhido, o sistema DEVE criar a conta correspondente e registrar a data de criação. ↳ *US-01*
 - **RF-002** *(Indesejado)* — **SE** o e-mail informado no cadastro já pertencer a uma conta, **ENTÃO** o sistema DEVE recusar o cadastro e informar que o e-mail não está disponível, sem revelar dados da conta existente. ↳ *US-01, RNF-03*
 - **RF-003** *(Evento)* — **QUANDO** uma conta for criada com o perfil Prestador, o sistema DEVE colocá-la no estado `PENDENTE_APROVACAO` e notificar a fila de moderação do admin. ↳ *RN-28, US-01, UC-01*
-- **RF-004** *(Evento)* — **QUANDO** um usuário submeter credenciais válidas de uma conta não suspensa, o sistema DEVE iniciar uma sessão autenticada vinculada ao perfil da conta. ↳ *US-02*
+- **RF-004** *(Evento)* — **QUANDO** um usuário submeter credenciais válidas de uma conta não suspensa, o sistema DEVE iniciar uma sessão autenticada vinculada ao perfil da conta. Contas em `PENDENTE_APROVACAO`, `REPROVADO`, `EM_REVISAO` e `RESTRITO` autenticam; o que cada estado pode fazer depois é decidido pela autorização e pelas regras de negócio. **SE** a conta estiver `SUSPENSO` e a senha conferir, **ENTÃO** o sistema DEVE recusar a autenticação informando que a conta está suspensa. ↳ *US-02, RN-28*
 - **RF-005** *(Indesejado)* — **SE** as credenciais forem inválidas, **ENTÃO** o sistema DEVE recusar a autenticação com mensagem genérica, sem indicar se o erro foi no e-mail ou na senha. ↳ *US-02, RNF-03*
 - **RF-006** *(Ubíquo)* — O sistema DEVE autorizar cada operação com base no perfil da sessão e na titularidade do recurso, negando toda operação fora da matriz de permissões da seção 4.5. ↳ *US-03*
 - **RF-007** *(Indesejado)* — **SE** uma sessão tentar executar operação não permitida ao seu perfil, **ENTÃO** o sistema DEVE negar a operação, retornar erro de autorização e registrar a tentativa na trilha de auditoria. ↳ *US-03, RF-084*
@@ -694,7 +696,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 ## 8. Requisitos não funcionais
 
 - **RNF-01 — Persistência.** O sistema DEVE armazenar todo o estado de negócio em banco de dados, com continuidade entre sessões e integridade referencial entre agendamento, horário, conta e lançamento financeiro. *(Restrição 6.2 do enunciado.)*
-- **RNF-02 — Autenticação e sessão.** O sistema DEVE autenticar usuários e manter sessões com expiração por inatividade; senhas DEVEM ser armazenadas apenas como hash com algoritmo de derivação lenta e sal por usuário.
+- **RNF-02 — Autenticação e sessão.** O sistema DEVE autenticar usuários e manter sessões com expiração por inatividade e com duração máxima absoluta, cujos valores ficam no ADR-004; senhas DEVEM ser armazenadas apenas como hash com algoritmo de derivação lenta e sal por usuário.
 - **RNF-03 — Autorização e separação de perfis.** Toda rota e toda operação de serviço DEVEM verificar perfil e titularidade no servidor; controle apenas na interface não é aceito como implementação de RF-006.
 - **RNF-04 — Privacidade e dados pessoais.** O sistema DEVE expor publicamente apenas nome de exibição, região, reputação e histórico agregado; dados de contato só ficam visíveis entre as partes de um agendamento `CONFIRMADO`.
 - **RNF-05 — Desempenho.** A busca de horários DEVE responder em até 2 segundos para o volume esperado do MVP; a chamada ao LLM DEVE ter tempo limite configurável (padrão 15 s, `LLM_TIMEOUT_MS`), sem bloquear a busca por filtros. *O limite de 5 s da v0.1.0 foi revisto na implementação: modelos com raciocínio adaptativo excedem 5 s com frequência, e o timeout curto transformava a degradação segura (RN-31) em comportamento padrão em vez de exceção.*
@@ -1360,18 +1362,21 @@ pull request revisado por outro integrante · CI verde.
 Cada item abaixo é uma decisão pendente. Nenhuma bloqueia o início da implementação, mas todas precisam ser
 fechadas até o marco indicado — e as marcadas com **ADR** viram registro formal.
 
-| ID | Questão | Encaminhamento proposto | Prazo |
-|---|---|---|---|
-| QA-01 | Expiração da reserva deve liberar o horário ou autoconfirmar? | Entregar as duas como política do prestador (P-02), padrão `LIBERAR`; validar com o professor | M1 |
-| QA-02 | Stack técnica (linguagem, framework, banco) | **ADR-001** e **ADR-002**, na próxima etapa do fluxo | M0 |
-| QA-03 | Provedor de LLM e formato de saída estruturada | **ADR-003**, com interface própria (RNF-12) e provedor simulado nos testes | M0/M3 |
-| QA-04 | Modelo de autenticação (sessão x token) e granularidade de permissão | **ADR-004** | M1 |
-| QA-05 | Escopo financeiro: registrar pagamento sem gateway | **ADR-005**, formalizando RN-33 | M2 |
-| QA-06 | Penalidade financeira em cancelamento (multa) além da reputação | Fora do MVP; sem gateway, não há como cobrar. Reavaliar se QA-05 mudar | M2 |
-| QA-07 | Régua de desconto por serviço ou por prestador | MVP: régua por prestador, selecionável por horário. Revisar se aparecer necessidade real | M1 |
-| QA-08 | Execução das rotinas temporais (expiração, conclusão automática) | Definir no `plan.md`: agendador interno x verificação sob demanda na leitura | M1 |
-| QA-09 | Anexos de evidência em disputa: arquivo real ou apenas texto e URL | Iniciar com texto + URL; arquivo se houver tempo | M3 |
-| QA-10 | Limite de interpretações por usuário (RNF-13) | Definir número junto com o provedor escolhido em ADR-003 | M3 |
+| ID | Questão | Encaminhamento proposto | Prazo | Situação |
+|---|---|---|---|---|
+| QA-01 | Expiração da reserva deve liberar o horário ou autoconfirmar? | Entregar as duas como política do prestador (P-02), padrão `LIBERAR`; validar com o professor | M1 | Aberta (validação com o professor) |
+| QA-02 | Stack técnica (linguagem, framework, banco) | **ADR-001** e **ADR-002**, na próxima etapa do fluxo | M0 | Resolvida: ADR-001 e ADR-002 aceitos |
+| QA-03 | Provedor de LLM e formato de saída estruturada | **ADR-003**, com interface própria (RNF-12) e provedor simulado nos testes | M0/M3 | Resolvida: ADR-003 aceito |
+| QA-04 | Modelo de autenticação (sessão x token) e granularidade de permissão | **ADR-004** | M1 | Resolvida: ADR-004 aceito (ver `OPEN-12` em `docs/specs/` sobre a expiração da sessão) |
+| QA-05 | Escopo financeiro: registrar pagamento sem gateway | **ADR-005**, formalizando RN-33 | M2 | Resolvida: ADR-005 aceito |
+| QA-06 | Penalidade financeira em cancelamento (multa) além da reputação | Fora do MVP; sem gateway, não há como cobrar. Reavaliar se QA-05 mudar | M2 | Aberta (fora do MVP) |
+| QA-07 | Régua de desconto por serviço ou por prestador | MVP: régua por prestador, selecionável por horário. Revisar se aparecer necessidade real | M1 | Aberta (ver `OPEN-10` em `docs/specs/`) |
+| QA-08 | Execução das rotinas temporais (expiração, conclusão automática) | Definir no `plan.md`: agendador interno x verificação sob demanda na leitura | M1 | Resolvida: `plan.md` §5.2, estratégia dupla |
+| QA-09 | Anexos de evidência em disputa: arquivo real ou apenas texto e URL | Iniciar com texto + URL; arquivo se houver tempo | M3 | Aberta |
+| QA-10 | Limite de interpretações por usuário (RNF-13) | Definir número junto com o provedor escolhido em ADR-003 | M3 | Aberta: o número não está nesta spec (ver `OPEN-20` em `docs/specs/`) |
+
+> A partir da v0.1.4, questões novas encontradas na decomposição em Specs são registradas como `OPEN-XX`
+> em [`docs/specs/mapa-de-specs.md`](specs/mapa-de-specs.md) e em cada Spec individual.
 
 ---
 
@@ -1397,9 +1402,13 @@ código ou justificada com atualização desta spec e ADR correspondente.
 
 ## 15. Próximos passos do fluxo Spec-Driven
 
+Já concluídos: ADR-001 a ADR-005, `docs/plan.md`, `docs/tasks.md` e o mapa de Specs.
+
 1. **Validação desta spec** com o grupo e com o professor (fechar QA-01 e QA-07).
-2. **ADR-001 / ADR-002** — stack técnica com justificativa.
-3. **`docs/plan.md`** — arquitetura, camadas, modelo físico e estratégia de testes.
-4. **`docs/tasks.md`** — tarefas atômicas derivadas desta spec, prontas para virar issues.
-5. **ADR-003 a ADR-005** — LLM, autenticação e escopo financeiro.
-6. Abertura das issues do marco M0 e configuração do repositório (Kanban, colaborador, CI).
+2. **Aprovação do mapa de Specs** ([`docs/specs/mapa-de-specs.md`](specs/mapa-de-specs.md)) e decisão das
+   questões `OPEN-XX` que bloqueiam as primeiras Specs.
+3. **Geração das Specs uma a uma**, cada uma aprovada antes da implementação correspondente.
+4. **Implementação Spec por Spec**, com divergências registradas conforme a regra fundamental do roteiro.
+5. Abertura das issues e configuração do repositório (Kanban, colaborador, CI).
+
+O andamento de cada etapa fica em [`docs/specs/registro-sdd.md`](specs/registro-sdd.md).

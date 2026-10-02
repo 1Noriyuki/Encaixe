@@ -10,7 +10,8 @@
 |---|---|
 | Versão | 1.0.0 |
 | Data | 2026-08-21 |
-| Legenda de estado | ✅ concluída · 🔄 em andamento · ⬜ a fazer |
+| Legenda de estado | ✅ concluída (issue fechada com evidência de teste ou documento) · 🔄 implementada antes das Specs, falta teste do critério de aceite ou conferência contra a Spec · ⬜ a fazer |
+| Estado revisado em | 2026-10-01, junto com as issues do GitHub (ver `docs/specs/registro-sdd.md`, etapa 13) |
 
 ## Definição de pronto (vale para toda tarefa)
 
@@ -31,8 +32,8 @@
 | T-03 | ADR-001 (stack) e ADR-002 (modelo de dados) | QA-02 | Contexto, decisão e consequências em cada um | ✅ |
 | T-04 | Esqueleto do projeto: `package.json`, scripts, `.gitignore` | ADR-001 | `npm start` e `npm test` respondem | ✅ |
 | T-05 | Módulos base do domínio: `tempo`, `dinheiro`, `erros` | RNF-08, ADR-002 | Relógio injetável; centavos; `ErroDeRegra` carrega o ID da regra | ✅ |
-| T-06 | Esquema físico `schema.sql` + conexão + transações | §9.2, ADR-002 | 18 tabelas; `npm run db:migrar` idempotente | ✅ |
-| T-07 | Parâmetros do domínio como dados | RN-00 | Tabela `parametro` + metadados; nenhum número solto no código | ✅ |
+| T-06 | Esquema físico `schema.sql` + conexão + transações | §9.2, ADR-002 | 20 tabelas (19 entidades da spec + `sessao`); `npm run db:migrar` idempotente | ✅ |
+| T-07 | Parâmetros do domínio como dados | RN-00 | Tabela `parametro` + metadados; nenhum número solto no código | 🔄 |
 | T-08 | Máquinas de estado com `assegurarTransicao` | §9.4–9.7, INV-13 | Transição não declarada lança erro | ✅ |
 
 ## Marco M1 — Núcleo transacional
@@ -41,26 +42,26 @@
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-09 | Cadastro de cliente e prestador | RF-001 a RF-003 | Prestador nasce `PENDENTE_APROVACAO`; e-mail duplicado não vaza dado | ✅ |
-| T-10 | Hash de senha com `scrypt` e política mínima | RNF-02 | Nenhuma senha em texto puro; comparação em tempo constante | ✅ |
-| T-11 | Login, sessão em cookie e logout | RF-004, RF-005 | Cookie `HttpOnly`+`SameSite`; mensagem de erro genérica | ✅ |
+| T-09 | Cadastro de cliente e prestador | RF-001 a RF-003 | Prestador nasce `PENDENTE_APROVACAO`; e-mail duplicado não vaza dado | 🔄 |
+| T-10 | Hash de senha com `scrypt` e política mínima | RNF-02 | Nenhuma senha em texto puro; comparação em tempo constante | 🔄 |
+| T-11 | Login, sessão em cookie e logout | RF-004, RF-005 | Cookie `HttpOnly`+`SameSite`; mensagem de erro genérica | 🔄 |
 | T-12 | Autorização por perfil nas rotas + auditoria de acesso negado | RF-006, RF-007 | 403 e registro `ACESSO_NEGADO` | ✅ |
 | T-13 | Proteção CSRF em todo POST autenticado | RNF-03 | Token por sessão; POST sem token → 403 | ✅ |
-| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado | ✅ |
-| T-15 | Perfil do prestador com janela e política de expiração | RF-010, RN-10 | Janela entre 5 e 60 min; política `LIBERAR`/`AUTOCONFIRMAR` | ✅ |
-| T-16 | Barreira "pode publicar" com lista do que falta | RF-011, RN-08 | Perfil incompleto lista pendências | ✅ |
+| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado | 🔄 |
+| T-15 | Perfil do prestador com janela e política de expiração | RF-010, RN-10 | Janela entre 5 e 60 min; política `LIBERAR`/`AUTOCONFIRMAR` | 🔄 |
+| T-16 | Barreira "pode publicar" com lista do que falta | RF-011, RN-08 | Perfil incompleto lista pendências | 🔄 |
 
 ### Catálogo e agenda
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-17 | CRUD de serviços com validação | RF-012, RF-013 | Duração múltiplo de 5; piso ≤ preço-base | ✅ |
+| T-17 | CRUD de serviços com validação | RF-012, RF-013 | Duração múltiplo de 5; piso ≤ preço-base | 🔄 |
 | T-18 | Régua de desconto com validação de monotonicidade | RF-018 a RF-020, RN-02 | Régua não monotônica é recusada com mensagem clara | ✅ |
 | T-19 | Publicação de horário com antecedência mínima | RF-014, RF-015, RN-07 | Abaixo de P-03 é recusado | ✅ |
 | T-20 | Bloqueio de sobreposição na agenda | RF-016, RN-06 | Conflito recusado apontando o horário conflitante | ✅ |
 | T-21 | Snapshots de preço no horário | RN-05, ADR-002 | Editar o serviço não altera horário publicado | ✅ |
-| T-22 | Publicação em lote | RF-023 | Falha parcial reportada item a item | ✅ |
-| T-23 | Cancelar horário ainda livre | RF-022 | Horário com reserva não pode ser retirado por essa via | ✅ |
+| T-22 | Publicação em lote | RF-023 | Falha parcial reportada item a item | 🔄 |
+| T-23 | Cancelar horário ainda livre | RF-022 | Horário com reserva não pode ser retirado por essa via | 🔄 |
 
 ### Preço dinâmico
 
@@ -75,12 +76,12 @@
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Só `PUBLICADO`, futuro e de prestador `ATIVO` | ✅ |
-| T-29 | Ordenação com desempate determinístico | RF-031 | Ordem estável entre execuções | ✅ |
+| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Só `PUBLICADO`, futuro e de prestador `ATIVO` | 🔄 |
+| T-29 | Ordenação com desempate determinístico | RF-031 | Ordem estável entre execuções | 🔄 |
 | T-30 | Reserva com preço travado e bloqueio do horário | RF-039, RF-040, RN-04 | Valor travado não muda depois | ✅ |
 | T-31 | Exclusividade sob concorrência | RF-041, INV-01 | Segunda reserva simultânea é recusada | ✅ |
 | T-32 | Limite de reservas simultâneas por reputação | RF-047, RN-12 | Cliente restrito é barrado na segunda reserva | ✅ |
-| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Recusa exige motivo e libera o horário | ✅ |
+| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Recusa exige motivo e libera o horário | 🔄 |
 | T-34 | Expiração automática com as duas políticas | RF-045, RF-046, RN-10 | `LIBERAR` devolve à busca; `AUTOCONFIRMAR` confirma | ✅ |
 | T-35 | ADR-004 (autenticação) | QA-04 | Registrado com limites conhecidos | ✅ |
 
@@ -99,7 +100,7 @@
 | T-44 | Conclusão do atendimento com estado de cobrança | RF-058, RN-33 | Só após o fim do horário | ✅ |
 | T-45 | Apuração de comissão sobre o valor final | RF-059, RN-14, RN-15 | `bruto = comissão + líquido`; base é o valor travado | ✅ |
 | T-46 | Conclusão automática após o prazo | RF-060 | Sem contestação em P-17 → conclui e apura | ✅ |
-| T-47 | Extrato do prestador com retidos separados | RF-061, RF-062 | Itens `RETIDO` fora do total | ✅ |
+| T-47 | Extrato do prestador com retidos separados | RF-061, RF-062 | Itens `RETIDO` fora do total | 🔄 |
 | T-48 | Avaliação bilateral com janela e unicidade | RF-065 a RF-067, RN-24 | Uma avaliação por parte, dentro de P-14 | ✅ |
 | T-49 | Revelação cega das avaliações | RF-068, RN-25 | Notas só aparecem com ambas ou com a janela encerrada | ✅ |
 | T-50 | ADR-005 (escopo financeiro) | QA-05 | Registrado com limites conhecidos | ✅ |
@@ -110,27 +111,27 @@
 |---|---|---|---|:--:|
 | T-51 | Abertura de disputa com evidência obrigatória | RF-071 a RF-073, RN-26 | Sem evidência ou fora do prazo é recusada | ✅ |
 | T-52 | Retenção de comissão e suspensão de penalidades | RN-17, INV-12 | Lançamento vira `RETIDO` ao abrir disputa | ✅ |
-| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Fora do SLA fica destacado | ✅ |
+| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Fora do SLA fica destacado | 🔄 |
 | T-54 | Resolução com os quatro desfechos | RF-076, RF-077, RN-27 | `MANTIDO`/`REVERTIDO`/`PARCIAL`/`ARQUIVADO` com efeitos distintos | ✅ |
-| T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Decisão exige justificativa e notifica o titular | ✅ |
-| T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | ✅ |
-| T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras | ✅ |
-| T-58 | Tela de parâmetros do domínio | RN-00 | Alterável sem deploy, com faixa validada | ✅ |
+| T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Decisão exige justificativa e notifica o titular | 🔄 |
+| T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |
+| T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras | 🔄 |
+| T-58 | Tela de parâmetros do domínio | RN-00 | Alterável sem deploy, com faixa validada | 🔄 |
 | T-59 | Contrato do provedor de LLM + validação de saída | RN-29, RNF-12 | Saída fora do formato vira `FALHA`, não exceção | ✅ |
 | T-60 | Provedor simulado determinístico | ADR-003 | Sistema funciona sem chave e sem rede | ✅ |
-| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout configurável | ✅ |
+| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout configurável | 🔄 |
 | T-62 | Limiar de confiança e confirmação de filtros | RF-035, RF-036, RN-30 | Confiança baixa ou categoria inválida pedem confirmação | ✅ |
 | T-63 | Degradação segura na falha do LLM | RF-037, RF-038, RN-31 | Busca por filtros continua funcionando | ✅ |
 | T-64 | Persistência e telemetria das interpretações | RF-034, RN-32 | Painel mostra taxa de sucesso e de correção | ✅ |
 | T-65 | ADR-003 (uso de LLM) | QA-03 | Registrado com fronteira e limites | ✅ |
-| T-66 | Notificações por evento e central do usuário | RF-082, RF-083 | Toda transição relevante gera aviso | ✅ |
-| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Toda transição registrada com ator e correlação | ✅ |
+| T-66 | Notificações por evento e central do usuário | RF-082, RF-083 | Toda transição relevante gera aviso | 🔄 |
+| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Toda transição registrada com ator e correlação | 🔄 |
 
 ## Marco M4 — Fechamento
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra | ✅ |
+| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra | 🔄 |
 | T-69 | Testes de integração dos fluxos completos | AC-03 a AC-12 | UC-03 → UC-12 ponta a ponta | ✅ |
 | T-70 | Testes da camada HTTP | AC-01, RF-006, RF-007 | Autorização, CSRF e escape de saída | ✅ |
 | T-71 | `plan.md` e `tasks.md` | §7 enunciado | Derivados da spec, com rastreabilidade | ✅ |

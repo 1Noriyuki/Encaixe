@@ -1,0 +1,36 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-01T15:00:00Z" },
+  "title": "Encaixe — telas de cadastro e login",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 844, "title": "Entrar" },
+    "Entrar-erro.dc.html": { "x": 470, "y": 0, "w": 390, "h": 844, "title": "Entrar · credencial inválida" },
+    "Entrar-suspensa.dc.html": { "x": 940, "y": 0, "w": 390, "h": 844, "title": "Entrar · conta suspensa" },
+    "Cadastro.dc.html": { "x": 0, "y": 1300, "w": 390, "h": 960, "title": "Criar conta" },
+    "Cadastro-erro.dc.html": { "x": 470, "y": 1300, "w": 390, "h": 960, "title": "Criar conta · campos inválidos" },
+    "Prestador-aguardando.dc.html": { "x": 940, "y": 1300, "w": 390, "h": 960, "title": "Prestador · aguardando aprovação" },
+    "Sessao-encerrada.dc.html": { "x": 0, "y": 2640, "w": 390, "h": 844, "title": "Saiu da conta" },
+    "Sessao-expirada.dc.html": { "x": 470, "y": 2640, "w": 390, "h": 844, "title": "Sessão expirada" }
+  },
+  "order": [
+    "Main.dc.html",
+    "Entrar-erro.dc.html",
+    "Entrar-suspensa.dc.html",
+    "Cadastro.dc.html",
+    "Cadastro-erro.dc.html",
+    "Prestador-aguardando.dc.html",
+    "Sessao-encerrada.dc.html",
+    "Sessao-expirada.dc.html"
+  ],
+  "notes": {
+    "titulo1": { "x": 0, "y": -300, "text": "Entrar — SPEC-002 (RF-004, RF-005)", "kind": "title1", "maxW": 1330 },
+    "nota1": { "x": 1420, "y": 0, "w": 380, "fill": "blue", "text": "Entrar\n\n• CA-06: login válido cria sessão (cookie HttpOnly + SameSite).\n• CA-07: e-mail inexistente e senha errada mostram a MESMA mensagem (RF-005, INV-005). O e-mail digitado é mantido; a senha, não.\n• CA-08 (conta suspensa): decisão da OPEN-203 aprovada. Mensagem específica só depois da senha correta.\n• Contato com a administração: a spec não define canal → [CANAL DE CONTATO]." },
+    "titulo2": { "x": 0, "y": 1040, "text": "Criar conta — SPEC-002 (RF-001, RF-002, RF-003)", "kind": "title1", "maxW": 1330 },
+    "nota2": { "x": 1420, "y": 1300, "w": 380, "fill": "blue", "text": "Criar conta\n\n• Perfil só CLIENTE ou PRESTADOR (CA-05).\n• Política de senha vinda de seguranca.md §3 (OPEN-201).\n• Campos além de e-mail, senha e perfil: só Nome (Usuario.nome). Telefone e região ficaram de fora até a OPEN-205.\n• E-mail indisponível não revela dados da conta (CA-03, RF-002; ver OPEN-209).\n• Depois do cadastro: a spec não diz se a pessoa já entra logada (OPEN-210). O cliente ATIVO segue o mesmo caminho, com aviso de sucesso." },
+    "titulo3": { "x": 0, "y": 2380, "text": "Sessão — SPEC-002 (RNF-02, ADR-004)", "kind": "title1", "maxW": 860 },
+    "nota3": { "x": 940, "y": 2640, "w": 380, "fill": "blue", "text": "Sessão\n\n• CA-10: o logout revoga a sessão.\n• CA-09a: expira após 2 h sem uso, com teto de 12 h desde o login (OPEN-12 aprovada, ADR-004)." }
+  },
+  "designSystems": []
+}

@@ -148,7 +148,9 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 |---|---|
 | `docs/spec.md` | fonte de verdade: personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
-| `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro |
+| `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
+| `docs/identidade-visual/` | guia de marca e SVGs da logo (símbolo "E de agenda" com a peça laranja); cores = tokens de `estilo.js`. Aplicada no site: `MARCA_SVG`, `PALAVRA_SVG` e `FAVICON` em `views/layout.js`. A palavra "encaixe" está em curvas (Bricolage Grotesque 700). O site inteiro usa a Bricolage, servida de `public/bricolage-grotesque.woff2` (ADR-006); a fonte do sistema fica só como reserva |
+| `docs/specs/` | roteiro SDD: `mapa-de-specs.md`, `SPEC-NNN-*.md` e `registro-sdd.md` (diário de toda etapa, atualizado a cada ação) |
 | `docs/plan.md`, `docs/tasks.md` | arquitetura e quebra em tarefas |
 | `docs/testes.md` | estratégia de testes e evidências |
 | `docs/seguranca.md` | modelo de ameaças e controles |

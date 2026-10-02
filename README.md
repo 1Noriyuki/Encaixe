@@ -87,7 +87,9 @@ Senha de todas: `senha1234`
 | [`docs/spec.md`](docs/spec.md) | **Fonte de verdade.** Personas, backlog, 85 requisitos EARS, 34 regras de negócio, modelo de domínio, 14 casos de uso, invariantes e rastreabilidade |
 | [`docs/plan.md`](docs/plan.md) | Plano técnico: camadas, ciclo de requisição, decisões de implementação, riscos |
 | [`docs/tasks.md`](docs/tasks.md) | Tarefas atômicas prontas para virar issues, com estado e rastreio |
-| [`docs/adr/`](docs/adr/) | 5 ADRs: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro |
+| [`docs/adr/`](docs/adr/) | 6 ADRs: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
+| [`docs/identidade-visual/`](docs/identidade-visual/) | Guia de marca (símbolo, versões da logo, cores, tipografia, voz) e os arquivos SVG da logo, já aplicada no cabeçalho, no rodapé e no favicon |
+| [`docs/specs/`](docs/specs/) | Spec-Driven Development: mapa ordenado de Specs, Specs individuais aprovadas antes da implementação e registro de cada etapa do processo |
 | [`docs/seguranca.md`](docs/seguranca.md) | Modelo de ameaças, controles implementados, SSDLC e pendências assumidas |
 | [`docs/testes.md`](docs/testes.md) | Estratégia de testes e evidências de qualidade |
 | [`docs/review/`](docs/review/) | Revisão multidimensional: arquitetura, performance, segurança, observabilidade |
