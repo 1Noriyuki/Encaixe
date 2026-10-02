@@ -27,7 +27,9 @@
 | Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 141/141 |
 | Baseline (`spec.md`, ADRs) | Atualizada para refletir o processo (spec v0.1.4, etapa 7). Nenhuma regra, requisito ou estado foi alterado |
 | Código (`src/`, `tests/`) | Ainda não commitado. Só a marca foi alterada (linha abaixo); o resto depende da OPEN-01 |
-| Commits do processo SDD | Nenhum |
+| Commits do processo SDD | 4 commits na branch `sdd/especificacao-e-identidade`, com push; **falta PR e merge na `main`** (etapa 13) |
+| Issues no GitHub | 54 fechadas com evidência; 53 abertas e atribuídas (1Noriyuki 18, gostislavs 18, 2dart5 17); #79 decisões, #80–#108 uma por Spec (etapa 13) |
+| Documento de passagem | `docs/proximos-passos.docx` (etapa 13) |
 
 ### Decisões humanas pendentes
 
@@ -55,6 +57,7 @@
 | PA-03 | Os invariantes de cada Spec usam numeração local `INV-001`, citando o `INV-xx` global coberto | o roteiro pede `INV-001`; a baseline já usa `INV-01..14` | SPEC-001 §6, SPEC-002 §6 |
 | PA-04 | Os "drivers arquiteturais" foram lidos como as restrições do enunciado (spec §1.5) mais os princípios da constituição | a baseline não tem seção formal de drivers (OPEN-03) | mapa, todas as Specs |
 | PA-05 | Os nomes de teste propostos seguem a convenção do projeto, com sufixos para não colidir (`T-CONTA-01a`) | os IDs `T-CONTA-01..04` já estão reservados na matriz da spec §11 | SPEC-002 §12 |
+| PA-06 | `niltonmack` é o professor, não integrante, e ficou fora da distribuição de issues | sem nome nem atividade no repositório; a spec §15 prevê o professor como colaborador | issues do GitHub, etapa 13 |
 
 ---
 
@@ -254,3 +257,51 @@
 | `src/dominio/estados.js` | já tem `ATIVO/RESTRITO/PENDENTE → SUSPENSO` e `EM_REVISAO → RESTRITO`, que a spec §9.6 não desenha | relacionado à OPEN-08, ainda aberta |
 
 - **Não corrigido ainda:** pela regra fundamental do roteiro, cada divergência precisa de uma ação. A correção do código depende da OPEN-01, que define como o código existente será tratado.
+- **Recomendações entregues** (aguardando decisão, issue #79):
+  - **OPEN-01:** manter o código e conferi-lo Spec por Spec.
+  - **OPEN-02:** manter `RN-xx`; `INV-001` local citado como "SPEC-00X INV-00Y".
+  - **OPEN-210:** a conta sai logada do cadastro; o prestador pendente prepara o catálogo antes da aprovação.
+
+### Etapa 13 — Encerramento do dia: commits, issues e documento de passagem · 2026-10-01
+
+- **Pedido:**
+  - documento .docx com os próximos passos e recomendações para os integrantes;
+  - commitar tudo e dar push;
+  - fechar as issues já resolvidas e distribuir igualmente as que faltam entre os três integrantes.
+- **Commits e push:**
+  - Branch nova `sdd/especificacao-e-identidade`. As instruções do ambiente pedem branch quando se está na `main`, e a constituição (princípio X) pede branch própria e revisão antes do merge.
+  - Commits:
+    - `a653fa7`: código anterior às Specs;
+    - `36af8ed`: identidade visual;
+    - `a47b9bb`: documentação SDD;
+    - mais o commit desta etapa.
+  - **O merge na `main` ficou para a equipe**, depois da revisão de outro integrante.
+- **Análise das issues:** as 74 abertas (T-01 a T-76) foram cruzadas com o código e com os títulos dos testes automatizados.
+
+| Resultado | Critério | Quantidade |
+|---|---|---|
+| Fechadas | documento existe, ou código com teste cobrindo o critério de aceite da tarefa; cada uma recebeu comentário com a evidência | 51 |
+| Mantidas abertas, com comentário do que falta | código existe, mas falta teste do critério de aceite ou há divergência com Spec aprovada (T-11) | 23 |
+| Criadas | #79 (decisões OPEN-01/02/210) e #80 a #108 (uma por Spec, com checklist do ciclo) | 30 |
+
+- **Achados da análise:**
+  - **T-68** ("toda regra com teste") não está cumprida: RN-00, RN-05, RN-08, RN-11, RN-28 e RN-33 não têm teste nomeado.
+  - **T-06:** a migração é idempotente, mas cria **20 tabelas**, não 18. ADR-002, `plan.md` e `tasks.md` foram corrigidos: 19 entidades da spec mais `sessao`.
+  - **`tasks.md`:** as 23 tarefas abertas passaram de ✅ para 🔄, com legenda nova.
+- **Distribuição:** por trilha do `tasks.md`, para cada pessoa ficar com uma área coerente.
+
+| Integrante | Trilha | Issues abertas |
+|---|---|---|
+| gostislavs (Gustavo) | A: domínio e financeiro | 18 |
+| 2dart5 | B: transação e consequência | 17 |
+| 1Noriyuki (Enzo) | C: acesso, admin e IA, mais a #79 | 18 |
+
+- **Premissa do agente (PA-06):** o colaborador `niltonmack` foi tratado como professor, por não ter nome nem atividade no repositório e porque a spec §15 prevê o professor como colaborador. Ele não recebeu issues. Se for integrante, a distribuição precisa ser refeita.
+- **Documento de passagem:** `docs/proximos-passos.docx`, 5 páginas, conferido renderizado (Word → PDF → imagem). Conteúdo:
+  - estado do projeto;
+  - primeiro passo (PR e merge);
+  - o ciclo de cada Spec e a regra fundamental;
+  - as recomendações da #79;
+  - a divisão com ondas de dependência;
+  - os pontos de atenção já conhecidos;
+  - mapa dos arquivos e ordem de leitura.
