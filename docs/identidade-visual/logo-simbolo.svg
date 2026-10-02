@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="t">
+  <title id="t">Encaixe</title>
+  <!-- Um E feito de faixas de agenda: a do meio é o horário vago, entrando no lugar. -->
+  <rect x="14" y="12" width="11" height="40" rx="3.5" fill="#3b41c5"/>
+  <rect x="14" y="12" width="36" height="11" rx="3.5" fill="#3b41c5"/>
+  <rect x="14" y="41" width="36" height="11" rx="3.5" fill="#3b41c5"/>
+  <rect x="30" y="26.5" width="20" height="11" rx="3.5" fill="#f97316"/>
+</svg>
