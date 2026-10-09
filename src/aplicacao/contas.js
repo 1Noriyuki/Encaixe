@@ -81,7 +81,11 @@ export function cadastrar({ nome, email, senha, perfil, nomeExibicao, telefone, 
   });
 }
 
-/** RF-004 / RF-005 - autenticacao com mensagem generica. */
+/**
+ * RF-004 / RF-005 - autenticacao com mensagem generica.
+ * Todo estado de conta autentica, menos SUSPENSO (OPEN-202, OPEN-203): o que
+ * cada estado pode fazer depois e decidido pela autorizacao e pelas regras.
+ */
 export function autenticar({ email, senha }) {
   const usuario = usuarios.porEmail(email);
   const generica = 'E-mail ou senha inválidos.';
@@ -93,8 +97,10 @@ export function autenticar({ email, senha }) {
   if (!usuario || !senhaConfere) {
     throw new ErroDeAutenticacao(generica);
   }
-  if (usuario.estado_conta === 'REPROVADO') {
-    throw new ErroDeAutenticacao('Seu cadastro foi reprovado. Fale com o suporte da plataforma.');
+  // RN-28 - so depois de a senha conferir: com a senha errada, vale a mensagem
+  // generica, para nao revelar o estado da conta a quem nao e o titular.
+  if (usuario.estado_conta === 'SUSPENSO') {
+    throw new ErroDeRegra('RN-28', 'Sua conta está suspensa e não pode entrar. Fale com o suporte da plataforma.');
   }
 
   return usuario;
@@ -182,6 +188,8 @@ export function decidirSobreConta({ adminId, usuarioId, decisao, justificativa }
 
     assegurarTransicao('conta', usuario.estado_conta, decisao);
     usuarios.atualizarEstadoConta(usuarioId, decisao);
+    // RN-28 - a suspensao derruba as sessoes abertas na hora, sem esperar expirar.
+    if (decisao === 'SUSPENSO') usuarios.encerrarSessoes(usuarioId);
 
     auditoria.registrar({
       atorId: adminId,

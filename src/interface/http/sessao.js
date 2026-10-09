@@ -12,7 +12,11 @@ import { agoraIso, adicionarHoras, antesDe } from '../../dominio/tempo.js';
 import * as usuariosRepo from '../../infra/repositorios/usuarios.js';
 
 const COOKIE = 'encaixe_sid';
-const DURACAO_HORAS = 12;
+// ADR-004 (revisao, OPEN-12): 2 h sem uso expiram a sessao, e 12 h desde o
+// login sao o teto mesmo com uso continuo. `expira_em` guarda o prazo de
+// inatividade e anda a cada uso, mas nunca passa de `criada_em` + teto.
+const INATIVIDADE_HORAS = 2;
+const TETO_HORAS = 12;
 
 /** Mensagens efemeras entre requisicoes (pos-redirect). Vivem so no processo. */
 const avisos = new Map();
@@ -24,10 +28,16 @@ export function criarSessao(usuarioId) {
 
   executar(
     'INSERT INTO sessao (id, usuario_id, csrf, criada_em, expira_em) VALUES (?, ?, ?, ?, ?)',
-    id, usuarioId, csrf, agora, adicionarHoras(agora, DURACAO_HORAS),
+    id, usuarioId, csrf, agora, proximoPrazo(agora, agora),
   );
 
   return { id, csrf };
+}
+
+function proximoPrazo(criadaEm, agora) {
+  const inatividade = adicionarHoras(agora, INATIVIDADE_HORAS);
+  const teto = adicionarHoras(criadaEm, TETO_HORAS);
+  return antesDe(inatividade, teto) ? inatividade : teto;
 }
 
 export function carregarSessao(req) {
@@ -37,7 +47,8 @@ export function carregarSessao(req) {
   const sessao = um('SELECT * FROM sessao WHERE id = ?', id);
   if (!sessao) return null;
 
-  if (!antesDe(agoraIso(), sessao.expira_em)) {
+  const agora = agoraIso();
+  if (!antesDe(agora, sessao.expira_em)) {
     encerrarSessao(id);
     return null;
   }
@@ -45,7 +56,10 @@ export function carregarSessao(req) {
   const usuario = usuariosRepo.porId(sessao.usuario_id);
   if (!usuario) return null;
 
-  return { ...sessao, usuario };
+  const expiraEm = proximoPrazo(sessao.criada_em, agora);
+  executar('UPDATE sessao SET expira_em = ? WHERE id = ?', expiraEm, id);
+
+  return { ...sessao, expira_em: expiraEm, usuario };
 }
 
 export function encerrarSessao(id) {
@@ -53,7 +67,7 @@ export function encerrarSessao(id) {
 }
 
 export function cookieDeSessao(id) {
-  return `${COOKIE}=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${DURACAO_HORAS * 3600}`;
+  return `${COOKIE}=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${TETO_HORAS * 3600}`;
 }
 
 export function cookieDeSaida() {

@@ -65,31 +65,7 @@ test('paginas publicas respondem sem sessao', async () => {
   }
 });
 
-test('RF-005 | credencial invalida devolve mensagem generica', async () => {
-  cenarioBasico();
-  const r = await fetch(`${base}/entrar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ email: 'prestador@teste.dev', senha: 'errada12' }),
-    redirect: 'manual',
-  });
-
-  const corpo = await r.text();
-  assert.match(corpo, /E-mail ou senha inválidos/);
-  assert.doesNotMatch(corpo, /senha incorreta|usuario nao existe/i,
-    'a mensagem nao pode revelar qual campo errou');
-});
-
-test('RF-004 | login valido cria sessao com cookie httpOnly', async () => {
-  cenarioBasico();
-  const { resposta, cookie } = await entrar('cliente@teste.dev');
-
-  assert.equal(resposta.status, 302);
-  assert.ok(cookie, 'deveria vir um cookie de sessao');
-  const bruto = resposta.headers.getSetCookie()[0];
-  assert.match(bruto, /HttpOnly/);
-  assert.match(bruto, /SameSite=Lax/);
-});
+// Login, sessao e logout (RF-004, RF-005, RNF-02) ficam em contas-sessao.test.js (SPEC-002).
 
 test('RF-006 | rota de perfil exige sessao e redireciona para o login', async () => {
   cenarioBasico();

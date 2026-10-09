@@ -14,6 +14,11 @@ export function criar({ nome, email, senha_hash, perfil, estado_conta, reputacao
   );
 }
 
+/** RN-28 - usada na suspensao: nenhuma sessao da conta continua valendo. */
+export function encerrarSessoes(usuarioId) {
+  executar('DELETE FROM sessao WHERE usuario_id = ?', usuarioId);
+}
+
 export function porId(id) {
   return um('SELECT * FROM usuario WHERE id = ?', id);
 }
