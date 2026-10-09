@@ -8,7 +8,7 @@
 |---|---|
 | Versão | 1.0.0 |
 | Data | 2026-10-01 |
-| Status | **Aprovado** pela equipe em 2026-10-01, na ordem proposta (sem reordenação). OPEN-01 e OPEN-02 ainda sem decisão |
+| Status | **Aprovado** pela equipe em 2026-10-01, na ordem proposta (sem reordenação). OPEN-01 e OPEN-02 decididas em 2026-10-08 |
 | Specs geradas | [SPEC-001](SPEC-001-fundacao.md) · [SPEC-002](SPEC-002-cadastro-e-autenticacao.md) |
 | Registro do processo | [`registro-sdd.md`](registro-sdd.md) |
 | Baseline analisada | `docs/spec.md` v0.1.3 · `docs/plan.md` v1.0.0 · ADR-001 a ADR-005 · `.specify/memory/constitution.md` · `docs/tasks.md` · `docs/testes.md` · `docs/seguranca.md` · `docs/review/revisao-multidimensional.md` · `README.md` |
@@ -538,8 +538,8 @@ Nenhum item abaixo foi resolvido neste mapa. Para cada um, a decisão pertence �
 
 | ID | Tipo | Descrição | Afeta |
 |---|---|---|---|
-| OPEN-01 | Processo | **A implementação já existe** (`src/`, `tests/`, 141 testes) e `docs/tasks.md` marca as 76 tarefas como concluídas. O roteiro manda produzir as Specs **antes** da implementação. Decisão necessária: (a) tratar o código existente como candidato a ser verificado contra cada Spec aprovada, registrando divergências conforme a "Regra fundamental"; ou (b) descartar o código e implementar Spec por Spec | todas |
-| OPEN-02 | Nomenclatura | O roteiro usa **RB** para regra de negócio e **INV-001** para invariantes por Spec. A baseline usa **RN-xx** e **INV-xx** globais (spec §9.8). Decisão necessária: manter os IDs da baseline (como neste mapa) ou renumerar | todas |
+| OPEN-01 | Processo · **resolvida em 2026-10-08: opção (a)**, o código é conferido Spec por Spec e corrigido só onde diverge | **A implementação já existe** (`src/`, `tests/`, 141 testes) e `docs/tasks.md` marca as 76 tarefas como concluídas. O roteiro manda produzir as Specs **antes** da implementação. Decisão necessária: (a) tratar o código existente como candidato a ser verificado contra cada Spec aprovada, registrando divergências conforme a "Regra fundamental"; ou (b) descartar o código e implementar Spec por Spec | todas |
+| OPEN-02 | Nomenclatura · **resolvida em 2026-10-08:** mantidos os IDs `RN-xx`; invariantes de Spec são `INV-001` locais, citados fora dela como "SPEC-00X INV-00Y" | O roteiro usa **RB** para regra de negócio e **INV-001** para invariantes por Spec. A baseline usa **RN-xx** e **INV-xx** globais (spec §9.8). Decisão necessária: manter os IDs da baseline (como neste mapa) ou renumerar | todas |
 | OPEN-03 | Lacuna | A baseline não tem uma lista formal de **drivers arquiteturais**. Este mapa usou as restrições do enunciado (spec §1.5) e os princípios da constituição. Decisão necessária: aceitar essa leitura ou formalizar os drivers num artefato próprio | todas |
 | OPEN-04 | Inconsistência spec × ADR · **resolvida na spec v0.1.4** (QA-02 a 05 e QA-08 marcadas como resolvidas; QA-10 continua aberta, ver OPEN-20) | A spec §13 ainda lista como abertas QA-02 a QA-05 (respondidas pelos ADR-001 a 005), QA-08 (respondida no plan §5.2) e QA-10 (o ADR-003 já cita `limite_interpretacoes_dia`). A §15 descreve passos já executados. Spec com status "em validação" | baseline |
 | OPEN-05 | Inconsistência interna | A spec §6 afirma que "todo valor numérico é parâmetro", mas os **deltas de reputação** (RN-18, 19, 20, 23: −3, −6, −1, −5, −10, −12, −8, +1, +3…) e a **janela de 30 dias** de RN-21 não aparecem na tabela §6.1 | SPEC-006, 017, 018, 019, 021, 023 |

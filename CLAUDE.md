@@ -17,10 +17,14 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 141 testes, ~3 s
+npm test             # suíte completa (node --test), 158 testes, ~3 s
 npm run db:seed      # cria o banco e popula demonstração
+npm run db:migrar    # só cria as 20 tabelas (idempotente)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
 ```
+
+Para testar sem tocar no banco da equipe: `DB_PATH=<pasta temporária>/demo.db npm run db:seed` e
+`PORT=3917 DB_PATH=... node src/main.js`.
 
 Rodar um teste isolado:
 
@@ -57,6 +61,32 @@ Consequências práticas disso no dia a dia:
 - **A IA interpreta; o sistema decide.** O LLM produz *filtros* validados por esquema; seleção,
   ordenação, preço e transição de estado são sempre código determinístico. O sistema inteiro precisa
   funcionar com o provedor fora do ar.
+
+## Processo SDD (em andamento)
+
+O projeto segue o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
+Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
+
+- **O código veio antes das Specs.** O trabalho agora é, Spec por Spec, conferir o código existente
+  contra os critérios de aceitação, registrar divergências e corrigir (OPEN-01, decidida em
+  2026-10-08).
+- **Regra fundamental do roteiro:** conflito entre código, Spec e modelagem nunca é resolvido em
+  silêncio. Registra-se e escolhe-se: corrigir o código ou propor mudança na spec.
+- **Toda etapa é registrada em `docs/specs/registro-sdd.md`**, inclusive premissas do agente. A
+  equipe autorizou atualizar a baseline (spec com versão e histórico, ADRs, plan, README, este
+  arquivo) a cada ação; **decisões de mérito** (`OPEN-XX`, recomendações) exigem aprovação explícita.
+- **Nomes:** o roteiro chama regra de "RB"; aqui continua `RN-xx`. Invariantes de uma Spec são
+  `INV-001` locais; fora dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14`.
+- **Issues:** `T-nn` é a issue `#nn+2`; #79 foram as decisões OPEN-01/02/210; #80–#108 são as SPEC-001..029.
+  Divididas por trilha do `tasks.md` entre 1Noriyuki, gostislavs e 2dart5 (`niltonmack` é o
+  professor). `docs/proximos-passos.docx` é o documento de passagem para a equipe.
+- **Estado em 2026-10-01:** mapa, SPEC-001 e SPEC-002 aprovados; próxima é a SPEC-003. Tudo isso está
+  na branch `sdd/especificacao-e-identidade`, **ainda sem PR nem merge na `main`**.
+- **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
+  suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde
+  o login (`expira_em` é o prazo deslizante). Testes em `integracao/contas-sessao.test.js`.
+- **Depois do cadastro a conta já sai logada** (OPEN-210, spec v0.1.6): o prestador pendente prepara
+  perfil, serviços e régua, mas só publica quando estiver `ATIVO` (RN-08).
 
 ## Arquitetura
 
@@ -99,6 +129,10 @@ o intervalo falhar.
   Por isso a navegação no celular é uma trilha de abas rolável, e não um menu que precisa abrir.
 - **O visual é um sistema de tokens**, no topo de `estilo.js`: cor, escala tipográfica, ritmo de
   espaçamento, raio e sombra. Tela que precisa de um valor novo ganha um token, não um número solto.
+- **Marca:** `MARCA_SVG` (o "E de agenda"), `PALAVRA_SVG` (a palavra já em curvas) e `FAVICON` vivem
+  em `views/layout.js`. A fonte do site inteiro é a Bricolage Grotesque, servida de
+  `public/bricolage-grotesque.woff2` (ADR-006); nada vem de rede externa. Guia em
+  `docs/identidade-visual/`.
 - Como tudo é módulo JS carregado na inicialização, **alteração de CSS ou de tela exige reiniciar o
   servidor**. Daí o `npm run dev`.
 
@@ -120,6 +154,16 @@ o intervalo falhar.
   `vazio(texto, { titulo, acoes: [[href, rótulo]] })` — estado vazio sem ação é um beco.
 - **`grade-2/3/4` usam `minmax(min(Xpx, 100%), 1fr)`.** O `min()` não é enfeite: sem ele a coluna
   fica mais larga que a viewport em 320 px e a página inteira rola para o lado.
+- **A Bricolage é mais larga que a fonte do sistema.** Texto novo pode quebrar mal em 320 px (a
+  etiqueta do hero deixava "h" sozinho; resolvido com `&nbsp;`). Confira nessa largura.
+- **Chrome headless não desce abaixo de 500 px de janela**: um print com `--window-size=320` é só um
+  recorte. Para medir celular de verdade, use emulação de dispositivo pelo DevTools Protocol.
+- **Git Bash converte argumentos que começam com `/` em caminhos do Windows** (`/buscar` vira
+  `C:/Program Files/Git/buscar`). Use `MSYS_NO_PATHCONV=1` ao passar rotas para scripts.
+- **Os arquivos são CRLF.** Buscar um trecho com `\n` no meio falha em silêncio, e `sed` quebra em
+  linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`.
+- **Cinco regras ainda não têm teste nomeado** (RN-00, RN-05, RN-08, RN-11, RN-33; issue
+  T-68). "Tudo verde" não significa "toda regra coberta".
 
 ## Testes
 
@@ -146,12 +190,13 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade: personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.6): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
-| `docs/identidade-visual/` | guia de marca e SVGs da logo (símbolo "E de agenda" com a peça laranja); cores = tokens de `estilo.js`. Aplicada no site: `MARCA_SVG`, `PALAVRA_SVG` e `FAVICON` em `views/layout.js`. A palavra "encaixe" está em curvas (Bricolage Grotesque 700). O site inteiro usa a Bricolage, servida de `public/bricolage-grotesque.woff2` (ADR-006); a fonte do sistema fica só como reserva |
-| `docs/specs/` | roteiro SDD: `mapa-de-specs.md`, `SPEC-NNN-*.md` e `registro-sdd.md` (diário de toda etapa, atualizado a cada ação) |
-| `docs/plan.md`, `docs/tasks.md` | arquitetura e quebra em tarefas |
+| `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
+| `docs/proximos-passos.docx` | passagem para a equipe: estado, ciclo das Specs, divisão das issues |
+| `docs/identidade-visual/` | guia de marca, SVGs da logo e licença OFL da fonte |
+| `docs/plan.md`, `docs/tasks.md` | arquitetura e tarefas; no `tasks.md`, 🔄 = implementado antes das Specs e ainda sem evidência |
 | `docs/testes.md` | estratégia de testes e evidências |
 | `docs/seguranca.md` | modelo de ameaças e controles |
 | `docs/review/` | revisão multidimensional periódica, com achados e ações |

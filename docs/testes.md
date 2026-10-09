@@ -52,8 +52,8 @@ assert.equal(penalidade.delta, -6);
 ```
 $ npm test
 
-ℹ tests 141
-ℹ pass 141
+ℹ tests 158
+ℹ pass 158
 ℹ fail 0
 ℹ duration_ms ~3000
 ```
@@ -69,7 +69,8 @@ $ npm test
 | `unidade/comissao.test.js` | 7 | RN-14, RN-15, RN-16, INV-06 |
 | `unidade/tempo.test.js` | 5 | RNF-08: fuso, virada do dia e rótulos de agenda |
 | `integracao/fluxo-principal.test.js` | 16 | UC-03, UC-05 a UC-10; RN-04, RF-045/046/060 |
-| `integracao/http.test.js` | 11 | RF-004 a RF-007, RNF-03, escape de saída |
+| `integracao/contas-sessao.test.js` | 19 | SPEC-002: RF-001 a RF-005, RN-23, RN-28, RNF-02, RNF-03 (cadastro, login, expiração, logout, suspensão) |
+| `integracao/http.test.js` | 9 | RF-006, RF-007, RNF-03 (CSRF), escape de saída |
 | `integracao/penalidades.test.js` | 11 | RN-18 a RN-22, RF-055 |
 | `integracao/busca-llm.test.js` | 9 | RN-29 a RN-32, INV-14, RNF-13 |
 | `integracao/disputas.test.js` | 9 | RN-17, RN-26, RN-27 (quatro desfechos) |

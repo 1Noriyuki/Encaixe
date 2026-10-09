@@ -7,8 +7,8 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.5 |
-| Data | 2026-10-01 |
+| Versão da spec | 0.1.6 |
+| Data | 2026-10-08 |
 | Status | Em validação com o grupo e com o professor |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
@@ -16,6 +16,7 @@
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.6 | 2026-10-08 | Equipe | **UC-01**: a conta já sai autenticada do cadastro, e o prestador `PENDENTE_APROVACAO` pode completar perfil, serviços e régua antes da aprovação; publicar continua bloqueado pela RN-08 (OPEN-210). Processo SDD: o código existente é conferido Spec por Spec e corrigido só onde diverge (OPEN-01); regras continuam `RN-xx`, invariantes de Spec são `INV-001` locais (OPEN-02) |
 | 0.1.5 | 2026-10-01 | Equipe | Decisões da SPEC-002: **RN-28**, conta `SUSPENSO` não autentica e tem as sessões encerradas na suspensão (OPEN-203); **RF-004**, todos os estados autenticam exceto `SUSPENSO`, que recebe mensagem específica quando a senha confere (OPEN-202); **RNF-02**, expiração por inatividade com teto absoluto, valores no ADR-004 (OPEN-12) |
 | 0.1.4 | 2026-10-01 | Equipe | Adoção do roteiro de Spec-Driven Development: esta spec passa a ser decomposta em Specs implementáveis em `docs/specs/` (mapa de Specs e SPEC-001, SPEC-002). §13: QA-02 a QA-05 e QA-08 marcadas como resolvidas pelos ADRs e pelo plano já aceitos; novas questões passam a ser registradas como `OPEN-XX` em `docs/specs/`. §15 atualizada. Nenhuma regra, requisito ou estado foi alterado |
 | 0.1.0 | 2026-08-21 | Equipe | Versão inicial: personas, backlog, EARS, domínio e casos de uso |
@@ -999,9 +1000,11 @@ flowchart LR
 | **Pós-condição de sucesso** | Conta `ATIVO`, apta a publicar horários após completar o perfil |
 | **Regras** | RN-08, RN-28 · **Requisitos:** RF-001 a RF-003, RF-008 a RF-011 |
 
-**Fluxo principal:** 1) Prestador cria conta → 2) sistema cria conta em `PENDENTE_APROVACAO` e coloca na fila do
-admin → 3) admin analisa os dados → 4) admin aprova → 5) sistema move para `ATIVO` e notifica → 6) prestador
-completa perfil, serviços e régua.
+**Fluxo principal:** 1) Prestador cria conta → 2) sistema cria conta em `PENDENTE_APROVACAO`, já autenticada, e
+coloca na fila do admin → 3) admin analisa os dados → 4) admin aprova → 5) sistema move para `ATIVO` e notifica →
+6) prestador publica horários.
+**Enquanto aguarda (entre 2 e 5):** o prestador pode completar perfil, serviços e régua. Publicar continua
+bloqueado até a conta estar `ATIVO` (RN-08).
 **Alternativo 4a — Reprovação:** admin informa justificativa; conta vai para `REPROVADO`; prestador é notificado com o motivo.
 **Exceção 1a — E-mail já usado:** sistema recusa sem revelar dados da conta existente (RF-002).
 

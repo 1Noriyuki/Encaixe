@@ -42,9 +42,9 @@
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-09 | Cadastro de cliente e prestador | RF-001 a RF-003 | Prestador nasce `PENDENTE_APROVACAO`; e-mail duplicado não vaza dado | 🔄 |
-| T-10 | Hash de senha com `scrypt` e política mínima | RNF-02 | Nenhuma senha em texto puro; comparação em tempo constante | 🔄 |
-| T-11 | Login, sessão em cookie e logout | RF-004, RF-005 | Cookie `HttpOnly`+`SameSite`; mensagem de erro genérica | 🔄 |
+| T-09 | Cadastro de cliente e prestador | RF-001 a RF-003 | Prestador nasce `PENDENTE_APROVACAO`; e-mail duplicado não vaza dado | ✅ |
+| T-10 | Hash de senha com `scrypt` e política mínima | RNF-02 | Nenhuma senha em texto puro; comparação em tempo constante | ✅ |
+| T-11 | Login, sessão em cookie e logout | RF-004, RF-005 | Cookie `HttpOnly`+`SameSite`; mensagem de erro genérica | ✅ |
 | T-12 | Autorização por perfil nas rotas + auditoria de acesso negado | RF-006, RF-007 | 403 e registro `ACESSO_NEGADO` | ✅ |
 | T-13 | Proteção CSRF em todo POST autenticado | RNF-03 | Token por sessão; POST sem token → 403 | ✅ |
 | T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado | 🔄 |

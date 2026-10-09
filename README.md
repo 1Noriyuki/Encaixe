@@ -167,5 +167,5 @@ Sem isso, o sistema roda completo com o provedor simulado — inclusive a busca 
 
 ## Estado do projeto
 
-MVP funcional. Suíte de testes: **141 testes automatizados**, todos verdes
+MVP funcional. Suíte de testes: **158 testes automatizados**, todos verdes
 (`npm test`). Cobertura por regra e evidências em [`docs/testes.md`](docs/testes.md).

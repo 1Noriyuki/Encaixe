@@ -8,7 +8,7 @@
 |---|---|
 | Início | 2026-10-01 |
 | Roteiro seguido | `Prompt_SDD_Specs.pdf` (3 páginas: prompt de decomposição, prompt de Spec individual, regra fundamental) |
-| Baseline | `docs/spec.md` v0.1.5 · `docs/plan.md` v1.0.0 · ADR-001 a ADR-006 (ADR-004 revisado) · constituição |
+| Baseline | `docs/spec.md` v0.1.6 · `docs/plan.md` v1.0.0 · ADR-001 a ADR-006 (ADR-004 revisado) · constituição |
 | Autorização vigente | A equipe autorizou (etapa 7) atualizar a baseline sempre que uma ação for realizada no projeto. **Decisões de mérito** (`OPEN-XX`, reordenação, recomendações) continuam exigindo aprovação explícita |
 
 ---
@@ -19,14 +19,14 @@
 |---|---|
 | Mapa de Specs | **Aprovado** (v1.0.0, etapa 11), na ordem original |
 | SPEC-001 Fundação | **Aprovada** (v1.0.0, etapa 11) |
-| SPEC-002 Cadastro e autenticação | **Aprovada**; v1.1.0 com as decisões das OPEN-12/202/203 (etapa 12). OPEN-210 segue aberta |
+| SPEC-002 Cadastro e autenticação | **Aprovada**; v1.2.0 com as decisões das OPEN-12/202/203 (etapa 12) e OPEN-01/02/210 (etapa 14). **Código conferido e corrigido** (etapa 15): CA-01 a CA-12 com teste |
 | Próxima Spec | SPEC-003 Autorização por perfil e titularidade |
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; aguardando aprovação (etapa 8) |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 141/141 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 158/158 desde a etapa 15 |
 | Baseline (`spec.md`, ADRs) | Atualizada para refletir o processo (spec v0.1.4, etapa 7). Nenhuma regra, requisito ou estado foi alterado |
-| Código (`src/`, `tests/`) | Ainda não commitado. Só a marca foi alterada (linha abaixo); o resto depende da OPEN-01 |
+| Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | 4 commits na branch `sdd/especificacao-e-identidade`, com push; **falta PR e merge na `main`** (etapa 13) |
 | Issues no GitHub | 54 fechadas com evidência; 53 abertas e atribuídas (1Noriyuki 18, gostislavs 18, 2dart5 17); #79 decisões, #80–#108 uma por Spec (etapa 13) |
 | Documento de passagem | `docs/proximos-passos.docx` (etapa 13) |
@@ -35,15 +35,16 @@
 
 | ID | Assunto | Onde |
 |---|---|---|
-| OPEN-01 | Código existente: verificar contra as Specs ou reimplementar | mapa §3 |
+| ~~OPEN-01~~ | resolvida na etapa 14: conferir o código Spec por Spec e corrigir onde diverge | mapa §3 |
 | OPEN-04 | ~~Spec §13 desatualizada~~ resolvida na v0.1.4 (QA-10 segue aberta) | mapa §3 |
-| OPEN-02 | Nomenclatura RB/RN e INV-001/INV-xx | mapa §3 |
+| ~~OPEN-02~~ | resolvida na etapa 14: mantém `RN-xx`; `INV-001` local | mapa §3 |
 | ~~OPEN-12~~ | resolvida na etapa 12: 2 h de inatividade, teto de 12 h | ADR-004 |
 | ~~OPEN-202~~ | resolvida na etapa 12: todos autenticam, exceto `SUSPENSO` | spec v0.1.5 |
 | ~~OPEN-203~~ | resolvida na etapa 12: suspensa não autentica, mensagem própria | spec v0.1.5 |
-| Divergências da SPEC-002 no código | `autenticar()` e `sessao.js` contrariam CA-08, CA-09a/b e CA-11; correção depende da OPEN-01 | etapa 12 |
+| ~~Divergências da SPEC-002 no código~~ | corrigidas na etapa 15 | etapa 15 |
+| INV-004 no banco | o banco garante os valores de `perfil` e `estado_conta`, mas não a combinação perfil × estado inicial | etapa 15 |
 | ~~Reordenação~~ | decidida na etapa 11: não reordenar | etapa 11 |
-| OPEN-210 | O que acontece logo depois do cadastro (código autentica direto) | SPEC-002 §13 |
+| ~~OPEN-210~~ | resolvida na etapa 14: a conta sai logada do cadastro | spec v0.1.6 |
 | Layout | Aprovação das 8 telas | etapa 8 |
 | ~~Identidade visual~~ | aprovada na etapa 10; resta só trocar a arte do `og.jpg` (opcional) | etapa 10 |
 | Demais OPEN | 21 no mapa, 5 na SPEC-001, 9 na SPEC-002 | arquivos respectivos |
@@ -53,8 +54,8 @@
 | # | Premissa | Por quê | Onde aparece |
 |---|---|---|---|
 | ~~PA-01~~ | ~~O pedido "Gerar SPEC-001" foi tratado como aprovação do mapa~~ **confirmada**: mapa aprovado explicitamente na etapa 11 | o roteiro só permite gerar Specs depois da aprovação do mapa | status do mapa |
-| PA-02 | Os IDs da baseline foram mantidos (`RN-xx` como "RB") | evitar renumerar 34 regras sem decisão (OPEN-02) | mapa, todas as Specs |
-| PA-03 | Os invariantes de cada Spec usam numeração local `INV-001`, citando o `INV-xx` global coberto | o roteiro pede `INV-001`; a baseline já usa `INV-01..14` | SPEC-001 §6, SPEC-002 §6 |
+| ~~PA-02~~ **confirmada** (OPEN-02, etapa 14) | Os IDs da baseline foram mantidos (`RN-xx` como "RB") | evitar renumerar 34 regras sem decisão (OPEN-02) | mapa, todas as Specs |
+| ~~PA-03~~ **confirmada** (OPEN-02, etapa 14) | Os invariantes de cada Spec usam numeração local `INV-001`, citando o `INV-xx` global coberto | o roteiro pede `INV-001`; a baseline já usa `INV-01..14` | SPEC-001 §6, SPEC-002 §6 |
 | PA-04 | Os "drivers arquiteturais" foram lidos como as restrições do enunciado (spec §1.5) mais os princípios da constituição | a baseline não tem seção formal de drivers (OPEN-03) | mapa, todas as Specs |
 | PA-05 | Os nomes de teste propostos seguem a convenção do projeto, com sufixos para não colidir (`T-CONTA-01a`) | os IDs `T-CONTA-01..04` já estão reservados na matriz da spec §11 | SPEC-002 §12 |
 | PA-06 | `niltonmack` é o professor, não integrante, e ficou fora da distribuição de issues | sem nome nem atividade no repositório; a spec §15 prevê o professor como colaborador | issues do GitHub, etapa 13 |
@@ -305,3 +306,46 @@
   - a divisão com ondas de dependência;
   - os pontos de atenção já conhecidos;
   - mapa dos arquivos e ordem de leitura.
+
+### Etapa 14 — Decisões da issue #79: OPEN-01, OPEN-02 e OPEN-210 · 2026-10-08
+
+- **Pedido:** dar continuidade às issues atribuídas a 1Noriyuki. A #79 trava o ciclo da SPEC-002, então as três decisões foram levadas ao Enzo antes de mexer em código.
+- **Decisões (Enzo, aceitando as recomendações da etapa 12):**
+
+| OPEN | Decisão | Onde ficou |
+|---|---|---|
+| OPEN-01 | manter o código existente, conferi-lo contra cada Spec aprovada e corrigir só as divergências | mapa §3, SPEC-001 §13, SPEC-002 §4 e §13, CLAUDE.md |
+| OPEN-02 | manter `RN-xx`; invariantes de Spec são `INV-001` locais, citados fora dela como "SPEC-00X INV-00Y". PA-02 e PA-03 confirmadas | mapa §3, SPEC-001 §13, SPEC-002 §13 |
+| OPEN-210 | a conta sai autenticada do cadastro; o prestador pendente prepara perfil, serviços e régua antes da aprovação; publicar segue bloqueado pela RN-08 | spec v0.1.6 (UC-01), SPEC-002 v1.2.0 (5.1 passo 6, CA-12, T-CONTA-01i) |
+
+- **Baseline atualizada:**
+  - `docs/spec.md` v0.1.5 → **v0.1.6**, com histórico.
+  - **SPEC-002** v1.1.0 → **v1.2.0**: fluxo 5.1, pós-condições, tela da §8.1, CA-12 e teste T-CONTA-01i novos, DoD passa a CA-01..CA-12.
+  - Mapa, SPEC-001 e CLAUDE.md.
+- **Não decidido aqui:** a parte da OPEN-210 sobre os campos extras do formulário (telefone, região, nome do negócio) continua na OPEN-205.
+- **Efeito:** o código que já autentica depois do cadastro (`rotas/publicas.js`) deixa de ser divergência; passa a precisar só do teste T-CONTA-01i.
+
+### Etapa 15 — Ciclo da SPEC-002: conferência do código, correções e testes · 2026-10-08
+
+- **Pedido:** continuar as issues de 1Noriyuki. Com a OPEN-01 decidida (etapa 14), a #81 (SPEC-002) foi a primeira da fila, porque fecha as T-09, T-10 e T-11.
+- **Conferência:** cada critério da SPEC-002 v1.2.0 contra `aplicacao/contas.js`, `infra/senha.js`, `interface/http/sessao.js` e `rotas/publicas.js`.
+
+| Critério | Antes | Ação |
+|---|---|---|
+| CA-01 a CA-05, CA-12 | código conforme, sem teste nomeado | testes T-CONTA-01a a 01i |
+| CA-06, CA-07 | conforme; os testes antigos não comparavam as duas recusas (INV-005) | T-SESSAO-01 e 02 substituem os dois testes de `http.test.js` |
+| CA-08 | **divergia:** conta `SUSPENSO` entrava | `autenticar()` recusa com `ErroDeRegra('RN-28')`, só depois de a senha conferir |
+| CA-11 | **divergia:** `REPROVADO` era barrado | bloqueio removido |
+| CA-09a/b/c | **divergia:** só expiração fixa de 12 h | `expira_em` virou prazo deslizante: cada uso o empurra para agora + 2 h, sem passar de `criada_em` + 12 h. Sem coluna nova, então nenhum banco existente precisa migrar |
+| 5.3, suspensão | **divergia (achado novo):** suspender não encerrava as sessões | `decidirSobreConta` chama `usuarios.encerrarSessoes()`; teste novo T-SESSAO-03b, acrescentado à §12 da Spec |
+| CA-10, RNF-03 | conforme, sem teste | T-SESSAO-05 e 06 |
+
+- **Verificação:**
+  - `npm test`: 158/158 (141 − 2 testes substituídos + 19 novos).
+  - Os testes novos rodados contra o código antigo falham em 4 (CA-08, CA-11, CA-09a/b e suspensão), o que confirma que eles pegam as divergências.
+- **Documentação:** SPEC-002 (§12 e §14), `tasks.md` (T-09, T-10 e T-11 passam a ✅), `testes.md`, README e CLAUDE.md. A RN-28 deixa a lista de regras sem teste nomeado da T-68.
+- **Observações, sem decisão tomada:**
+  - **INV-004 no banco:** a DoD pede INV-004 garantido também no banco (C-VI). O `CHECK` cobre os valores de `perfil` e `estado_conta`, mas a combinação "nasce `ATIVO` se cliente, `PENDENTE_APROVACAO` se prestador" não cabe num `CHECK`, porque o estado muda depois. Opções: aceitar a garantia só no domínio, ou criar um gatilho `BEFORE INSERT`. Decisão da equipe.
+  - **OPEN-208:** o repositório já trata o e-mail sem diferenciar maiúsculas (grava e busca em minúsculas). Isso é uma decisão de fato no código, ainda não registrada na spec.
+  - **Mensagem de conta suspensa:** cita "o suporte da plataforma", porque o canal de contato segue indefinido (`[CANAL DE CONTATO]` no layout).
+- **Ainda abertas na SPEC-002:** OPEN-201, 204 a 209 e a aprovação do layout (etapa 8). Nenhuma delas muda o comportamento verificado aqui.

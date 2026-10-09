@@ -66,7 +66,7 @@
 |---|---|
 | Specs anteriores | nenhuma (é a primeira do mapa) |
 | Decisões arquiteturais | ADR-001 (Node.js 24 sem dependências de runtime), ADR-002 (SQLite, tempo em ISO-8601 UTC, invariantes no banco), plan §2 (domínio sem I/O, então o instante chega como parâmetro), plan §5.4 (transação com `SAVEPOINT` para aninhamento) |
-| Decisões humanas pendentes | OPEN-01 e OPEN-02 do mapa (ver seção 13) |
+| Decisões humanas | OPEN-01 e OPEN-02 do mapa, decididas em 2026-10-08 (ver seção 13) |
 
 ## 5. Comportamento esperado
 
@@ -323,8 +323,8 @@ Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <compor
 
 Herdadas do mapa e pertinentes a esta Spec:
 
-- **OPEN-01:** o código existente será verificado contra esta Spec ou reimplementado? Até a decisão, a seção 14 vale para qualquer das duas opções.
-- **OPEN-02:** a numeração local `INV-001` convive com a global `INV-13`. Confirmar a convenção.
+- ~~**OPEN-01**~~ **resolvida em 2026-10-08:** o código existente é verificado contra esta Spec e corrigido onde diverge.
+- ~~**OPEN-02**~~ **resolvida em 2026-10-08:** a numeração local `INV-001` convive com a global `INV-13`; fora desta Spec, cite "SPEC-001 INV-00Y".
 - **OPEN-05:** os deltas de reputação e a janela de 30 dias da RN-21 não estão no catálogo de parâmetros. Se forem parâmetros, o catálogo da seção 7.1 muda.
 - **OPEN-06, OPEN-08, OPEN-15:** lacunas nas máquinas de estado da seção 7.2, transcritas sem correção.
 - **OPEN-20:** P-16 não tem faixa na spec, e o código existente diverge da §6.1 em P-07, P-12, P-16 e no limite do RNF-13.
