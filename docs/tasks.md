@@ -60,8 +60,8 @@
 | T-19 | Publicação de horário com antecedência mínima | RF-014, RF-015, RN-07 | Abaixo de P-03 é recusado | ✅ |
 | T-20 | Bloqueio de sobreposição na agenda | RF-016, RN-06 | Conflito recusado apontando o horário conflitante | ✅ |
 | T-21 | Snapshots de preço no horário | RN-05, ADR-002 | Editar o serviço não altera horário publicado | ✅ |
-| T-22 | Publicação em lote | RF-023 | Falha parcial reportada item a item | 🔄 |
-| T-23 | Cancelar horário ainda livre | RF-022 | Horário com reserva não pode ser retirado por essa via | 🔄 |
+| T-22 | Publicação em lote | RF-023 | Falha parcial item a item; `T-HORARIO-LOTE-01` | 🔄 |
+| T-23 | Cancelar horário ainda livre | RF-022 | Recusa horário reservado e permite cancelar livre; `T-HORARIO-CANCEL-01/02` | 🔄 |
 
 ### Preço dinâmico
 
@@ -76,12 +76,12 @@
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Só `PUBLICADO`, futuro e de prestador `ATIVO` | 🔄 |
-| T-29 | Ordenação com desempate determinístico | RF-031 | Ordem estável entre execuções | 🔄 |
+| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Filtros, elegibilidade e janela; `T-BUSCA-03` | 🔄 |
+| T-29 | Ordenação com desempate determinístico | RF-031 | Desempate por ID estável; `T-BUSCA-04` | 🔄 |
 | T-30 | Reserva com preço travado e bloqueio do horário | RF-039, RF-040, RN-04 | Valor travado não muda depois | ✅ |
 | T-31 | Exclusividade sob concorrência | RF-041, INV-01 | Segunda reserva simultânea é recusada | ✅ |
 | T-32 | Limite de reservas simultâneas por reputação | RF-047, RN-12 | Cliente restrito é barrado na segunda reserva | ✅ |
-| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Recusa exige motivo e libera o horário | 🔄 |
+| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Confirmação e recusa validada liberam/ocupam; `T-AGENDAMENTO-06/07` | 🔄 |
 | T-34 | Expiração automática com as duas políticas | RF-045, RF-046, RN-10 | `LIBERAR` devolve à busca; `AUTOCONFIRMAR` confirma | ✅ |
 | T-35 | ADR-004 (autenticação) | QA-04 | Registrado com limites conhecidos | ✅ |
 
@@ -111,7 +111,7 @@
 |---|---|---|---|:--:|
 | T-51 | Abertura de disputa com evidência obrigatória | RF-071 a RF-073, RN-26 | Sem evidência ou fora do prazo é recusada | ✅ |
 | T-52 | Retenção de comissão e suspensão de penalidades | RN-17, INV-12 | Lançamento vira `RETIDO` ao abrir disputa | ✅ |
-| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Fora do SLA fica destacado | 🔄 |
+| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação e destaque fora do SLA; `T-DISPUTA-07` | 🔄 |
 | T-54 | Resolução com os quatro desfechos | RF-076, RF-077, RN-27 | `MANTIDO`/`REVERTIDO`/`PARCIAL`/`ARQUIVADO` com efeitos distintos | ✅ |
 | T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Decisão exige justificativa e notifica o titular | 🔄 |
 | T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |

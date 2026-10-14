@@ -349,3 +349,19 @@
   - **OPEN-208:** o repositório já trata o e-mail sem diferenciar maiúsculas (grava e busca em minúsculas). Isso é uma decisão de fato no código, ainda não registrada na spec.
   - **Mensagem de conta suspensa:** cita "o suporte da plataforma", porque o canal de contato segue indefinido (`[CANAL DE CONTATO]` no layout).
 - **Ainda abertas na SPEC-002:** OPEN-201, 204 a 209 e a aprovação do layout (etapa 8). Nenhuma delas muda o comportamento verificado aqui.
+
+### Etapa 16 — Evidências de teste da Trilha B · 2026-10-13
+
+- **Pedido:** acrescentar cobertura automatizada às issues T-22, T-23, T-28, T-29, T-33 e T-53, atualizar `tasks.md` e preparar a SPEC-010.
+- **Produzido:** `tests/integracao/trilha-b.test.js`, com oito casos:
+  - `T-HORARIO-LOTE-01 | RF-023`: erro isolado no lote é reportado, sem impedir os itens seguintes;
+  - `T-HORARIO-CANCEL-01/02 | RF-022`: horário livre pode ser cancelado; horário reservado é recusado;
+  - `T-BUSCA-03 | RF-028 a RF-030`: filtros por categoria/região/janela e exclusão de horário não publicado ou prestador inelegível;
+  - `T-BUSCA-04 | RF-031`: desempate por ID mantém a ordem entre execuções;
+  - `T-AGENDAMENTO-06 | RF-042`: confirmação ocupa o horário;
+  - `T-AGENDAMENTO-07 | RF-043/RF-044`: recusa exige motivo e libera o horário;
+  - `T-DISPUTA-07 | RF-074/RF-075`: fila prioriza o prazo de SLA e sinaliza o prazo vencido.
+- **Verificação:** `node --test tests/integracao/trilha-b.test.js`, 8/8 aprovados; `npm test`, 166/166 aprovados (158 anteriores + 8 novos).
+- **Documentação:** `tasks.md` referencia os novos testes nas seis issues. O estado permanece `🔄`: as issues ainda estão abertas e a conferência da Spec correspondente não foi concluída.
+- **Sem mudança de regra ou implementação:** os testes registram os critérios já expressos na baseline.
+- **SPEC-010:** não gerada nesta etapa. O estado atual do processo identifica a SPEC-003 como próxima (resumo deste registro); o mapa coloca SPEC-010 após a SPEC-009, e o documento de passagem diz que as Specs devem ser geradas uma por vez na ordem aprovada. **Decisão da equipe (2026-10-13):** manter a fila e adiar a SPEC-010 até concluir as SPEC-003 a 009.
