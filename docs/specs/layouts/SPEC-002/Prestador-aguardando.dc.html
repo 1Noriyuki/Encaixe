@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Encaixe · Prestador aguardando aprovação</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3b41c5}a:hover{color:#2b30a0}
+</style>
+</helmet>
+<div style="width: 390px; height: 960px; box-sizing: border-box; background: #f5f6fa; color: #171a26; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; display: flex; flex-direction: column">
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e0e3ee">
+<a href="#" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: #171a26; text-decoration: none"><span style="width: 30px; height: 30px; border-radius: 8px; background: #3b41c5; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px">E</span>Encaixe</a>
+<a href="Main.dc.html" style="font-size: 15px; font-weight: 600; padding: 12px 4px">Entrar</a>
+</header>
+<main style="padding: 32px 16px; display: flex; flex-direction: column; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #fdf1da; color: #6e4606"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Aguardando aprovação</span>
+<h1 style="margin: 0; font-size: 28px; line-height: 1.2">Conta criada, Renata</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5b6379">A administração vai analisar seu cadastro. O aviso da decisão chega na sua central de notificações.</p>
+</div>
+<ol style="margin: 0; padding: 20px; list-style: none; background: #ffffff; border: 1px solid #e0e3ee; border-radius: 13px; box-shadow: 0 1px 2px rgba(20,25,50,.05), 0 3px 12px rgba(20,25,50,.045); display: flex; flex-direction: column; gap: 18px">
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="flex-shrink: 0; width: 28px; height: 28px; border-radius: 999px; background: #0f7245; color: #ffffff; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Cadastro enviado</strong><span style="font-size: 13px; color: #5b6379">E-mail e senha registrados</span></span>
+</li>
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="flex-shrink: 0; width: 28px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 2px solid #8f5c09; background: #fdf1da; color: #6e4606; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">2</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Aprovação da administração</strong><span style="font-size: 13px; color: #5b6379">Em análise. Se o cadastro for reprovado, o motivo chega a você.</span></span>
+</li>
+<li style="display: flex; gap: 14px; align-items: flex-start">
+<span style="flex-shrink: 0; width: 28px; height: 28px; box-sizing: border-box; border-radius: 999px; border: 2px solid #cbd0e2; color: #5b6379; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">3</span>
+<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Completar perfil, serviços e régua</strong><span style="font-size: 13px; color: #5b6379">Depois disso você já pode publicar horários vagos</span></span>
+</li>
+</ol>
+<aside style="display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; background: #e3f1f9; border-radius: 13px">
+<span style="flex-shrink: 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #0d5980">RN-28</span>
+<span style="font-size: 13px; line-height: 1.5; color: #0d3f5c">Enquanto aguarda aprovação, a conta não aparece na busca e não publica horários.</span>
+</aside>
+<a href="Main.dc.html" style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 13px; border: 1px solid #cbd0e2; background: #ffffff; color: #171a26; font-size: 16px; font-weight: 600; text-decoration: none">Acompanhar meu cadastro</a>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Encaixe · Criar conta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#3b41c5}a:hover{color:#2b30a0}
+</style>
+</helmet>
+<div style="width: 390px; height: 960px; box-sizing: border-box; background: #f5f6fa; color: #171a26; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; display: flex; flex-direction: column">
+<header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e0e3ee">
+<a href="#" style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; color: #171a26; text-decoration: none"><span style="width: 30px; height: 30px; border-radius: 8px; background: #3b41c5; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px">E</span>Encaixe</a>
+<a href="Main.dc.html" style="font-size: 15px; font-weight: 600; padding: 12px 4px">Entrar</a>
+</header>
+<main style="padding: 28px 16px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-size: 28px; line-height: 1.2">Criar conta</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5b6379">Escolha como você vai usar o Encaixe. Prestadores passam pela aprovação da administração antes de publicar.</p>
+</div>
+<form style="background: #ffffff; border: 1px solid #e0e3ee; border-radius: 13px; padding: 22px 20px; box-shadow: 0 1px 2px rgba(20,25,50,.05), 0 3px 12px rgba(20,25,50,.045); display: flex; flex-direction: column; gap: 18px">
+<fieldset style="margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: 10px">
+<legend style="font-size: 14px; font-weight: 600; margin-bottom: 10px">Eu quero</legend>
+<label style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 2px solid #3b41c5; border-radius: 13px; background: #eaebfb; cursor: pointer">
+<input type="radio" name="perfil" value="CLIENTE" checked="checked" style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #3b41c5">
+<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Encontrar horários com desconto</strong><span style="font-size: 13px; color: #5b6379">Conta de cliente, liberada na hora</span></span>
+</label>
+<label style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid #cbd0e2; border-radius: 13px; background: #ffffff; cursor: pointer">
+<input type="radio" name="perfil" value="PRESTADOR" style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #3b41c5">
+<span style="display: flex; flex-direction: column; gap: 2px"><strong style="font-size: 15px">Vender meus horários vagos</strong><span style="font-size: 13px; color: #5b6379">Conta de prestador, aguarda aprovação</span></span>
+</label>
+</fieldset>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="nome" style="font-size: 14px; font-weight: 600">Nome</label>
+<input id="nome" autocomplete="name" style="height: 48px; box-sizing: border-box; padding: 0 14px; font-size: 16px; font-family: inherit; border: 1px solid #cbd0e2; border-radius: 8px; background: #ffffff; color: #171a26">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="email" style="font-size: 14px; font-weight: 600">E-mail</label>
+<input id="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" style="height: 48px; box-sizing: border-box; padding: 0 14px; font-size: 16px; font-family: inherit; border: 1px solid #cbd0e2; border-radius: 8px; background: #ffffff; color: #171a26">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="senha" style="font-size: 14px; font-weight: 600">Senha</label>
+<input id="senha" type="password" autocomplete="new-password" aria-describedby="ajuda-senha" style="height: 48px; box-sizing: border-box; padding: 0 14px; font-size: 16px; font-family: inherit; border: 1px solid #cbd0e2; border-radius: 8px; background: #ffffff; color: #171a26">
+<span id="ajuda-senha" style="font-size: 13px; color: #5b6379">Mínimo de 8 caracteres, misturando letras e números.</span>
+</div>
+<button type="submit" style="height: 50px; border: 0; border-radius: 13px; background: #3b41c5; color: #ffffff; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer">Criar conta</button>
+<p style="margin: 0; text-align: center; font-size: 14px; color: #5b6379">Já tem conta? <a href="Main.dc.html" style="font-weight: 600">Entrar</a></p>
+</form>
+<aside style="display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; background: #e3f1f9; border-radius: 13px">
+<span style="flex-shrink: 0; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #0d5980">RN-28</span>
+<span style="font-size: 13px; line-height: 1.5; color: #0d3f5c">A conta de prestador nasce aguardando aprovação e só publica horários depois de aprovada e com o perfil completo.</span>
+</aside>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":960}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
