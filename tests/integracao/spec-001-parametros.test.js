@@ -129,3 +129,14 @@ test('T-PARAM-07 | RN-00: migracao de snapshot legado preserva o ultimo valor co
   migrar();
   assert.equal(um('SELECT COUNT(*) AS total FROM parametro_historico WHERE chave = ?', CHAVE).total, 1);
 });
+
+test('T-PARAM-08 | RN-00: falha na gravacao do historico desfaz o snapshot', () => {
+  executar(
+    `CREATE TRIGGER falha_historico BEFORE INSERT ON parametro_historico
+      BEGIN SELECT RAISE(FAIL, 'falha simulada no historico'); END`,
+  );
+  assert.throws(() => salvarGlobal(CHAVE, 90, null), /falha simulada/);
+  assert.equal(carregarGlobais()[CHAVE], 60);
+  assert.equal(um('SELECT COUNT(*) AS total FROM parametro').total, 0);
+  assert.equal(um('SELECT COUNT(*) AS total FROM parametro_historico').total, 0);
+});
