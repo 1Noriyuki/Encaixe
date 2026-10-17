@@ -365,3 +365,14 @@
 - **Documentação:** `tasks.md` referencia os novos testes nas seis issues. O estado permanece `🔄`: as issues ainda estão abertas e a conferência da Spec correspondente não foi concluída.
 - **Sem mudança de regra ou implementação:** os testes registram os critérios já expressos na baseline.
 - **SPEC-010:** não gerada nesta etapa. O estado atual do processo identifica a SPEC-003 como próxima (resumo deste registro); o mapa coloca SPEC-010 após a SPEC-009, e o documento de passagem diz que as Specs devem ser geradas uma por vez na ordem aprovada. **Decisão da equipe (2026-10-13):** manter a fila e adiar a SPEC-010 até concluir as SPEC-003 a 009.
+
+### Etapa 17 — Trilha A, início da conferência da SPEC-001 e da T-07 · 2026-10-16
+
+- **Responsável da trilha:** gostislavs. **Escopo:** #80 (SPEC-001), #9 (T-07) e cobertura inicial de #70 (T-68). Não altera as issues dos demais integrantes.
+- **Branch própria:** `audit/gostislavs-spec-001-20261016`, derivada de `main`. A branch SDD compartilhada não foi alterada.
+- **Conferência estática:** matriz de CA-01 a CA-11 e seis divergências em [`auditoria-SPEC-001-gostislavs.md`](auditoria-SPEC-001-gostislavs.md).
+- **Alterações técnicas propostas (ainda sem merge):** criação de `parametro_historico` com backfill idempotente; gravação atômica do valor atual e de cada versão; leitura global em instante UTC; validação estrita com `ErroDeRegra('RN-00')`; histórico visível no repositório; documentação de modelo físico atualizada.
+- **Testes criados:** `tests/integracao/spec-001-parametros.test.js`, cobrindo T-PARAM-01/02/03/03b/04/06 e regressões de migração e atomicidade T-PARAM-07/08.
+- **Verificação disponível:** smoke test isolado com Node 22 e SQLite confirmou idempotência de backfill, vigência e atualização transacional. **Não equivale ao `npm test` do projeto**, que exige Node >=24. A suíte do repositório não foi executada nem se afirma que está verde.
+- **Bloqueios:** OPEN-103 (fonte de P-01/P-02 e precedência de escopo), OPEN-20 (faixas divergentes), OPEN-06/08/15 (máquinas de estado), OPEN-104 (ator do sistema). Nada disso foi decidido pelo agente.
+- **Situação:** proposta em branch/PR draft para revisão humana; #9, #80 e #70 permanecem abertas. Executar todos os testes, completar CA-05/08/09/10/11 e verificar todos os invariantes antes de concluir a SPEC-001.

@@ -19,7 +19,7 @@ npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho
 npm run dev          # node --watch — use este durante desenvolvimento
 npm test             # suíte completa (node --test), 158 testes, ~3 s
 npm run db:seed      # cria o banco e popula demonstração
-npm run db:migrar    # só cria as 20 tabelas (idempotente)
+npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
 ```
 

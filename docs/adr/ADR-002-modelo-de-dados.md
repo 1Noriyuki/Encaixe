@@ -25,9 +25,20 @@ Três decisões de representação apareceram cedo e afetam tudo:
 
 ### Banco relacional SQLite, esquema explícito em SQL
 
-Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve as 20 tabelas (as 19 entidades da spec §9.2 e mais `sessao`, do ADR-004), derivado diretamente da
+Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve 21 tabelas físicas (as 19 entidades da spec §9.2, mais `sessao`, do ADR-004, e `parametro_historico`, da RN-00), derivadas da
 §9.2 da spec. Sem ORM: as consultas são SQL escrito à mão em `src/infra/repositorios/`, o que mantém
 o mapeamento entre spec e banco visível linha a linha.
+
+### Histórico versionado de parâmetros (RN-00 / SPEC-001)
+
+A tabela `parametro` permanece como snapshot do valor atual para preservar os leitores existentes.
+Cada alteração adiciona uma linha à `parametro_historico`, com chave, escopo, alvo, autor e vigência
+UTC. A atualização do snapshot e o registro da versão são atômicos; consultas por data recuperam
+a versão de maior vigência anterior ou igual à referência.
+
+A migração idempotente importa o último valor conhecido de bancos existentes, mas **não recupera**
+históricos antigos já sobrescritos. A origem dos P-01/P-02 (perfil vs. tabela de parâmetros)
+permanece pendente da OPEN-103; não se presume uma precedência nova nesta implementação.
 
 ### Dinheiro em centavos (INTEGER)
 

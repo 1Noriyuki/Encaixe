@@ -20,6 +20,32 @@ CREATE TABLE IF NOT EXISTS parametro (
   PRIMARY KEY (chave, escopo, alvo_id)
 );
 
+-- RN-00 / SPEC-001 CA-04: versões anteriores nunca são sobrescritas.
+-- A tabela parametro continua sendo o snapshot atual, para manter compatibilidade
+-- com leituras existentes; o histórico armazena cada atualização com vigência.
+CREATE TABLE IF NOT EXISTS parametro_historico (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  chave           TEXT NOT NULL,
+  escopo          TEXT NOT NULL CHECK (escopo IN ('GLOBAL','PRESTADOR','SERVICO')),
+  alvo_id         INTEGER NOT NULL DEFAULT 0,
+  valor           TEXT NOT NULL,
+  vigente_desde   TEXT NOT NULL,
+  atualizado_por  INTEGER
+);
+CREATE INDEX IF NOT EXISTS ix_parametro_historico_vigencia
+  ON parametro_historico (chave, escopo, alvo_id, vigente_desde DESC, id DESC);
+
+-- Migração idempotente: conserva o último estado conhecido dos bancos antigos.
+-- Mudanças anteriores a esta migração já foram sobrescritas e não são recuperáveis.
+INSERT INTO parametro_historico
+  (chave, escopo, alvo_id, valor, vigente_desde, atualizado_por)
+SELECT p.chave, p.escopo, p.alvo_id, p.valor, p.vigente_desde, p.atualizado_por
+  FROM parametro p
+ WHERE NOT EXISTS (
+   SELECT 1 FROM parametro_historico h
+    WHERE h.chave = p.chave AND h.escopo = p.escopo AND h.alvo_id = p.alvo_id
+ );
+
 CREATE TABLE IF NOT EXISTS regiao (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
   cidade  TEXT NOT NULL,
