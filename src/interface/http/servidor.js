@@ -36,18 +36,16 @@ export function criarAplicacao() {
 
   return createServer(async (req, res) => {
     const correlacao = randomUUID();
-    auditoria.definirCorrelacao(correlacao);
-
-    try {
-      await atender(req, res, roteador);
-    } catch (erro) {
-      console.error(`[${correlacao}]`, erro);
-      if (!res.headersSent) {
-        responder(res, 500, paginaDeErro(500, 'Erro interno', 'Algo quebrou do nosso lado. Tente de novo em instantes.'));
+    await auditoria.comCorrelacao(correlacao, async () => {
+      try {
+        await atender(req, res, roteador);
+      } catch (erro) {
+        console.error(`[${correlacao}]`, erro);
+        if (!res.headersSent) {
+          responder(res, 500, paginaDeErro(500, 'Erro interno', 'Algo quebrou do nosso lado. Tente de novo em instantes.'));
+        }
       }
-    } finally {
-      auditoria.limparCorrelacao();
-    }
+    });
   });
 }
 
