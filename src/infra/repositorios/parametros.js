@@ -25,7 +25,7 @@ export function carregarGlobais() {
 /** Apenas o ISO-8601 UTC completo é comparável por ordem lexicográfica no SQLite. */
 function assegurarUtc(instante) {
   if (typeof instante !== 'string'
-    || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(instante)
+    || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(instante)
     || !Number.isFinite(Date.parse(instante))) {
     throw new Error('Instante deve ser ISO-8601 UTC com milissegundos.');
   }
