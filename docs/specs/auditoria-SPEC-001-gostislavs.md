@@ -22,7 +22,7 @@
 - `migrar()` importa idempotentemente o último estado conhecido de bancos antigos. **Histórico anterior já sobrescrito não é recuperável.**
 - `listarGlobais` passa a exibir alterações anteriores, não só o snapshot atual.
 - `normalizarParametro` recusa entradas parciais, valores sem o tipo correto e faixas inválidas com identificação RN-00.
-- Novos testes: `tests/integracao/spec-001-parametros.test.js` (T-PARAM-01/02/03/03b/04/06/07). Os demais testes da SPEC-001 ainda não foram implementados e não são declarados concluídos.
+- Novos testes: `tests/integracao/spec-001-parametros.test.js` (T-PARAM-01/02/03/03b/04/06/07/08). Os demais testes da SPEC-001 ainda não foram implementados e não são declarados concluídos.
 
 ## Verificação e aprovação
 
