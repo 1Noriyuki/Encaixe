@@ -164,8 +164,10 @@ e a interface exibe o selo da regra ao lado do aviso. O usuário não recebe "op
 
 ### 5.1 Parâmetros são dados (RN-00)
 
-Os 20+ parâmetros vivem na tabela `parametro` e têm metadados (rótulo, faixa, ajuda) em
-`src/dominio/parametros.js`. O admin edita pela interface; a alteração vale só para fatos futuros.
+Os 20+ parâmetros têm valor atual em `parametro` e versões com vigência em
+`parametro_historico`. Os metadados (rótulo, faixa, ajuda) ficam em `src/dominio/parametros.js`.
+O admin edita pela interface; as versões anteriores permanecem consultáveis por data e a
+alteração vale só para fatos futuros. O escopo PRESTADOR aguarda OPEN-103.
 Nenhum número de regra aparece solto no meio do código.
 
 ### 5.2 Rotinas temporais — resposta ao QA-08
@@ -216,7 +218,7 @@ que os testes simulam falha, timeout e baixa confiança.
 
 ## 6. Modelo físico
 
-20 tabelas: as 19 entidades da spec §9.2 e mais `sessao` (ADR-004). Destaques em [ADR-002](adr/ADR-002-modelo-de-dados.md):
+21 tabelas: as 19 entidades da spec §9.2, mais `sessao` (ADR-004) e `parametro_historico` (RN-00). Destaques em [ADR-002](adr/ADR-002-modelo-de-dados.md):
 
 - dinheiro em **centavos** (`INTEGER`), tempo em **ISO-8601 UTC** (`TEXT`);
 - enums protegidos por `CHECK`, invariantes por `UNIQUE`/`CHECK`/índice parcial;
