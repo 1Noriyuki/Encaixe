@@ -22,6 +22,15 @@ export function carregarGlobais() {
   return comPadroes(parciais);
 }
 
+/** Apenas o ISO-8601 UTC completo é comparável por ordem lexicográfica no SQLite. */
+function assegurarUtc(instante) {
+  if (typeof instante !== 'string'
+    || !/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(instante)
+    || !Number.isFinite(Date.parse(instante))) {
+    throw new Error('Instante deve ser ISO-8601 UTC com milissegundos.');
+  }
+}
+
 /**
  * RN-00 / CA-01 / CA-04: lê o valor global vigente no instante informado.
  * Antes da primeira alteração, prevalece o valor padrão da baseline.
@@ -30,9 +39,7 @@ export function carregarGlobais() {
 export function lerGlobalEm(chave, instante = agoraIso()) {
   const meta = PARAMETROS[chave];
   if (!meta) throw new Error(`Parâmetro desconhecido: ${chave}`);
-  if (!Number.isFinite(Date.parse(instante))) {
-    throw new Error('Instante de referência inválido.');
-  }
+  assegurarUtc(instante);
 
   const linha = um(
     `SELECT valor FROM parametro_historico
@@ -52,9 +59,7 @@ export function lerGlobalEm(chave, instante = agoraIso()) {
  */
 export function salvarGlobal(chave, valorBruto, atorId, instante = agoraIso()) {
   const valor = normalizarParametro(chave, valorBruto);
-  if (!Number.isFinite(Date.parse(instante))) {
-    throw new Error('Instante de vigência inválido.');
-  }
+  assegurarUtc(instante);
 
   return transacao(() => {
     executar(
