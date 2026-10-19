@@ -549,7 +549,7 @@ Nenhum item abaixo foi resolvido neste mapa. Para cada um, a decisão pertence �
 | OPEN-09 | Lacuna | A matriz §4.5 dá ao admin o poder de cancelar qualquer agendamento com justificativa e ao prestador o de "editar horário vago", mas não há RF nem UC para nenhum dos dois, nem penalidade definida para o cancelamento do admin. A edição de parâmetros pelo admin (RN-00, RNF-10) também não tem RF | SPEC-012, 017, 027 |
 | OPEN-10 | Inconsistência interna | A §9.2 diz que `ReguaDesconto` tem "uma ativa por serviço". A QA-07 diz "régua por prestador, selecionável por horário" | SPEC-008, SPEC-010 |
 | OPEN-11 | Lacuna | Nenhum RF define quem cria e mantém o catálogo de **categorias de serviço** e a lista controlada de **regiões** | SPEC-007, 009, 013 |
-| OPEN-12 | Inconsistência RNF × ADR | RNF-02 exige "expiração por inatividade". O ADR-004 define `Max-Age` fixo de 12 h (expiração absoluta) | SPEC-002 |
+| OPEN-12 | **Resolvida em 2026-10-01** | Equipe aprovou expiração por inatividade de 2 h e teto absoluto de 12 h desde o login; ADR-004 e SPEC-002 atualizados | SPEC-002 |
 | OPEN-13 | Lacuna | RNF-06 exige que a suíte rode em **integração contínua a cada pull request**. O repositório não tem CI configurado | todas (DoD) |
 | OPEN-14 | Inconsistência interna | A exceção 3a de UC-09 ("existe disputa aberta: o lançamento nasce `RETIDO`") é impossível, porque RN-26 só permite disputa depois de `CONCLUIDO`. RF-073 manda reter o lançamento, mas disputa sobre `NO_SHOW_*` não tem lançamento | SPEC-020, SPEC-022 |
 | OPEN-15 | Ambiguidade | O estado `RASCUNHO` de `HorarioVago` (§9.5) não tem RF que o crie. RF-014 cria o horário direto em `PUBLICADO` | SPEC-010 |
@@ -574,4 +574,7 @@ Aguarda-se:
    todas as Specs seguintes.
 3. Decisão sobre **OPEN-02** (nomenclatura), antes de gerar a primeira Spec.
 
-Depois disso, o pedido seguinte será **"Gerar SPEC-001"**, uma Spec por vez.
+O mapa e a ordem foram aprovados em 2026-10-01. OPEN-01 e OPEN-02 foram decididas em 2026-10-08
+e ratificadas pela Trilha C em 2026-10-18; a OPEN-210 também foi decidida em 2026-10-08. As Specs
+seguem uma por vez, na ordem aprovada: SPEC-001 e SPEC-002 estão aprovadas; SPEC-003, SPEC-004 e
+SPEC-005 têm rascunhos em revisão. A implementação de uma Spec depende de aprovação explícita.

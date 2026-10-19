@@ -122,5 +122,7 @@ inatividade"). A equipe aprovou:
 | Conta `SUSPENSO` | não autentica; com a senha certa, recebe a mensagem de que a conta está suspensa (não a genérica, já que a pessoa provou ser a titular); suspender encerra as sessões abertas | OPEN-203, RN-28 |
 | Demais estados | `PENDENTE_APROVACAO`, `REPROVADO`, `EM_REVISAO` e `RESTRITO` autenticam; o que podem fazer é decidido pela autorização | OPEN-202, RF-004 |
 
-**Consequência:** a linha `sessao` passa a precisar do instante do último uso, além de `criada_em` e
-`expira_em`. A implementação atual ainda não segue esta revisão (ver `docs/specs/registro-sdd.md`, etapa 12).
+**Consequência:** a sessão guarda `criada_em` e `expira_em`. O prazo de inatividade é renovado em
+`expira_em` a cada uso, limitado por `criada_em` + 12 h; não é necessário adicionar coluna de último
+uso. A implementação foi conferida e os três limites têm cobertura em
+`tests/integracao/contas-sessao.test.js` (ver `docs/specs/registro-sdd.md`, etapas 15 e 17).

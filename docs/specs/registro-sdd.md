@@ -20,12 +20,15 @@
 | Mapa de Specs | **Aprovado** (v1.0.0, etapa 11), na ordem original |
 | SPEC-001 Fundação | **Aprovada** (v1.0.0, etapa 11) |
 | SPEC-002 Cadastro e autenticação | **Aprovada**; v1.2.0 com as decisões das OPEN-12/202/203 (etapa 12) e OPEN-01/02/210 (etapa 14). **Código conferido e corrigido** (etapa 15): CA-01 a CA-12 com teste |
-| Próxima Spec | SPEC-003 Autorização por perfil e titularidade |
+| SPEC-003 Autorização por perfil e titularidade | Rascunho v0.1.0 em [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md); aguarda aprovação |
+| SPEC-004 Notificações por evento e central do usuário | Rascunho v0.1.0 em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); aguarda aprovação |
+| SPEC-005 Aprovação e reprovação de prestador | Rascunho v0.1.0 em [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md); aguarda aprovação |
+| Próxima etapa | Revisão/aprovação dos rascunhos SPEC-003 a 005; nenhuma implementação inicia antes da aprovação da respectiva Spec |
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; aguardando aprovação (etapa 8) |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 158/158 desde a etapa 15 |
-| Baseline (`spec.md`, ADRs) | Atualizada para refletir o processo (spec v0.1.4, etapa 7). Nenhuma regra, requisito ou estado foi alterado |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 166/166 após a etapa 16 |
+| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.6; histórico das alterações nas etapas 7, 12 e 14 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | 4 commits na branch `sdd/especificacao-e-identidade`, com push; **falta PR e merge na `main`** (etapa 13) |
 | Issues no GitHub | 54 fechadas com evidência; 53 abertas e atribuídas (1Noriyuki 18, gostislavs 18, 2dart5 17); #79 decisões, #80–#108 uma por Spec (etapa 13) |
@@ -35,19 +38,19 @@
 
 | ID | Assunto | Onde |
 |---|---|---|
-| ~~OPEN-01~~ | resolvida na etapa 14: conferir o código Spec por Spec e corrigir onde diverge | mapa §3 |
+| ~~OPEN-01~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: conferir o código Spec por Spec e corrigir onde diverge | mapa §3, etapas 14 e 17 |
 | OPEN-04 | ~~Spec §13 desatualizada~~ resolvida na v0.1.4 (QA-10 segue aberta) | mapa §3 |
-| ~~OPEN-02~~ | resolvida na etapa 14: mantém `RN-xx`; `INV-001` local | mapa §3 |
+| ~~OPEN-02~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: mantém `RN-xx`; `INV-001` local | mapa §3, etapas 14 e 17 |
 | ~~OPEN-12~~ | resolvida na etapa 12: 2 h de inatividade, teto de 12 h | ADR-004 |
 | ~~OPEN-202~~ | resolvida na etapa 12: todos autenticam, exceto `SUSPENSO` | spec v0.1.5 |
 | ~~OPEN-203~~ | resolvida na etapa 12: suspensa não autentica, mensagem própria | spec v0.1.5 |
 | ~~Divergências da SPEC-002 no código~~ | corrigidas na etapa 15 | etapa 15 |
 | INV-004 no banco | o banco garante os valores de `perfil` e `estado_conta`, mas não a combinação perfil × estado inicial | etapa 15 |
 | ~~Reordenação~~ | decidida na etapa 11: não reordenar | etapa 11 |
-| ~~OPEN-210~~ | resolvida na etapa 14: a conta sai logada do cadastro | spec v0.1.6 |
+| ~~OPEN-210~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: a conta sai logada do cadastro | spec v0.1.6, etapas 14 e 17 |
 | Layout | Aprovação das 8 telas | etapa 8 |
 | ~~Identidade visual~~ | aprovada na etapa 10; resta só trocar a arte do `og.jpg` (opcional) | etapa 10 |
-| Demais OPEN | 21 no mapa, 5 na SPEC-001, 9 na SPEC-002 | arquivos respectivos |
+| Demais OPEN | Questões ainda em aberto nas Specs e no mapa | arquivos respectivos |
 
 ### Premissas adotadas pelo agente, ainda sem confirmação humana
 
@@ -365,3 +368,28 @@
 - **Documentação:** `tasks.md` referencia os novos testes nas seis issues. O estado permanece `🔄`: as issues ainda estão abertas e a conferência da Spec correspondente não foi concluída.
 - **Sem mudança de regra ou implementação:** os testes registram os critérios já expressos na baseline.
 - **SPEC-010:** não gerada nesta etapa. O estado atual do processo identifica a SPEC-003 como próxima (resumo deste registro); o mapa coloca SPEC-010 após a SPEC-009, e o documento de passagem diz que as Specs devem ser geradas uma por vez na ordem aprovada. **Decisão da equipe (2026-10-13):** manter a fila e adiar a SPEC-010 até concluir as SPEC-003 a 009.
+
+### Etapa 17 — Ratificação da #79 e reconferência da SPEC-002 · 2026-10-18
+
+- **Pedido:** assumir as atribuições da Trilha C e registrar formalmente as decisões da issue #79; reconferir as correções da SPEC-002/T-11 antes de iniciar as Specs seguintes.
+- **Decisões ratificadas por `2dart5`:**
+
+| OPEN | Decisão aprovada | Registro |
+|---|---|---|
+| OPEN-01 | O código existente é candidato à conferência Spec por Spec; corrigir apenas divergências documentadas em relação a Specs aprovadas | `docs/tasks.md`, mapa §3, decisão original na etapa 14 |
+| OPEN-02 | Manter `RN-xx` como nomenclatura do projeto equivalente a `RB`; invariantes locais `INV-001` são citados com o ID da Spec fora dela | `docs/tasks.md`, mapa §3, etapas 14 e 17 |
+| OPEN-210 | Cadastro aceito já cria sessão autenticada; prestador pendente pode preparar perfil, serviços e régua, sem publicar antes de `ATIVO` (RN-08) | `docs/tasks.md`, spec v0.1.6, SPEC-002 §5.1/CA-12, etapa 14 |
+
+- **Conferência de T-11 / SPEC-002:** as três correções solicitadas já estavam presentes na branch: `autenticar()` recusa `SUSPENSO` com mensagem própria depois da validação da senha; `REPROVADO` autentica; a sessão renova o prazo de 2 h sem ultrapassar 12 h desde a criação. Os testes correspondentes já existem em `tests/integracao/contas-sessao.test.js` (`T-SESSAO-03`, `T-SESSAO-04a/b/c`, `T-SESSAO-07`). Nenhuma alteração de código foi necessária nesta reconferência.
+- **Documentação corrigida:** `tasks.md` detalha os critérios e testes de T-11; ADR-004 deixa de afirmar que a implementação está pendente e explica o uso de `expira_em` como prazo renovável; SPEC-002 aponta para spec v0.1.6. OPEN-12 foi marcada resolvida no mapa.
+- **Verificação nesta etapa:** `npm test`, 166/166 aprovados; `git diff --check` sem erros.
+
+### Etapa 18 — Rascunhos das SPEC-003, SPEC-004 e SPEC-005 · 2026-10-18
+
+- **Pedido:** gerar as próximas três Specs da Trilha C em sequência, baseadas na baseline `docs/spec.md` v0.1.6.
+- **Produzido:** três propostas v0.1.0 com as 14 seções do roteiro:
+  - [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md): RF-006/RF-007, matriz da spec §4.5, titularidade e auditoria;
+  - [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md): RF-082/RF-083, avisos persistidos, central, leitura e isolamento por usuário;
+  - [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md): RF-003/RF-008/RF-009, fila, transições administrativas, justificativa e notificação.
+- **Estado:** as três estão em rascunho e aguardam revisão/aprovação explícita da equipe. Nenhuma implementação nova ou teste de comportamento ainda não aprovado foi iniciado. Os testes de T-11 existentes constituem evidência da conferência da SPEC-002.
+- **Questões mantidas explícitas:** auditoria de tentativas por titularidade (SPEC-003), matriz/atomicidade/paginação de notificações (SPEC-004), limite mínimo da justificativa e significado de “notificar a fila” (SPEC-005).
