@@ -122,5 +122,8 @@ inatividade"). A equipe aprovou:
 | Conta `SUSPENSO` | não autentica; com a senha certa, recebe a mensagem de que a conta está suspensa (não a genérica, já que a pessoa provou ser a titular); suspender encerra as sessões abertas | OPEN-203, RN-28 |
 | Demais estados | `PENDENTE_APROVACAO`, `REPROVADO`, `EM_REVISAO` e `RESTRITO` autenticam; o que podem fazer é decidido pela autorização | OPEN-202, RF-004 |
 
-**Consequência:** a linha `sessao` passa a precisar do instante do último uso, além de `criada_em` e
-`expira_em`. A implementação atual ainda não segue esta revisão (ver `docs/specs/registro-sdd.md`, etapa 12).
+**Consequência, como implementado em 2026-10-08** (`registro-sdd.md`, etapas 15 e 19): não foi preciso
+coluna nova. `expira_em` passou a ser o prazo de inatividade: cada uso o empurra para agora + 2 h, sem
+passar de `criada_em` + 12 h, que é o teto. A renovação só é gravada quando o prazo andaria pelo menos
+1 minuto. Por isso a sessão pode expirar até 1 minuto antes das 2 h exatas sem uso. Nenhum banco
+existente precisou de migração.

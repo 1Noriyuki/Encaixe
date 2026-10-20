@@ -24,11 +24,11 @@
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; aguardando aprovação (etapa 8) |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 158/158 desde a etapa 15 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 205/205 na etapa 19 |
 | Baseline (`spec.md`, ADRs) | Atualizada para refletir o processo (spec v0.1.4, etapa 7). Nenhuma regra, requisito ou estado foi alterado |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
-| Commits do processo SDD | 4 commits na branch `sdd/especificacao-e-identidade`, com push; **falta PR e merge na `main`** (etapa 13) |
-| Issues no GitHub | 54 fechadas com evidência; 53 abertas e atribuídas (1Noriyuki 18, gostislavs 18, 2dart5 17); #79 decisões, #80–#108 uma por Spec (etapa 13) |
+| Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 19). Rascunhos das SPEC-003 a 005 só na branch `specs-duarte`, sem PR |
+| Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 19) |
 | Documento de passagem | `docs/proximos-passos.docx` (etapa 13) |
 
 ### Decisões humanas pendentes
@@ -376,3 +376,35 @@
 - **Verificação disponível:** smoke test isolado com Node 22 e SQLite confirmou idempotência de backfill, vigência e atualização transacional. **Não equivale ao `npm test` do projeto**, que exige Node >=24. A suíte do repositório não foi executada nem se afirma que está verde.
 - **Bloqueios:** OPEN-103 (fonte de P-01/P-02 e precedência de escopo), OPEN-20 (faixas divergentes), OPEN-06/08/15 (máquinas de estado), OPEN-104 (ator do sistema). Nada disso foi decidido pelo agente.
 - **Situação:** proposta em branch/PR draft para revisão humana; #9, #80 e #70 permanecem abertas. Executar todos os testes, completar CA-05/08/09/10/11 e verificar todos os invariantes antes de concluir a SPEC-001.
+
+### Etapa 19 — Levantamento das issues e recuperação dos PRs empilhados da Trilha A · 2026-10-20
+
+> A branch `specs-duarte` já usa os números 17 e 18 para a ratificação da #79 e os rascunhos das
+> SPEC-003 a 005. Esta etapa recebe o 19 para não colidir; ao mergear aquela branch, renumerar as
+> duas etapas 17.
+
+- **Pedido (Enzo):** verificar o andamento do projeto, separar issues fechadas e abertas e apontar as que
+  já estariam resolvidas mas esquecidas abertas.
+- **Levantamento:** 59 issues fechadas e 48 abertas. Das abertas, 20 são tarefas T-nn, todas 🔄 no
+  `tasks.md`, e 28 são Specs (só a #81, SPEC-002, está fechada).
+- **Esquecidas abertas:** nenhuma. Pela OPEN-01, uma tarefa só fecha depois da conferência da Spec
+  correspondente, e nenhuma das 20 passou por ela. As mais próximas são estas:
+  - #9 (T-07): falta CA-05/08/09/10/11 da SPEC-001 e há bloqueio da OPEN-103;
+  - #24, #25, #30, #31, #35 e #55: têm testes em `trilha-b.test.js`, mas as Specs ainda não existem;
+  - #70 (T-68): RN-05 ainda está parcial.
+- **Achado:** os PRs #111, #112 e #113 foram mergeados, mas estavam empilhados, cada um apontando para a
+  branch do anterior. O #110, que apontava para a `main`, foi mergeado antes dos outros. Com isso os
+  três arquivos de teste e os três de evidências da Trilha A ficaram parados nas branches intermediárias.
+- **Correção:**
+  - o PR #114 leva `test/gostislavs-perfil-catalogo-20261016`, que acumula os três PRs, para a `main`;
+  - sem código novo e sem conflito;
+  - `npm test` deu 204/204 localmente e o CI no Node 24 passou;
+  - Enzo fez o merge.
+- **Trilha C:** desde a etapa 17 da `specs-duarte` (2026-10-18) ela está com o 2dart5. Os rascunhos das
+  SPEC-003 a 005 continuam sem PR. O CLAUDE.md passou a mostrar a divisão atual. O
+  `docs/proximos-passos.docx` ainda mostra a original.
+- **Alteração local registrada junto:** a renovação da sessão (ADR-004, revisão) só regrava `expira_em`
+  quando o prazo anda 1 minuto ou mais. Assim a sessão não escreve no banco a cada requisição. Isso vem
+  com o teste `T-SESSAO-04d` e com notas na ADR-004, SPEC-002 §12, `testes.md` e README.
+- **Verificação:** `npm test` deu 205/205 na `main` com essa alteração.
+- **Nenhuma decisão de mérito foi tomada** e nenhuma issue foi fechada.

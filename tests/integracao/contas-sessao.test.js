@@ -275,6 +275,21 @@ test('T-SESSAO-04c | RNF-02: 12 h desde o login expiram a sessao mesmo em uso', 
   assert.equal(await autenticado(cookie), false, 'o teto de 12 h vale mesmo com uso continuo');
 });
 
+test('T-SESSAO-04d | RNF-02: a renovacao nao grava no banco a cada requisicao', async () => {
+  cenarioBasico();
+  const { cookie } = await entrar('cliente@teste.dev');
+  const prazo = () => um('SELECT expira_em FROM sessao').expira_em;
+
+  const inicial = prazo();
+  avancarHoras(0.5 / 60);
+  assert.ok(await autenticado(cookie));
+  assert.equal(prazo(), inicial, '30 s depois, o prazo nao e regravado (ADR-004)');
+
+  avancarHoras(1);
+  assert.ok(await autenticado(cookie));
+  assert.notEqual(prazo(), inicial, 'passado mais de 1 min, a renovacao e gravada');
+});
+
 test('T-SESSAO-07 | RF-004: pendente, reprovado, em revisao e restrito autenticam', async () => {
   const c = cenarioBasico();
 
