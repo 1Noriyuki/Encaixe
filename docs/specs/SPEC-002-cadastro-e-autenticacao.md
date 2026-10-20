@@ -10,7 +10,7 @@
 > **v0.1.1:** acrescentados o layout das telas (seção 8.1) e a OPEN-210. Nenhum critério, invariante ou
 > escopo mudou.
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 2 de 29 |
-| Baseline | `docs/spec.md` v0.1.3 · ADR-004 · `docs/seguranca.md` |
+| Baseline | `docs/spec.md` v0.1.6 · ADR-004 · `docs/seguranca.md` |
 
 ---
 
