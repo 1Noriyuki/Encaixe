@@ -27,8 +27,8 @@
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23), com `[CANAL DE CONTATO]` pendente |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 205/205 na etapa 20 |
-| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.7; histórico das alterações nas etapas 7, 12, 14 e 22 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 208/208 na etapa 24 |
+| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.8; histórico das alterações nas etapas 7, 12, 14, 22 e 24 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
 | Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 20) |
@@ -45,7 +45,7 @@
 | ~~OPEN-202~~ | resolvida na etapa 12: todos autenticam, exceto `SUSPENSO` | spec v0.1.5 |
 | ~~OPEN-203~~ | resolvida na etapa 12: suspensa não autentica, mensagem própria | spec v0.1.5 |
 | ~~Divergências da SPEC-002 no código~~ | corrigidas na etapa 15 | etapa 15 |
-| INV-004 no banco | o banco garante os valores de `perfil` e `estado_conta`, mas não a combinação perfil × estado inicial | etapa 15 |
+| ~~INV-004 no banco~~ | resolvido na etapa 24: gatilho `BEFORE INSERT` | etapas 15 e 24 |
 | ~~Reordenação~~ | decidida na etapa 11: não reordenar | etapa 11 |
 | ~~OPEN-210~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: a conta sai logada do cadastro | spec v0.1.6, etapas 14 e 18 |
 | ~~Layout~~ | aprovado na etapa 23; falta só definir o canal de contato da conta suspensa | etapas 8 e 23 |
@@ -491,3 +491,35 @@
 - **Ainda abertas na SPEC-002:** OPEN-201 e 204 a 209, além da decisão do INV-004 no banco. Recomendações
   apresentadas ao Enzo nesta etapa, sem decisão.
 - **Documento de passagem:** `docs/proximos-passos.docx` reescrito com o estado de 2026-10-20.
+
+### Etapa 24 — Decisões da SPEC-002, correções no código e INV-004 no banco · 2026-10-20
+
+- **Pedido e decisão (Enzo):** adotar as recomendações da etapa 23 para as OPEN-201 e 204 a 209, corrigir os dois
+  problemas encontrados no código e garantir o INV-004 no banco com um gatilho (opção 2).
+- **Decisões, já na spec v0.1.8 e na SPEC-002 v1.3.0:**
+
+| OPEN | Decisão |
+|---|---|
+| 201 | Política de senha na RF-001 (8 caracteres, letras e números), sem virar parâmetro |
+| 204 | Logout vira a RF-005a |
+| 205 | Nome, e-mail, senha e perfil obrigatórios; telefone, região e nome de exibição opcionais |
+| 206 | Admin nasce só pelo procedimento de implantação (ADR-004) |
+| 207 | Reputação parte da P-08 da criação, gravada em `usuario.reputacao_inicial` (RN-23, INV-08) |
+| 208 | E-mail comparado sem espaços nas pontas e sem diferenciar maiúsculas |
+| 209 | Revelar que o e-mail está em uso é risco residual aceito (`seguranca.md` A2) |
+
+- **Código corrigido:**
+  - **OPEN-208:** `normalizarEmail()` em `infra/repositorios/usuarios.js` é o único lugar que normaliza. Antes, a
+    checagem de duplicidade não tirava os espaços e a gravação tirava; um e-mail repetido com espaços estourava
+    `UNIQUE constraint failed` em vez da mensagem da RF-002.
+  - **OPEN-207:** coluna `usuario.reputacao_inicial`, gravada na criação. `reputacao.recalcular()` usa ela, e não a
+    P-08 atual. Bancos antigos ganham a coluna em `migrar()`, preenchida com a P-08 em vigor (o valor que o
+    recálculo já usava) e, no admin, com a reputação dele.
+  - **INV-004:** gatilho `usuario_nasce_no_estado_inicial`, que só olha o `INSERT`. O seed é compatível: cria
+    clientes e prestadores pelo `cadastrar()` e só insere direto o admin.
+- **Testes novos:** `T-CONTA-01j`, `01k` e `01l`. Rodados contra o código anterior, os três falham.
+- **Verificação:**
+  - `npm test`: 208/208;
+  - migração de um banco no formato antigo, executada duas vezes;
+  - seed do zero num banco temporário.
+- **Documentos:** spec, SPEC-002, ADR-002, ADR-004, `seguranca.md`, README, `testes.md` e CLAUDE.md.

@@ -63,8 +63,23 @@ CREATE TABLE IF NOT EXISTS usuario (
   estado_conta  TEXT NOT NULL CHECK (estado_conta IN
                   ('PENDENTE_APROVACAO','ATIVO','RESTRITO','EM_REVISAO','SUSPENSO','REPROVADO')),
   reputacao     INTEGER NOT NULL DEFAULT 70 CHECK (reputacao BETWEEN 0 AND 100),
-  criado_em     TEXT NOT NULL
+  criado_em     TEXT NOT NULL,
+  -- RN-00/RN-23: a P-08 vigente na criacao fica travada na conta; mudar a P-08
+  -- depois nao mexe na reputacao de quem ja existe. Bancos antigos ganham a
+  -- coluna em migrar().
+  reputacao_inicial INTEGER CHECK (reputacao_inicial BETWEEN 0 AND 100)
 );
+
+-- SPEC-002 INV-004 tambem no banco (C-VI): um CHECK nao serve, porque o estado
+-- muda depois da criacao. O gatilho olha so o INSERT, entao aprovar, suspender
+-- ou restringir continua livre.
+CREATE TRIGGER IF NOT EXISTS usuario_nasce_no_estado_inicial
+BEFORE INSERT ON usuario
+WHEN (NEW.perfil = 'CLIENTE' AND NEW.estado_conta <> 'ATIVO')
+  OR (NEW.perfil = 'PRESTADOR' AND NEW.estado_conta <> 'PENDENTE_APROVACAO')
+BEGIN
+  SELECT RAISE(ABORT, 'INV-004: cliente nasce ATIVO e prestador nasce PENDENTE_APROVACAO');
+END;
 
 CREATE TABLE IF NOT EXISTS perfil_prestador (
   usuario_id             INTEGER PRIMARY KEY REFERENCES usuario(id) ON DELETE CASCADE,

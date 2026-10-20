@@ -25,7 +25,7 @@
 | # | Ameaça | Categoria | Controle implementado | Onde |
 |---|---|---|---|---|
 | A1 | Fazer-se passar por outro usuário | Spoofing | Sessão opaca em cookie `HttpOnly`+`SameSite=Lax`, com estado revogável no banco | `interface/http/sessao.js` |
-| A2 | Descobrir se um e-mail está cadastrado | Information disclosure | Mensagem genérica no login; hash calculado mesmo para e-mail inexistente (defesa contra *timing*) | `aplicacao/contas.js` |
+| A2 | Descobrir se um e-mail está cadastrado | Information disclosure | Mensagem genérica no login; hash calculado mesmo para e-mail inexistente (defesa contra *timing*). **Risco residual aceito (OPEN-209):** o cadastro informa que o e-mail não está disponível, porque esconder exigiria confirmação por e-mail, que o MVP não tem | `aplicacao/contas.js` |
 | A3 | Confirmar/cancelar agendamento de outra pessoa | Elevation of privilege | Titularidade verificada no caso de uso, não só na rota | `carregarComoParte`, `carregarDoPrestador` |
 | A4 | Cliente acessando área de prestador ou admin | Elevation of privilege | Autorização declarativa por rota, verificada no servidor + registro `ACESSO_NEGADO` | `interface/http/servidor.js` |
 | A5 | Ação forjada a partir de outro site | Tampering | Token CSRF por sessão em todo POST autenticado, comparado em tempo constante | `sessao.js`, `servidor.js` |

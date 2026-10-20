@@ -127,3 +127,11 @@ coluna nova. `expira_em` passou a ser o prazo de inatividade: cada uso o empurra
 passar de `criada_em` + 12 h, que é o teto. A renovação só é gravada quando o prazo andaria pelo menos
 1 minuto. Por isso a sessão pode expirar até 1 minuto antes das 2 h exatas sem uso. Nenhum banco
 existente precisou de migração.
+
+## Como nasce a conta de admin (OPEN-206, 2026-10-20)
+
+O cadastro público só oferece Cliente e Prestador (RF-001; SPEC-002 CA-05). A conta de admin é criada no
+procedimento de implantação, direto pelo repositório: em demonstração, pelo `npm run db:seed`
+(`admin@encaixe.dev`). Não há tela nem RF para isso, de propósito: promover alguém a admin pela
+aplicação seria uma porta de elevação de privilégio. Numa implantação real, o admin é criado por script
+de quem administra o servidor, que deve trocar a senha de demonstração.

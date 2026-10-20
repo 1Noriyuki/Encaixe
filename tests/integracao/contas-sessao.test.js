@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { prepararBanco, encerrar, cenarioBasico, avancarHoras, T0 } from '../apoio/cenario.js';
 import { criarAplicacao } from '../../src/interface/http/servidor.js';
 import * as contas from '../../src/aplicacao/contas.js';
+import * as reputacao from '../../src/aplicacao/reputacao.js';
 import { params } from '../../src/aplicacao/parametros.js';
 import * as auditoria from '../../src/infra/auditoria.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
@@ -180,6 +181,43 @@ test('T-CONTA-01i | RF-001: cadastro aceito ja sai com sessao valida', async () 
   });
   assert.equal(cookieDe(recusado), null, 'cadastro recusado nao cria sessao');
   assert.equal(totalDeSessoes(), 2);
+});
+
+test('T-CONTA-01j | RF-002: e-mail com espacos ou maiusculas e o mesmo e-mail', async () => {
+  cadastrarCliente('ana@teste.dev');
+
+  assert.throws(
+    () => cadastrarCliente('  Ana@Teste.DEV '),
+    (erro) => erro.campo === 'email' && /não está disponível/.test(erro.message),
+    'antes da OPEN-208 isto estourava UNIQUE constraint failed',
+  );
+  const { cookie } = await entrar(' ANA@teste.dev ');
+  assert.ok(cookie && await autenticado(cookie), 'o login normaliza o e-mail do mesmo jeito');
+});
+
+test('T-CONTA-01k | SPEC-002 INV-004: o banco recusa conta nascida no estado errado', () => {
+  const inserirDireto = (perfil, estado) => usuariosRepo.criar({
+    nome: 'Atalho', email: `${perfil}-${estado}@teste.dev`, senha_hash: 'x',
+    perfil, estado_conta: estado, reputacao: 70, criado_em: T0,
+  });
+
+  assert.throws(() => inserirDireto('PRESTADOR', 'ATIVO'), /INV-004/);
+  assert.throws(() => inserirDireto('CLIENTE', 'PENDENTE_APROVACAO'), /INV-004/);
+  assert.ok(inserirDireto('ADMIN', 'ATIVO'), 'o admin nasce por implantacao (OPEN-206)');
+
+  const prestador = contas.cadastrar({ nome: 'P', email: 'p@teste.dev', senha: SENHA, perfil: 'PRESTADOR' });
+  usuariosRepo.atualizarEstadoConta(prestador.id, 'ATIVO');
+  assert.equal(usuariosRepo.porId(prestador.id).estado_conta, 'ATIVO', 'o gatilho olha so a criacao');
+});
+
+test('T-CONTA-01l | RN-00: mudar P-08 nao altera a reputacao de conta existente', () => {
+  const antiga = cadastrarCliente('antiga@teste.dev');
+  parametrosRepo.salvarGlobal('reputacao_inicial', 55, null);
+
+  reputacao.recalcular(antiga.id);
+
+  assert.equal(usuariosRepo.porId(antiga.id).reputacao, 70, 'antes da OPEN-207 o recalculo usava a P-08 atual');
+  assert.equal(usuariosRepo.porId(antiga.id).reputacao_inicial, 70);
 });
 
 // ------------------------------------------------------- login e sessao
