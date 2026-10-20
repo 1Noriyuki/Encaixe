@@ -1,6 +1,7 @@
 # Propostas de decisão — SPEC-001 e dependências da Trilha A
 
-> **Status: RECOMENDAÇÕES, NÃO APROVAÇÕES.**  
+> **Status: DECIDIDO em 2026-10-20 por Enzo** (registro, etapa 22). As recomendações abaixo foram aceitas e
+> já estão na spec v0.1.7 e na SPEC-001 v1.1.0. A seção "Decisões" no fim deste arquivo tem as respostas.  
 > Responsável pela preparação: gostislavs (Trilha A), 2026-10-16.  
 > Referências: `docs/specs/SPEC-001-fundacao.md` §13; `docs/specs/mapa-de-specs.md` §3; `docs/spec.md`, `docs/plan.md` e ADR-002.
 > **Regra de governança:** somente a equipe pode aprovar alteração de baseline; `docs/spec.md` muda antes do código.
@@ -39,3 +40,36 @@
 - **E.** Semântica da temporalidade/reputação/comissão (OPEN-05, 101, 102, 105), antes das Specs afetadas.
 
 **Nenhuma resposta foi inferida a partir de silêncio.** O PR continua em rascunho; revisão, CI verde e aprovação humana são passos distintos.
+
+## Decisões (Enzo, 2026-10-20)
+
+| Pedido | Decisão | Onde ficou |
+|---|---|---|
+| **A.** OPEN-103 | O perfil do prestador é a única fonte de P-01 e P-02; o catálogo global guarda o padrão e a faixa. P-13 passa a ser por categoria | spec §6.1 e §9.2; SPEC-001 §5.1, §7.1 e CA-05 |
+| **B.** OPEN-20 | P-07 segue a spec (0,5 a 6 h). A spec adota a divisão do código em P-12a/P-12b e P-16a/P-16b. O limite do RNF-13 vira P-21 e fecha a QA-10 | spec §6.1, RN-20, RN-21, RF-052, RF-056 |
+| **C.** OPEN-06/08/15 | Conta: suspensão a partir de `PENDENTE_APROVACAO`, `ATIVO` e `RESTRITO` (RN-28); `ATIVO → RESTRITO` só para cliente. Horário: `RASCUNHO` sai. Disputa: a RN-27 descreve o efeito de cada desfecho como o código já faz; na acusação mútua, o desfecho original é a primeira acusação | spec RN-27, §9.4, §9.5 e §9.6 |
+| **D.** OPEN-104 | `ator_id` nulo identifica o sistema; a rotina é nomeada em `acao` e cada execução tem sua correlação | spec §9.2; SPEC-001 §5.4 e §7.3 |
+| **E.** OPEN-05/101/102/105 | Deltas de reputação viram P-22 (cada evento já grava o delta). "Fato ocorrido" é o evento que cria a obrigação, e o valor vigente fica gravado. A P-20 é exceção declarada à RN-00. `LancamentoComissao` ganha máquina e auditoria | spec RN-00, RN-23, RN-17, §9.7.1 e RF-084 |
+
+Uma diferença em relação à proposta original da C: `EM_REVISAO → RESTRITO` **não** entra na spec. O código
+declara essa transição, mas nenhum caso de uso a dispara (a decisão do admin só leva a `ATIVO` ou
+`SUSPENSO`), então ela sai do código.
+
+## O que muda no código (Trilha A, gostislavs)
+
+A spec v0.1.7 mudou primeiro, como manda o processo. Estas são as correções que o código precisa para
+voltar a bater com ela. Cada uma ganha teste com o identificador da regra.
+
+| # | Correção | Onde | Decisão |
+|---|---|---|---|
+| 1 | P-07 aceita 0,5 h (hoje o mínimo é 1 h e o valor é inteiro) | `dominio/parametros.js` | B |
+| 2 | Remover `RASCUNHO` da máquina do horário e do `CHECK` de `horario_vago.estado` | `dominio/estados.js`, `schema.sql` | C |
+| 3 | Remover `BLOQUEADO → CANCELADO` (horário) e `EM_REVISAO → RESTRITO` (conta): nenhum caso de uso as usa | `dominio/estados.js` | C |
+| 4 | Perfil novo nasce com o padrão global de P-01 e P-02, não com o `DEFAULT` fixo do esquema | `aplicacao/contas.js`, `schema.sql` | A |
+| 5 | Os deltas de reputação viram o parâmetro P-22, com a faixa da spec §6.1 | `dominio/reputacao.js`, `dominio/parametros.js` | E (OPEN-05) |
+| 6 | Máquina do `LancamentoComissao` (spec §9.7.1) com `assegurarTransicao` e auditoria em toda transição | `dominio/estados.js`, `aplicacao/disputas.js`, `aplicacao/agendamentos.js` | E (OPEN-105) |
+| 7 | Conferir se a conclusão automática grava o prazo de P-17 ou relê o valor atual a cada rotina | `aplicacao/rotinas.js` (SPEC-020) | E (OPEN-101) |
+| 8 | T-PARAM-05 com o novo CA-05 da SPEC-001 v1.1.0 | `tests/` | A |
+
+P-12a/b, P-16a/b e P-21 **não** mudam: a spec passou a descrever o que o código já faz. A rotina com
+`ator_id` nulo (D) e a semântica dos desfechos de disputa (C, OPEN-06) também já estão corretas no código.

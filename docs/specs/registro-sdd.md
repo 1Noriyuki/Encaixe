@@ -18,7 +18,7 @@
 | Item | Situação |
 |---|---|
 | Mapa de Specs | **Aprovado** (v1.0.0, etapa 11), na ordem original |
-| SPEC-001 Fundação | **Aprovada** (v1.0.0, etapa 11) |
+| SPEC-001 Fundação | **Aprovada** (v1.0.0, etapa 11); v1.1.0 com as decisões da etapa 22. Falta a conferência do código (Trilha A) |
 | SPEC-002 Cadastro e autenticação | **Aprovada**; v1.2.0 com as decisões das OPEN-12/202/203 (etapa 12) e OPEN-01/02/210 (etapa 14). **Código conferido e corrigido** (etapa 15): CA-01 a CA-12 com teste |
 | SPEC-003 Autorização por perfil e titularidade | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md); questões da §13 seguem abertas |
 | SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
@@ -28,7 +28,7 @@
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
 | Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 205/205 na etapa 20 |
-| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.6; histórico das alterações nas etapas 7, 12 e 14 |
+| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.7; histórico das alterações nas etapas 7, 12, 14 e 22 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
 | Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 20) |
@@ -453,3 +453,27 @@
     "notificar a fila".
 - **Próximo passo:** o 2dart5 confere o código contra as três (T-14 para a SPEC-005, T-66 para a SPEC-004).
   Na fila de geração vem a SPEC-006 (Trilha A).
+
+### Etapa 22 — Decisões sobre os pedidos da Trilha A e spec v0.1.7 · 2026-10-20
+
+- **Pedido e decisão (Enzo):** responder aos pedidos A a E de `propostas-decisoes-trilha-a.md`, aceitando as
+  recomendações apresentadas na conversa, e atualizar a spec.
+- **Decisões:** A tabela "Decisões" no fim de `propostas-decisoes-trilha-a.md` registra cada uma. Em resumo:
+  - **A (OPEN-103):** o perfil é a fonte de P-01 e P-02; P-13 é por categoria;
+  - **B (OPEN-20):** P-07 segue a spec; P-12a/b, P-16a/b e P-21 entram na spec; a QA-10 é fechada;
+  - **C (OPEN-06/08/15):** novas transições de suspensão, `RASCUNHO` removido, RN-27 explícita;
+  - **D (OPEN-104):** `ator_id` nulo é o sistema;
+  - **E (OPEN-05/101/102/105):** P-22, definição de fato ocorrido, exceção da P-20 e máquina do lançamento.
+- **Ajuste em relação à recomendação inicial:** `EM_REVISAO → RESTRITO` não entrou na spec. Ao conferir o código,
+  nenhum caso de uso dispara essa transição, então ela sai do código.
+- **Achado ao conferir a OPEN-06:** a acusação mútua não ficou sem desfecho. O código guarda como estado anterior
+  a primeira acusação (`NO_SHOW_*`), e a RN-27 passou a dizer isso.
+- **Premissa do agente (PA-07), a confirmar:** a faixa da P-22 é "metade ao dobro do padrão, com o mesmo sinal, e a
+  penalidade do prestador nunca abaixo da do cliente na mesma faixa". A decisão foi tornar os deltas parâmetros,
+  mas a faixa exata foi proposta pelo agente.
+- **Baseline atualizada:**
+  - `docs/spec.md` v0.1.6 → **v0.1.7**, com histórico;
+  - SPEC-001 v1.0.0 → **v1.1.0**, sem OPEN abertas;
+  - mapa (OPEN-05, 06, 08, 15 e 20 marcadas como resolvidas).
+- **Código:** não foi alterado nesta etapa. As oito correções que o código passa a dever estão listadas em
+  `propostas-decisoes-trilha-a.md` e ficam com a Trilha A (#9, #80).
