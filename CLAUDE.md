@@ -79,7 +79,7 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   `INV-001` locais; fora dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14`.
 - **Issues:** `T-nn` é a issue `#nn+2`; #79 foram as decisões OPEN-01/02/210; #80–#108 são as SPEC-001..029.
   Divididas por trilha do `tasks.md` (`niltonmack` é o professor). Em 2026-10-18 o 2dart5 assumiu
-  também a Trilha C (etapa 17 do registro, na branch `specs-duarte`):
+  também a Trilha C (etapa 18 do registro):
 
   | Trilha | Responsável | Specs abertas |
   |---|---|---|
@@ -88,9 +88,9 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
 
   `docs/proximos-passos.docx` é o documento de passagem e ainda mostra a divisão original.
-- **Estado em 2026-10-20:** mapa, SPEC-001 e SPEC-002 aprovados e na `main` (PR #109); a #81
-  (SPEC-002) está fechada. Os rascunhos das SPEC-003 a 005 estão só na branch `specs-duarte`, sem PR,
-  e aguardam aprovação. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
+- **Estado em 2026-10-20:** mapa e SPEC-001 a SPEC-005 aprovados (as três últimas na etapa 21); a #81
+  (SPEC-002) está fechada. Próximo: o 2dart5 confere o código contra as SPEC-003 a 005, e a próxima
+  Spec a gerar é a SPEC-006. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
   aconteceu com os #111–#113, recuperados no #114.
 - **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
   suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde

@@ -11,7 +11,7 @@
 | Versão | 1.0.0 |
 | Data | 2026-08-21 |
 | Legenda de estado | ✅ concluída (issue fechada com evidência de teste ou documento) · 🔄 implementada antes das Specs, falta teste do critério de aceite ou conferência contra a Spec · ⬜ a fazer |
-| Estado revisado em | 2026-10-01, junto com as issues do GitHub (ver `docs/specs/registro-sdd.md`, etapa 13) |
+| Estado revisado em | 2026-10-18; decisões da #79 ratificadas e rascunhos SPEC-003 a SPEC-005 registrados em `docs/specs/registro-sdd.md` |
 
 ## Definição de pronto (vale para toda tarefa)
 
@@ -20,6 +20,14 @@
 3. `npm test` verde.
 4. Spec atualizada **no mesmo PR** se a regra mudou.
 5. Revisão de outro integrante antes do merge.
+
+## Decisões de processo aprovadas na issue #79
+
+Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
+
+- **OPEN-01:** manter o código existente como candidato e conferi-lo contra cada Spec aprovada; corrigir apenas divergências registradas.
+- **OPEN-02:** manter a nomenclatura `RN-xx` (equivalente a `RB` no roteiro); invariantes são locais `INV-001` por Spec.
+- **OPEN-210:** cadastro aceito já autentica a conta; prestador pendente pode preparar perfil, serviços e régua, mas publicar continua bloqueado pela RN-08.
 
 ---
 
@@ -44,10 +52,10 @@
 |---|---|---|---|:--:|
 | T-09 | Cadastro de cliente e prestador | RF-001 a RF-003 | Prestador nasce `PENDENTE_APROVACAO`; e-mail duplicado não vaza dado | ✅ |
 | T-10 | Hash de senha com `scrypt` e política mínima | RNF-02 | Nenhuma senha em texto puro; comparação em tempo constante | ✅ |
-| T-11 | Login, sessão em cookie e logout | RF-004, RF-005 | Cookie `HttpOnly`+`SameSite`; mensagem de erro genérica | ✅ |
-| T-12 | Autorização por perfil nas rotas + auditoria de acesso negado | RF-006, RF-007 | 403 e registro `ACESSO_NEGADO` | ✅ |
+| T-11 | Login, sessão em cookie e logout | RF-004, RF-005, RN-28, RNF-02 | `SUSPENSO` recebe mensagem própria; `REPROVADO` autentica; 2 h sem uso e teto de 12 h; `T-SESSAO-03/04a/04b/04c/07` | ✅ |
+| T-12 | Autorização por perfil nas rotas + auditoria de acesso negado | RF-006, RF-007 | 403 e registro `ACESSO_NEGADO`; testes HTTP em `tests/integracao/http.test.js` | ✅ |
 | T-13 | Proteção CSRF em todo POST autenticado | RNF-03 | Token por sessão; POST sem token → 403 | ✅ |
-| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado | 🔄 |
+| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado; SPEC-005 aguarda aprovação e evidência dos critérios | 🔄 |
 | T-15 | Perfil do prestador com janela e política de expiração | RF-010, RN-10 | Janela entre 5 e 60 min; política `LIBERAR`/`AUTOCONFIRMAR` | 🔄 |
 | T-16 | Barreira "pode publicar" com lista do que falta | RF-011, RN-08 | Perfil incompleto lista pendências | 🔄 |
 
