@@ -84,8 +84,16 @@ feitos (`RN-04`, `RN-05`).
 
 `usuario.reputacao` é **cache**. A verdade é a tabela `evento_reputacao`: cada delta com tipo, origem
 rastreável e marca de reversão. A reputação é recalculada somando os eventos não revertidos dentro da
-janela móvel. É isso que permite a disputa reverter uma penalidade sem inventar aritmética (`RN-27`),
+janela móvel, a partir de `usuario.reputacao_inicial`: a P-08 vigente quando a conta foi criada (OPEN-207,
+spec v0.1.8). É isso que permite a disputa reverter uma penalidade sem inventar aritmética (`RN-27`),
 e é isso que `INV-08` testa.
+
+### Estado inicial da conta no banco
+
+O `CHECK` de `usuario.estado_conta` só garante os valores possíveis. Que o cliente nasça `ATIVO` e o
+prestador `PENDENTE_APROVACAO` (SPEC-002 INV-004) é garantido pelo gatilho
+`usuario_nasce_no_estado_inicial`, que olha só o `INSERT`; as transições seguintes ficam com a máquina de
+estados.
 
 ## Consequências
 

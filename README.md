@@ -22,7 +22,7 @@ Senha de todas: `senha1234`
 
 | E-mail | Perfil | Serve para demonstrar |
 |---|---|---|
-| `admin@encaixe.dev` | Admin | Aprovação de prestador, fila de disputas, métricas, parâmetros |
+| `admin@encaixe.dev` | Admin | Aprovação de prestador, fila de disputas, métricas, parâmetros. O admin só nasce pelo seed, nunca pelo cadastro (ADR-004) |
 | `renata@salao.dev` | Prestador | Política `LIBERAR`: reserva não confirmada volta para a busca |
 | `marcos@barbearia.dev` | Prestador | Política `AUTOCONFIRMAR`: reserva não confirmada é aceita sozinha |
 | `clinica@estetica.dev` | Prestador | Conta aguardando aprovação (fila do admin) |
@@ -145,5 +145,5 @@ Sem isso, o sistema roda completo com o provedor simulado — inclusive a busca 
 
 ## Estado do projeto
 
-MVP funcional. Suíte de testes: **205 testes automatizados**, todos verdes
+MVP funcional. Suíte de testes: **208 testes automatizados**, todos verdes
 (`npm test`). Cobertura por regra e evidências em [`docs/testes.md`](docs/testes.md).

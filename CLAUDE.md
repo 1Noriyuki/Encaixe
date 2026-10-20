@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 205 testes, ~5 s
+npm test             # suíte completa (node --test), 208 testes, ~5 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -90,7 +90,7 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   `docs/proximos-passos.docx` é o documento de passagem (reescrito em 2026-10-20, etapa 23).
 - **Estado em 2026-10-20:** mapa e SPEC-001 a SPEC-005 aprovados (as três últimas na etapa 21); a #81
   (SPEC-002) está fechada. Próximo: o 2dart5 confere o código contra as SPEC-003 a 005, e a próxima
-  Spec a gerar é a SPEC-006. As OPEN da SPEC-001 foram decididas na etapa 22 (spec v0.1.7); o código
+  Spec a gerar é a SPEC-006. A SPEC-002 ficou sem OPEN abertas na etapa 24 (spec v0.1.8). As OPEN da SPEC-001 foram decididas na etapa 22 (spec v0.1.7); o código
   ainda deve as oito correções listadas em `docs/specs/propostas-decisoes-trilha-a.md`. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
   aconteceu com os #111–#113, recuperados no #114.
 - **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
@@ -201,7 +201,7 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.7): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.8): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |

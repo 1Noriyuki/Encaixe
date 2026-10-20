@@ -52,8 +52,8 @@ assert.equal(penalidade.delta, -6);
 ```
 $ npm test
 
-ℹ tests 205
-ℹ pass 205
+ℹ tests 208
+ℹ pass 208
 ℹ fail 0
 ℹ duration_ms ~3000
 ```

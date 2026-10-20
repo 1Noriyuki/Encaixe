@@ -10,6 +10,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PADROES } from '../../dominio/parametros.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../../..');
@@ -52,7 +53,26 @@ export function fechar() {
 export function migrar() {
   const sql = readFileSync(resolve(AQUI, 'schema.sql'), 'utf8');
   bd().exec(sql);
+  acrescentarReputacaoInicial();
   return bd();
+}
+
+/**
+ * Bancos criados antes da spec v0.1.8 nao tem `usuario.reputacao_inicial`, e o
+ * SQLite nao tem ADD COLUMN IF NOT EXISTS. As contas antigas recebem a P-08 em
+ * vigor agora, que era o valor que o recalculo ja usava para elas.
+ */
+function acrescentarReputacaoInicial() {
+  const banco = bd();
+  const colunas = banco.prepare('PRAGMA table_info(usuario)').all().map((c) => c.name);
+  if (colunas.includes('reputacao_inicial')) return;
+
+  banco.exec('ALTER TABLE usuario ADD COLUMN reputacao_inicial INTEGER CHECK (reputacao_inicial BETWEEN 0 AND 100)');
+  banco.prepare(
+    `UPDATE usuario SET reputacao_inicial = CASE perfil WHEN 'ADMIN' THEN reputacao ELSE COALESCE(
+       (SELECT CAST(valor AS INTEGER) FROM parametro WHERE chave = 'reputacao_inicial' AND escopo = 'GLOBAL'), ?)
+     END`,
+  ).run(PADROES.reputacao_inicial);
 }
 
 /**

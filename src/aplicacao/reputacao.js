@@ -44,7 +44,8 @@ export function recalcular(usuarioId) {
 
   const eventos = social.eventosDoUsuario(usuarioId);
   const nova = calcularReputacao(eventos, {
-    inicial: p.reputacao_inicial,
+    // RN-00: a P-08 da criacao da conta, nao a vigente agora.
+    inicial: usuario.reputacao_inicial,
     janelaDias: p.janela_reputacao_dias,
     agora: agoraIso(),
   });
