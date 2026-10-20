@@ -90,7 +90,8 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   `docs/proximos-passos.docx` é o documento de passagem e ainda mostra a divisão original.
 - **Estado em 2026-10-20:** mapa e SPEC-001 a SPEC-005 aprovados (as três últimas na etapa 21); a #81
   (SPEC-002) está fechada. Próximo: o 2dart5 confere o código contra as SPEC-003 a 005, e a próxima
-  Spec a gerar é a SPEC-006. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
+  Spec a gerar é a SPEC-006. As OPEN da SPEC-001 foram decididas na etapa 22 (spec v0.1.7); o código
+  ainda deve as oito correções listadas em `docs/specs/propostas-decisoes-trilha-a.md`. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
   aconteceu com os #111–#113, recuperados no #114.
 - **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
   suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde
@@ -200,7 +201,7 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.6): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.7): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
