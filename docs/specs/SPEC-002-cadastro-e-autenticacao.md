@@ -284,6 +284,7 @@ genérica não está na baseline e fica a cargo da implementação, desde que cu
 | `T-SESSAO-04a \| RNF-02: 2 h sem uso expiram a sessao` | CA-09a, INV-007 |
 | `T-SESSAO-04b \| RNF-02: cada uso renova o prazo de inatividade` | CA-09b |
 | `T-SESSAO-04c \| RNF-02: 12 h desde o login expiram a sessao mesmo em uso` | CA-09c, INV-007 |
+| `T-SESSAO-04d \| RNF-02: a renovacao nao grava no banco a cada requisicao` | ADR-004 (revisão) |
 | `T-SESSAO-07 \| RF-004: pendente, reprovado, em revisao e restrito autenticam` | CA-11 |
 | `T-SESSAO-05 \| RNF-02: logout revoga a sessao` | CA-10, INV-007 |
 | `T-SESSAO-06 \| RNF-03: identificador de sessao forjado nao autentica` | RNF-03 |
