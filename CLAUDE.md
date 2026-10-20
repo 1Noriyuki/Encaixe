@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 158 testes, ~3 s
+npm test             # suíte completa (node --test), 205 testes, ~5 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -78,13 +78,23 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 - **Nomes:** o roteiro chama regra de "RB"; aqui continua `RN-xx`. Invariantes de uma Spec são
   `INV-001` locais; fora dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14`.
 - **Issues:** `T-nn` é a issue `#nn+2`; #79 foram as decisões OPEN-01/02/210; #80–#108 são as SPEC-001..029.
-  Divididas por trilha do `tasks.md` entre 1Noriyuki, gostislavs e 2dart5 (`niltonmack` é o
-  professor). `docs/proximos-passos.docx` é o documento de passagem para a equipe.
-- **Estado em 2026-10-01:** mapa, SPEC-001 e SPEC-002 aprovados; próxima é a SPEC-003. Tudo isso está
-  na branch `sdd/especificacao-e-identidade`, **ainda sem PR nem merge na `main`**.
+  Divididas por trilha do `tasks.md` (`niltonmack` é o professor). Em 2026-10-18 o 2dart5 assumiu
+  também a Trilha C (etapa 17 do registro, na branch `specs-duarte`):
+
+  | Trilha | Responsável | Specs abertas |
+  |---|---|---|
+  | A: domínio e financeiro | gostislavs | SPEC-001, 006–009, 011, 020, 021, 024, 026 |
+  | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
+  | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
+
+  `docs/proximos-passos.docx` é o documento de passagem e ainda mostra a divisão original.
+- **Estado em 2026-10-20:** mapa, SPEC-001 e SPEC-002 aprovados e na `main` (PR #109); a #81
+  (SPEC-002) está fechada. Os rascunhos das SPEC-003 a 005 estão só na branch `specs-duarte`, sem PR,
+  e aguardam aprovação. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
+  aconteceu com os #111–#113, recuperados no #114.
 - **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
   suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde
-  o login (`expira_em` é o prazo deslizante). Testes em `integracao/contas-sessao.test.js`.
+  o login (`expira_em` é o prazo deslizante, regravado só quando anda 1 min ou mais). Testes em `integracao/contas-sessao.test.js`.
 - **Depois do cadastro a conta já sai logada** (OPEN-210, spec v0.1.6): o prestador pendente prepara
   perfil, serviços e régua, mas só publica quando estiver `ATIVO` (RN-08).
 
