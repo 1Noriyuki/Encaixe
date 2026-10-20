@@ -257,6 +257,9 @@ test('T-SESSAO-03 | RN-28: conta suspensa nao autentica e recebe mensagem propri
   assert.equal(certa.cookie, null);
   assert.match(certa.corpo, /conta está suspensa/);
   assert.match(certa.corpo, /RN-28/);
+  // RF-004 - a conta suspensa nao autentica, entao o canal tem de estar na propria tela.
+  assert.ok(certa.corpo.includes(contas.contatoDeSuporte()), 'o e-mail de contato aparece na tela');
+  assert.match(certa.corpo, /href="mailto:/);
 
   // Com a senha errada, quem tenta nao fica sabendo que a conta existe e esta suspensa.
   const errada = await entrar('cliente@teste.dev', 'errada123');

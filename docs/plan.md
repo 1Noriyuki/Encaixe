@@ -262,6 +262,7 @@ npm run db:reset    # recomeça do zero
 | `LLM_TIMEOUT_MS` | `15000` | Timeout da interpretação (RNF-05) |
 | `ANTHROPIC_API_KEY` | — | Necessária só com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | Intervalo do agendador |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | E-mail mostrado à conta suspensa (RF-004) |
 
 ---
 

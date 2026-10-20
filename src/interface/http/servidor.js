@@ -272,6 +272,9 @@ function tratarErroDeAcao(ctx, erro) {
       <p class="medida">A operação foi recusada e <strong>nada mudou de estado</strong>. O aviso acima
       traz a regra que decidiu isso.</p>
       <p class="linha sem-fundo">
+        ${erro?.detalhes?.contato
+          ? html`<a class="botao" href="mailto:${erro.detalhes.contato}">Escrever para a administração</a>`
+          : ''}
         <a class="botao botao-secundario" href="${ctx.req.headers.referer ?? '/'}">Tentar de novo</a>
         <a class="botao botao-secundario" href="/">Início</a>
       </p>

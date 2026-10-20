@@ -24,11 +24,11 @@
 | SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
 | SPEC-005 Aprovação e reprovação de prestador | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md); questões da §13 seguem abertas |
 | Próxima etapa | Conferir o código contra as SPEC-003, 004 e 005 (Trilha C, 2dart5). Próxima Spec a gerar: SPEC-006 (Trilha A) |
-| Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23), com `[CANAL DE CONTATO]` pendente |
+| Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23); canal de contato definido na etapa 25 |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 208/208 na etapa 24 |
-| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.8; histórico das alterações nas etapas 7, 12, 14, 22 e 24 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 208/208 na etapa 25 |
+| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.9; histórico das alterações nas etapas 7, 12, 14, 22, 24 e 25 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
 | Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 20) |
@@ -48,7 +48,7 @@
 | ~~INV-004 no banco~~ | resolvido na etapa 24: gatilho `BEFORE INSERT` | etapas 15 e 24 |
 | ~~Reordenação~~ | decidida na etapa 11: não reordenar | etapa 11 |
 | ~~OPEN-210~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: a conta sai logada do cadastro | spec v0.1.6, etapas 14 e 18 |
-| ~~Layout~~ | aprovado na etapa 23; falta só definir o canal de contato da conta suspensa | etapas 8 e 23 |
+| ~~Layout~~ | aprovado na etapa 23; canal de contato da conta suspensa definido na etapa 25 | etapas 8, 23 e 25 |
 | ~~Identidade visual~~ | aprovada na etapa 10; resta só trocar a arte do `og.jpg` (opcional) | etapa 10 |
 | Demais OPEN | Questões ainda em aberto nas Specs e no mapa | arquivos respectivos |
 
@@ -523,3 +523,23 @@
   - migração de um banco no formato antigo, executada duas vezes;
   - seed do zero num banco temporário.
 - **Documentos:** spec, SPEC-002, ADR-002, ADR-004, `seguranca.md`, README, `testes.md` e CLAUDE.md.
+
+### Etapa 25 — Canal de contato da conta suspensa · 2026-10-20
+
+- **Pedido:** recomendação para a única pendência da SPEC-002, o `[CANAL DE CONTATO]` da tela de conta suspensa.
+- **Recomendação do agente:** e-mail de suporte fixo, definido em configuração, mostrado na tela com link
+  `mailto:`. Motivos: a conta suspensa não autentica (RN-28), então nenhum canal interno serve; um formulário
+  público de contestação seria escopo novo (RF, tabela, fila no admin, proteção contra spam) dentro de uma Spec
+  aprovada; e "fale com o suporte" sem canal deixa o usuário sem saída. Não entra na tabela `parametro`, que
+  guarda números de regra com faixa, e não endereços.
+- **Decisão (Enzo):** aprovada como recomendada.
+- **Baseline:** spec v0.1.9 (RF-004 informa o canal); SPEC-002 v1.4.0 (CA-08 e tabela do layout); layout
+  `Entrar-suspensa` e `canvas.json` com o e-mail no lugar do marcador; variável `CONTATO_SUPORTE` no README, no
+  `plan.md` e no CLAUDE.md.
+- **Código:** `contatoDeSuporte()` em `aplicacao/contas.js` lê `CONTATO_SUPORTE` (padrão `suporte@encaixe.dev`) e
+  vai na mensagem e nos detalhes do `ErroDeRegra` RN-28. `tratarErroDeAcao()` mostra o botão "Escrever para a
+  administração" quando o erro traz um contato.
+- **Teste:** `T-SESSAO-03` passa a exigir o e-mail e o link `mailto:` na tela.
+- **Verificação:** `npm test`: 208/208.
+- **Fica de fora:** o canvas publicado no claude.ai não foi republicado; as fontes em `layouts/SPEC-002/` já trazem o
+  texto novo.

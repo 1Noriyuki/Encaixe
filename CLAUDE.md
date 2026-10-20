@@ -89,11 +89,10 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
   `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões (gerado
   com a lib `docx` fora do repositório, porque o projeto não tem dependências).
-- **Estado em 2026-10-20 (etapa 24):** spec v0.1.8; SPEC-001 a 005 aprovadas; SPEC-002 conferida e
-  sem OPEN; a próxima Spec a gerar é a SPEC-006. Pendentes: as oito correções de código da SPEC-001
-  (Gustavo, lista em `docs/specs/propostas-decisoes-trilha-a.md`) e a conferência do código contra as
-  SPEC-003 a 005 (2dart5). Única decisão em aberto da SPEC-002: o canal de contato da conta suspensa,
-  que a tela mostra como `[CANAL DE CONTATO]`.
+- **Estado em 2026-10-20 (etapa 25):** spec v0.1.9; SPEC-001 a 005 aprovadas; SPEC-002 conferida,
+  sem OPEN e sem pendência (o canal da conta suspensa é o e-mail `CONTATO_SUPORTE`). A próxima Spec a
+  gerar é a SPEC-006. Pendentes: as oito correções de código da SPEC-001 (Gustavo, lista em
+  `docs/specs/propostas-decisoes-trilha-a.md`) e a conferência do código contra as SPEC-003 a 005 (2dart5).
 
 ## Arquitetura
 
@@ -206,7 +205,7 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.8): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.9): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
@@ -229,3 +228,4 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 | `LLM_TIMEOUT_MS` | `15000` | teto da espera pela interpretação (RNF-05) |
 | `ANTHROPIC_API_KEY` | — | só com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | intervalo das rotinas temporais |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | e-mail mostrado à conta suspensa (RF-004) |
