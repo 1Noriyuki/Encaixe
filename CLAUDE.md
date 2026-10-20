@@ -87,17 +87,13 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
   | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
 
-  `docs/proximos-passos.docx` é o documento de passagem (reescrito em 2026-10-20, etapa 23).
-- **Estado em 2026-10-20:** mapa e SPEC-001 a SPEC-005 aprovados (as três últimas na etapa 21); a #81
-  (SPEC-002) está fechada. Próximo: o 2dart5 confere o código contra as SPEC-003 a 005, e a próxima
-  Spec a gerar é a SPEC-006. A SPEC-002 ficou sem OPEN abertas na etapa 24 (spec v0.1.8). As OPEN da SPEC-001 foram decididas na etapa 22 (spec v0.1.7); o código
-  ainda deve as oito correções listadas em `docs/specs/propostas-decisoes-trilha-a.md`. PRs empilhados não chegam à `main` se o da base for mergeado antes: foi o que
-  aconteceu com os #111–#113, recuperados no #114.
-- **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
-  suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde
-  o login (`expira_em` é o prazo deslizante, regravado só quando anda 1 min ou mais). Testes em `integracao/contas-sessao.test.js`.
-- **Depois do cadastro a conta já sai logada** (OPEN-210, spec v0.1.6): o prestador pendente prepara
-  perfil, serviços e régua, mas só publica quando estiver `ATIVO` (RN-08).
+  `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões (gerado
+  com a lib `docx` fora do repositório, porque o projeto não tem dependências).
+- **Estado em 2026-10-20 (etapa 24):** spec v0.1.8; SPEC-001 a 005 aprovadas; SPEC-002 conferida e
+  sem OPEN; a próxima Spec a gerar é a SPEC-006. Pendentes: as oito correções de código da SPEC-001
+  (Gustavo, lista em `docs/specs/propostas-decisoes-trilha-a.md`) e a conferência do código contra as
+  SPEC-003 a 005 (2dart5). Única decisão em aberto da SPEC-002: o canal de contato da conta suspensa,
+  que a tela mostra como `[CANAL DE CONTATO]`.
 
 ## Arquitetura
 
@@ -173,8 +169,17 @@ o intervalo falhar.
   `C:/Program Files/Git/buscar`). Use `MSYS_NO_PATHCONV=1` ao passar rotas para scripts.
 - **Os arquivos são CRLF.** Buscar um trecho com `\n` no meio falha em silêncio, e `sed` quebra em
   linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`.
-- **Cinco regras ainda não têm teste nomeado** (RN-00, RN-05, RN-08, RN-11, RN-33; issue
-  T-68). "Tudo verde" não significa "toda regra coberta".
+- **A RN-05 ainda tem teste só parcial** (issue T-68): "tudo verde" não significa "toda regra coberta".
+- **PR empilhado não chega à `main`.** Se o PR B aponta para a branch do PR A e A é mergeado antes,
+  B entra só na branch de A. Aconteceu com os #111–#113 (recuperados no #114). Abra todo PR contra a
+  `main`, mesmo partindo da branch de outro.
+- **SQLite não tem `ADD COLUMN IF NOT EXISTS`.** O `schema.sql` é reexecutado a cada início, então
+  coluna nova em tabela existente precisa entrar também em `migrar()` (`infra/db/conexao.js`),
+  checando `PRAGMA table_info` e preenchendo as linhas antigas. Exemplo: `usuario.reputacao_inicial`.
+- **Invariante de estado inicial não cabe em `CHECK`**, porque o estado muda depois. Use gatilho
+  `BEFORE INSERT`, como `usuario_nasce_no_estado_inicial` (SPEC-002 INV-004).
+- **Normalização de entrada mora num lugar só.** O e-mail era minusculizado na busca e aparado na
+  gravação, e um repetido com espaços estourava `UNIQUE`. Hoje é `normalizarEmail()` no repositório.
 
 ## Testes
 
