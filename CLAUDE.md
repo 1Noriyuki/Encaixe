@@ -87,7 +87,7 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
   | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
 
-  `docs/proximos-passos.docx` é o documento de passagem e ainda mostra a divisão original.
+  `docs/proximos-passos.docx` é o documento de passagem (reescrito em 2026-10-20, etapa 23).
 - **Estado em 2026-10-20:** mapa e SPEC-001 a SPEC-005 aprovados (as três últimas na etapa 21); a #81
   (SPEC-002) está fechada. Próximo: o 2dart5 confere o código contra as SPEC-003 a 005, e a próxima
   Spec a gerar é a SPEC-006. As OPEN da SPEC-001 foram decididas na etapa 22 (spec v0.1.7); o código

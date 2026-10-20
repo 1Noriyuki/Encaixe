@@ -5,7 +5,7 @@
 | Versão | 1.2.0 |
 | Data | 2026-10-08 |
 | Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões das OPEN-12, 202 e 203; v1.2.0, as das OPEN-01, 02 e 210 (2026-10-08), todas aprovadas. Seguem abertas as OPEN 201, 204 a 209 |
-| Layout | [canvas com 8 telas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) · fontes em [`layouts/SPEC-002/`](layouts/SPEC-002/) · aguardando aprovação |
+| Layout | [canvas com 8 telas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) · fontes em [`layouts/SPEC-002/`](layouts/SPEC-002/) · **aprovado** por Enzo em 2026-10-20 (registro, etapa 23). O texto `[CANAL DE CONTATO]` fica até a equipe definir o canal |
 
 > **v0.1.1:** acrescentados o layout das telas (seção 8.1) e a OPEN-210. Nenhum critério, invariante ou
 > escopo mudou.

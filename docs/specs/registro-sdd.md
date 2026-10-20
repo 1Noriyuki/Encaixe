@@ -24,7 +24,7 @@
 | SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
 | SPEC-005 Aprovação e reprovação de prestador | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md); questões da §13 seguem abertas |
 | Próxima etapa | Conferir o código contra as SPEC-003, 004 e 005 (Trilha C, 2dart5). Próxima Spec a gerar: SPEC-006 (Trilha A) |
-| Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; aguardando aprovação (etapa 8) |
+| Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23), com `[CANAL DE CONTATO]` pendente |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
 | Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 205/205 na etapa 20 |
@@ -48,7 +48,7 @@
 | INV-004 no banco | o banco garante os valores de `perfil` e `estado_conta`, mas não a combinação perfil × estado inicial | etapa 15 |
 | ~~Reordenação~~ | decidida na etapa 11: não reordenar | etapa 11 |
 | ~~OPEN-210~~ | resolvida na etapa 14 e ratificada pela Trilha C em 2026-10-18: a conta sai logada do cadastro | spec v0.1.6, etapas 14 e 18 |
-| Layout | Aprovação das 8 telas | etapa 8 |
+| ~~Layout~~ | aprovado na etapa 23; falta só definir o canal de contato da conta suspensa | etapas 8 e 23 |
 | ~~Identidade visual~~ | aprovada na etapa 10; resta só trocar a arte do `og.jpg` (opcional) | etapa 10 |
 | Demais OPEN | Questões ainda em aberto nas Specs e no mapa | arquivos respectivos |
 
@@ -61,6 +61,7 @@
 | ~~PA-03~~ **confirmada** (OPEN-02, etapa 14) | Os invariantes de cada Spec usam numeração local `INV-001`, citando o `INV-xx` global coberto | o roteiro pede `INV-001`; a baseline já usa `INV-01..14` | SPEC-001 §6, SPEC-002 §6 |
 | PA-04 | Os "drivers arquiteturais" foram lidos como as restrições do enunciado (spec §1.5) mais os princípios da constituição | a baseline não tem seção formal de drivers (OPEN-03) | mapa, todas as Specs |
 | PA-05 | Os nomes de teste propostos seguem a convenção do projeto, com sufixos para não colidir (`T-CONTA-01a`) | os IDs `T-CONTA-01..04` já estão reservados na matriz da spec §11 | SPEC-002 §12 |
+| ~~PA-07~~ **confirmada** (etapa 23) | Faixa da P-22: metade ao dobro do padrão, mesmo sinal, prestador nunca abaixo do cliente na mesma faixa | a decisão E da etapa 22 tornou os deltas parâmetros sem fixar a faixa | spec §6.1 |
 | PA-06 | `niltonmack` é o professor, não integrante, e ficou fora da distribuição de issues | sem nome nem atividade no repositório; a spec §15 prevê o professor como colaborador | issues do GitHub, etapa 13 |
 
 ---
@@ -468,7 +469,7 @@
   nenhum caso de uso dispara essa transição, então ela sai do código.
 - **Achado ao conferir a OPEN-06:** a acusação mútua não ficou sem desfecho. O código guarda como estado anterior
   a primeira acusação (`NO_SHOW_*`), e a RN-27 passou a dizer isso.
-- **Premissa do agente (PA-07), a confirmar:** a faixa da P-22 é "metade ao dobro do padrão, com o mesmo sinal, e a
+- **Premissa do agente (PA-07), confirmada por Enzo na etapa 23:** a faixa da P-22 é "metade ao dobro do padrão, com o mesmo sinal, e a
   penalidade do prestador nunca abaixo da do cliente na mesma faixa". A decisão foi tornar os deltas parâmetros,
   mas a faixa exata foi proposta pelo agente.
 - **Baseline atualizada:**
@@ -477,3 +478,16 @@
   - mapa (OPEN-05, 06, 08, 15 e 20 marcadas como resolvidas).
 - **Código:** não foi alterado nesta etapa. As oito correções que o código passa a dever estão listadas em
   `propostas-decisoes-trilha-a.md` e ficam com a Trilha A (#9, #80).
+
+### Etapa 23 — Aprovação do layout da SPEC-002 e da faixa da P-22 · 2026-10-20
+
+- **Pedido e decisão (Enzo):** aprovar as 8 telas do layout da SPEC-002 (etapa 8) e confirmar a faixa da P-22,
+  que tinha sido proposta pelo agente (PA-07, etapa 22).
+- **Layout:** aprovado como está no [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e em
+  `docs/specs/layouts/SPEC-002/`. A tela de conta suspensa mantém `[CANAL DE CONTATO]`, porque o canal ainda
+  não foi definido. Definir o canal não muda o layout, só esse texto.
+- **P-22:** a faixa "metade ao dobro do padrão, mesmo sinal, prestador nunca abaixo do cliente na mesma faixa"
+  passa a ser decisão da equipe. A spec v0.1.7 já tinha esse texto, então ela não muda.
+- **Ainda abertas na SPEC-002:** OPEN-201 e 204 a 209, além da decisão do INV-004 no banco. Recomendações
+  apresentadas ao Enzo nesta etapa, sem decisão.
+- **Documento de passagem:** `docs/proximos-passos.docx` reescrito com o estado de 2026-10-20.
