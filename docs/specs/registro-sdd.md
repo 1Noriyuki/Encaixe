@@ -548,7 +548,7 @@
 
 - **Pedido (gostislavs):** executar todas as tarefas possíveis da Trilha A após os merges de Enzo, sem aprovar regras por conta própria.
 - **Decisões:** nenhuma nova. Usadas as decisões A–E aprovadas por Enzo na etapa 22; SPEC-001 v1.1.0 e baseline v0.1.8.
-- **Branch de correção:** `gostislavs-spec001-fix` (base `main`). Ajustes de P-07 (0,5 h), remoção de transições/estado `RASCUNHO` não previstos, P-01/P-02 globais herdados ao cadastrar novo prestador e proteção de banco novo/legado; testes `T-PARAM-05`, `T-PARAM-08` e `T-ESTADO-04..06`.
+- **Branch de correção:** `gostislavs-spec001-fix` (base `main`). Ajustes de P-07 (0,5 h), remoção de transições/estado `RASCUNHO` não previstos, P-01/P-02 globais herdados ao cadastrar novo prestador e proteção de banco novo/legado; testes `T-PARAM-05`, `T-PARAM-09` e `T-ESTADO-04..06`.
 - **Evidência:** `evidencias-trilha-a-spec001-alinhamento-20261021.md` registra cobertura parcial, migração conservadora e pendências. Não fechar #9/#80 antes de conferir todos os CA e INV, CI e revisão.
 - **Próxima Spec:** rascunho completo da SPEC-006 preparado na branch `gostislavs-spec006-rascunho` (base `main`) com 14 seções; aguarda aprovação explícita de Enzo/equipe e questões da §13. Nenhuma regra de reputação foi modificada por esse rascunho.
 - **Ainda pendente:** P-22 e classificação/notificação aguardam SPEC-006; máquina/auditoria financeira aguardam fluxo de SPEC-020/022/023; P-17 congelada no nascimento da obrigação exige alinhar SPEC-020. Não foram tomadas decisões implícitas.
