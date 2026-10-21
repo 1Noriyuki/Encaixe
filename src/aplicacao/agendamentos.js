@@ -161,7 +161,12 @@ export function confirmar({ prestadorId, agendamentoId }) {
 /** Compartilhado entre confirmacao manual (RF-042) e automatica (RF-046). */
 function aplicarConfirmacao(ag, agora, atorId, acao) {
   assegurarTransicao('agendamento', ag.estado, 'CONFIRMADO');
-  agendamentosRepo.atualizar(ag.id, { estado: 'CONFIRMADO', confirmado_em: agora });
+  // RN-00 / P-17: guarda o prazo com a configuração vigente na confirmação.
+  const prazoCongelado = prazoAutoConclusao(ag.inicio, ag.duracao_min, params());
+  agendamentosRepo.atualizar(ag.id, {
+    estado: 'CONFIRMADO', confirmado_em: agora,
+    autoconclusao_prazo_em: prazoCongelado,
+  });
 
   assegurarTransicao('horario', ag.horario_estado, 'OCUPADO');
   horariosRepo.atualizarEstado(ag.horario_id, 'OCUPADO');
