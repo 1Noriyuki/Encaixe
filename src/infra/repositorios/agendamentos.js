@@ -59,7 +59,7 @@ export function porHorario(horarioId) {
 /** Atualizacao parcial: so mexe nos campos informados. */
 export function atualizar(id, campos) {
   const permitidos = [
-    'estado', 'confirmado_em', 'encerrado_em', 'estado_cobranca',
+    'estado', 'confirmado_em', 'autoconclusao_prazo_em', 'encerrado_em', 'estado_cobranca',
     'motivo_encerramento', 'observacao', 'prazo_confirmacao_em', 'estado_antes_disputa',
   ];
   const entradas = Object.entries(campos).filter(([k]) => permitidos.includes(k));
