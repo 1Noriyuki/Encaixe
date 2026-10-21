@@ -10,14 +10,29 @@ export function criarLancamento({
   agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
   valor_liquido, estado, competencia, criado_em,
 }) {
-  return inserir(
-    `INSERT INTO lancamento_comissao
-       (agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
-        valor_liquido, estado, competencia, criado_em)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
-    valor_liquido, estado, competencia, criado_em,
-  );
+  return transacao(() => {
+    if (estado !== 'EFETIVADO') {
+      throw new Error('Lançamento de comissão deve nascer EFETIVADO.');
+    }
+    const id = inserir(
+      `INSERT INTO lancamento_comissao
+         (agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
+          valor_liquido, estado, competencia, criado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
+      valor_liquido, estado, competencia, criado_em,
+    );
+    auditoria.registrar({
+      atorId: null,
+      acao: 'COMISSAO_CRIADA',
+      entidade: 'comissao',
+      entidadeId: id,
+      de: null,
+      para: 'EFETIVADO',
+      detalhe: { agendamentoId: agendamento_id },
+    });
+    return id;
+  });
 }
 
 export function porAgendamento(agendamentoId) {
