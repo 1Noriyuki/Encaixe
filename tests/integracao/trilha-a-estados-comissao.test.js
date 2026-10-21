@@ -78,3 +78,14 @@ test('T-COMISSAO-ESTADO-05 | INV-13: falha de auditoria reverte mudanca financei
   assert.throws(() => financeiro.atualizarEstado(id, 'RETIDO'), /falha de auditoria/);
   assert.equal(financeiro.porAgendamento(id).estado, 'EFETIVADO');
 });
+
+test('T-COMISSAO-ESTADO-06 | RF-084: o lançamento nasce EFETIVADO e auditado', () => {
+  const id = atendimentoConcluido();
+  const lancamento = financeiro.porAgendamento(id);
+  const criacoes = auditoria.historicoDe('comissao', lancamento.id)
+    .filter(e => e.acao === 'COMISSAO_CRIADA');
+  assert.equal(criacoes.length, 1);
+  assert.equal(criacoes[0].estado_anterior, null);
+  assert.equal(criacoes[0].estado_novo, 'EFETIVADO');
+  assert.equal(criacoes[0].detalhe.agendamentoId, id);
+});
