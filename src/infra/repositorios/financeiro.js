@@ -66,12 +66,17 @@ export function totaisPrestador(prestadorId, { de = null, ate = null } = {}) {
     ...params,
   );
 
+  // RF-062: usar o MESMO intervalo dos lançamentos efetivados.
+  const filtrosRetido = ['a.prestador_id = ?', "l.estado = 'RETIDO'"];
+  const parametrosRetido = [prestadorId];
+  if (de) { filtrosRetido.push('l.criado_em >= ?'); parametrosRetido.push(de); }
+  if (ate) { filtrosRetido.push('l.criado_em <= ?'); parametrosRetido.push(ate); }
   const retido = um(
     `SELECT COUNT(*) AS qtd, COALESCE(SUM(l.valor_liquido), 0) AS liquido
        FROM lancamento_comissao l
        JOIN agendamento a ON a.id = l.agendamento_id
-      WHERE a.prestador_id = ? AND l.estado = 'RETIDO'`,
-    prestadorId,
+      WHERE ${filtrosRetido.join(' AND ')}`,
+    ...parametrosRetido,
   );
 
   return { ...efetivado, retido_qtd: retido.qtd, retido_liquido: retido.liquido };
