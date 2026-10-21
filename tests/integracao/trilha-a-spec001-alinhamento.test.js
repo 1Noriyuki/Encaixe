@@ -16,7 +16,7 @@ import { executar, um } from '../../src/infra/db/conexao.js';
 test.beforeEach(prepararBanco);
 test.after(encerrar);
 
-test('T-PARAM-08 | RN-00 / OPEN-20: P-07 aceita 0,5 h, mas não valores fora da faixa', () => {
+test('T-PARAM-09 | RN-00 / OPEN-20: P-07 aceita 0,5 h, mas não valores fora da faixa', () => {
   assert.equal(normalizarParametro('cancelamento_total_h', '0,5'), 0.5);
   assert.equal(normalizarParametro('cancelamento_total_h', 0.5), 0.5);
   assert.equal(salvarGlobal('cancelamento_total_h', 0.5, null), 0.5);
