@@ -2,7 +2,9 @@
  * Repositorio financeiro: lancamentos de comissao, extrato e metricas.
  */
 
-import { um, varios, inserir, executar } from '../db/conexao.js';
+import { um, varios, inserir, executar, transacao } from '../db/conexao.js';
+import { assegurarTransicao } from '../../dominio/estados.js';
+import * as auditoria from '../auditoria.js';
 
 export function criarLancamento({
   agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
@@ -22,8 +24,28 @@ export function porAgendamento(agendamentoId) {
   return um('SELECT * FROM lancamento_comissao WHERE agendamento_id = ?', agendamentoId);
 }
 
+/** SPEC-001 §9.7.1 / RF-084: toda mudança financeira respeita a máquina,
+ * é auditada junto da escrita e não muda um lançamento inexistente. */
 export function atualizarEstado(agendamentoId, estado) {
-  executar('UPDATE lancamento_comissao SET estado = ? WHERE agendamento_id = ?', estado, agendamentoId);
+  return transacao(() => {
+    const lancamento = porAgendamento(agendamentoId);
+    if (!lancamento) {
+      throw new Error(`Lançamento de comissão inexistente para agendamento ${agendamentoId}.`);
+    }
+    if (lancamento.estado === estado) return lancamento;
+    assegurarTransicao('comissao', lancamento.estado, estado);
+    executar('UPDATE lancamento_comissao SET estado = ? WHERE id = ?', estado, lancamento.id);
+    auditoria.registrar({
+      atorId: null,
+      acao: 'COMISSAO_ESTADO_ALTERADO',
+      entidade: 'comissao',
+      entidadeId: lancamento.id,
+      de: lancamento.estado,
+      para: estado,
+      detalhe: { agendamentoId },
+    });
+    return porAgendamento(agendamentoId);
+  });
 }
 
 /** RF-061/RF-062 - extrato do prestador; itens RETIDO aparecem separados. */
