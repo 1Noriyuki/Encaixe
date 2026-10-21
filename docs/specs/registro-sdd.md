@@ -544,7 +544,7 @@
 - **Fica de fora:** o canvas publicado no claude.ai não foi republicado; as fontes em `layouts/SPEC-002/` já trazem o
   texto novo.
 
-### Etapa 25 — Correções aprovadas da SPEC-001 e rascunho da SPEC-006 · 2026-10-21
+### Etapa 26 — Correções aprovadas da SPEC-001 e rascunho da SPEC-006 · 2026-10-21
 
 - **Pedido (gostislavs):** executar todas as tarefas possíveis da Trilha A após os merges de Enzo, sem aprovar regras por conta própria.
 - **Decisões:** nenhuma nova. Usadas as decisões A–E aprovadas por Enzo na etapa 22; SPEC-001 v1.1.0 e baseline v0.1.8.
