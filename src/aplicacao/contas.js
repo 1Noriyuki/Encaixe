@@ -19,6 +19,15 @@ import { params } from './parametros.js';
 const PERFIS_PUBLICOS = ['CLIENTE', 'PRESTADOR'];
 
 /**
+ * RF-004 - canal pelo qual a conta suspensa fala com a administracao. Fica fora
+ * do sistema porque a conta suspensa nao autentica (RN-28); e configuracao de
+ * implantacao, e nao parametro de regra, por isso nao mora na tabela parametro.
+ */
+export function contatoDeSuporte() {
+  return process.env.CONTATO_SUPORTE ?? 'suporte@encaixe.dev';
+}
+
+/**
  * RF-001 a RF-003 - cadastro.
  * Prestador nasce PENDENTE_APROVACAO; cliente ja nasce ATIVO.
  */
@@ -100,7 +109,11 @@ export function autenticar({ email, senha }) {
   // RN-28 - so depois de a senha conferir: com a senha errada, vale a mensagem
   // generica, para nao revelar o estado da conta a quem nao e o titular.
   if (usuario.estado_conta === 'SUSPENSO') {
-    throw new ErroDeRegra('RN-28', 'Sua conta está suspensa e não pode entrar. Fale com o suporte da plataforma.');
+    const contato = contatoDeSuporte();
+    throw new ErroDeRegra('RN-28',
+      `Sua conta está suspensa e não pode entrar. Para entender o motivo ou pedir revisão, `
+      + `fale com a administração pelo e-mail ${contato}.`,
+      { contato });
   }
 
   return usuario;

@@ -130,6 +130,7 @@ injetável, e "faltam 90 minutos para o horário" vira um dado do teste.
 | `LLM_TIMEOUT_MS` | `15000` | Timeout da interpretação |
 | `ANTHROPIC_API_KEY` | — | Necessária apenas com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | Intervalo do agendador de rotinas temporais |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | E-mail mostrado à conta suspensa (RF-004) |
 
 Para usar o provedor real de LLM:
 
