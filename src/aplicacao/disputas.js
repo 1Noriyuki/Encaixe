@@ -247,6 +247,7 @@ export function resolver({ adminId, disputaId, desfecho, justificativa }) {
 
 /** Traduz o desfecho em estado do agendamento, reputacao e comissao. */
 function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora }) {
+  const deltaContra = params().delta_reputacao_disputa_contra ?? DELTA_DISPUTA_CONTRA;
   let estadoFinal;
   let comissao = 'inalterada';
 
@@ -259,7 +260,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
       reputacao.aplicarEvento({
         usuarioId: quemAbriu,
         tipo: TIPO_EVENTO.DISPUTA_CONTRA,
-        delta: DELTA_DISPUTA_CONTRA,
+        delta: deltaContra,
         origemTipo: 'agendamento',
         origemId: ag.id,
       });
@@ -274,7 +275,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
       reputacao.aplicarEvento({
         usuarioId: outraParte,
         tipo: TIPO_EVENTO.DISPUTA_CONTRA,
-        delta: DELTA_DISPUTA_CONTRA,
+        delta: deltaContra,
         origemTipo: 'agendamento',
         origemId: ag.id,
       });
@@ -325,21 +326,22 @@ function inverter(estado) {
 
 /** Reaplica as consequencias de reputacao do estado decidido. */
 function aplicarEfeitosDe(estado, ag) {
+  const p = params();
   if (estado === 'NO_SHOW_CLIENTE') {
     reputacao.aplicarEvento({
-      usuarioId: ag.cliente_id, tipo: TIPO_EVENTO.NO_SHOW, delta: DELTA_NO_SHOW,
+      usuarioId: ag.cliente_id, tipo: TIPO_EVENTO.NO_SHOW, delta: p.delta_reputacao_noshow ?? DELTA_NO_SHOW,
       origemTipo: 'agendamento', origemId: ag.id,
     });
   } else if (estado === 'NO_SHOW_PRESTADOR') {
     reputacao.aplicarEvento({
-      usuarioId: ag.prestador_id, tipo: TIPO_EVENTO.NO_SHOW, delta: DELTA_NO_SHOW,
+      usuarioId: ag.prestador_id, tipo: TIPO_EVENTO.NO_SHOW, delta: p.delta_reputacao_noshow ?? DELTA_NO_SHOW,
       origemTipo: 'agendamento', origemId: ag.id,
     });
     reputacao.verificarOcorrenciasDoPrestador(ag.prestador_id);
   } else if (estado === 'CONCLUIDO') {
     for (const id of [ag.cliente_id, ag.prestador_id]) {
       reputacao.aplicarEvento({
-        usuarioId: id, tipo: TIPO_EVENTO.CONCLUSAO, delta: DELTA_CONCLUSAO,
+        usuarioId: id, tipo: TIPO_EVENTO.CONCLUSAO, delta: p.delta_reputacao_conclusao ?? DELTA_CONCLUSAO,
         origemTipo: 'agendamento', origemId: ag.id,
       });
     }
