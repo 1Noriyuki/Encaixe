@@ -57,7 +57,7 @@ export function avaliar({ usuarioId, agendamentoId, nota, comentario = '' }) {
     reputacao.aplicarEvento({
       usuarioId: alvoId,
       tipo: TIPO_EVENTO.AVALIACAO,
-      delta: deltaPorAvaliacao(valor),
+      delta: deltaPorAvaliacao(valor, p),
       origemTipo: 'agendamento',
       origemId: agendamentoId,
     });
