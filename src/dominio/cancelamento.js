@@ -41,7 +41,7 @@ const PENALIDADES = {
  * confirmacao (RF-048) e a gravacao do evento (RF-049/RF-050). E deliberado:
  * o que o usuario le antes de confirmar e literalmente o que sera aplicado.
  */
-export function penalidadeDeCancelamento(faixa, papel) {
+export function penalidadeDeCancelamento(faixa, papel, params = {}) {
   if (faixa === FAIXA.APOS_INICIO) {
     throw new ErroDeRegra(
       'RN-18',
@@ -53,7 +53,8 @@ export function penalidadeDeCancelamento(faixa, papel) {
   const tabela = PENALIDADES[papel];
   if (!tabela) throw new Error(`Papel inválido: ${papel}`);
 
-  const delta = tabela[faixa];
+  const chave = `delta_reputacao_cancelamento_${papel.toLowerCase()}_${faixa.toLowerCase()}`;
+  const delta = params[chave] ?? tabela[faixa];
   const ocorrenciaNegativa = faixa !== FAIXA.LIVRE;
 
   return {
@@ -98,5 +99,5 @@ export function previaDeCancelamento(antecedenciaMin, papel, params) {
       rotulo: ROTULO_FAIXA[faixa],
     };
   }
-  return { permitido: true, ...penalidadeDeCancelamento(faixa, papel) };
+  return { permitido: true, ...penalidadeDeCancelamento(faixa, papel, params) };
 }
