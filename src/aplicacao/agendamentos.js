@@ -32,7 +32,7 @@ import {
 } from '../dominio/cancelamento.js';
 import {
   assegurarJanelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
-  prazoDisputa, prazoSlaDisputa, prazoAvaliacao,
+  prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAutoConclusao,
 } from '../dominio/prazos.js';
 import { calcularComissao, competenciaDe } from '../dominio/comissao.js';
 import {
