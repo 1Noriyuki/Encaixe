@@ -16,7 +16,7 @@ import { executar, um } from '../../src/infra/db/conexao.js';
 test.beforeEach(prepararBanco);
 test.after(encerrar);
 
-test('T-PARAM-07 | RN-00 / OPEN-20: P-07 aceita 0,5 h, mas não valores fora da faixa', () => {
+test('T-PARAM-08 | RN-00 / OPEN-20: P-07 aceita 0,5 h, mas não valores fora da faixa', () => {
   assert.equal(normalizarParametro('cancelamento_total_h', '0,5'), 0.5);
   assert.equal(normalizarParametro('cancelamento_total_h', 0.5), 0.5);
   assert.equal(salvarGlobal('cancelamento_total_h', 0.5, null), 0.5);
@@ -48,7 +48,7 @@ test('T-PARAM-05 | RN-00 / OPEN-103: prestador nasce com P-01/P-02 vigentes', ()
   assert.equal(usuarios.prestador(primeiro.id).politica_expiracao, 'AUTOCONFIRMAR');
 });
 
-test('T-ESTADO-01 | INV-13 / OPEN-08: a máquina de horários não possui RASCUNHO', () => {
+test('T-ESTADO-04 | INV-13 / OPEN-08: a máquina de horários não possui RASCUNHO', () => {
   assert.equal(Object.hasOwn(ESTADOS_HORARIO, 'RASCUNHO'), false);
   assert.equal(podeTransicionar('horario', 'BLOQUEADO', 'CANCELADO'), false);
   assert.throws(
@@ -57,7 +57,7 @@ test('T-ESTADO-01 | INV-13 / OPEN-08: a máquina de horários não possui RASCUN
   );
 });
 
-test('T-ESTADO-02 | INV-13 / OPEN-08: conta em revisão não muda para restrita', () => {
+test('T-ESTADO-05 | INV-13 / OPEN-08: conta em revisão não muda para restrita', () => {
   assert.equal(podeTransicionar('conta', 'EM_REVISAO', 'RESTRITO'), false);
   assert.throws(
     () => assegurarTransicao('conta', 'EM_REVISAO', 'RESTRITO'),
@@ -65,7 +65,7 @@ test('T-ESTADO-02 | INV-13 / OPEN-08: conta em revisão não muda para restrita'
   );
 });
 
-test('T-ESTADO-03 | INV-13: o SQLite recusa RASCUNHO e mantém o horário publicado', () => {
+test('T-ESTADO-06 | INV-13: o SQLite recusa RASCUNHO e mantém o horário publicado', () => {
   const c = cenarioBasico();
   assert.throws(
     () => executar("UPDATE horario_vago SET estado = 'RASCUNHO' WHERE id = ?", c.horario.id),
