@@ -37,9 +37,8 @@ export const AGENDAMENTO_EM_ABERTO = ['PENDENTE_CONFIRMACAO', 'CONFIRMADO'];
 // ------------------------------------------------------------------ horario
 
 export const ESTADOS_HORARIO = {
-  RASCUNHO: ['PUBLICADO', 'CANCELADO'],
   PUBLICADO: ['BLOQUEADO', 'CANCELADO', 'EXPIRADO'],
-  BLOQUEADO: ['OCUPADO', 'PUBLICADO', 'EXPIRADO', 'CANCELADO'],
+  BLOQUEADO: ['OCUPADO', 'PUBLICADO', 'EXPIRADO'],
   // Cliente cancelou um confirmado: o prestador segue disponivel, entao o
   // horario volta a ser vendavel (PUBLICADO) ou expira, se ja nao houver
   // antecedencia. Prestador cancelou: CANCELADO, porque quem nao atende e ele.
@@ -58,7 +57,7 @@ export const ESTADOS_CONTA = {
   PENDENTE_APROVACAO: ['ATIVO', 'REPROVADO', 'SUSPENSO'],
   ATIVO: ['RESTRITO', 'EM_REVISAO', 'SUSPENSO'],
   RESTRITO: ['ATIVO', 'EM_REVISAO', 'SUSPENSO'],
-  EM_REVISAO: ['ATIVO', 'RESTRITO', 'SUSPENSO'],
+  EM_REVISAO: ['ATIVO', 'SUSPENSO'],
   SUSPENSO: ['ATIVO'],
   REPROVADO: [],
 };
@@ -126,7 +125,6 @@ export const ROTULOS = {
   CONCLUIDO: 'Concluido',
   ARQUIVADO: 'Arquivado',
   // horario
-  RASCUNHO: 'Rascunho',
   PUBLICADO: 'Publicado',
   BLOQUEADO: 'Reservado',
   OCUPADO: 'Confirmado',
