@@ -11,10 +11,10 @@ Enzo aprovou, em 2026-10-20, as decisões A–E documentadas em [propostas-decis
 
 | Ajuste aprovado | Arquivos | Evidência |
 |---|---|---|
-| P-07 com mínimo de 0,5 hora, decimal validado | `src/dominio/parametros.js` | `T-PARAM-07` |
-| Máquina de horário sem `RASCUNHO`, sem `BLOQUEADO → CANCELADO`; máquina de conta sem `EM_REVISAO → RESTRITO` | `src/dominio/estados.js` | `T-ESTADO-01` e `T-ESTADO-02` |
+| P-07 com mínimo de 0,5 hora, decimal validado | `src/dominio/parametros.js` | `T-PARAM-08` |
+| Máquina de horário sem `RASCUNHO`, sem `BLOQUEADO → CANCELADO`; máquina de conta sem `EM_REVISAO → RESTRITO` | `src/dominio/estados.js` | `T-ESTADO-04` e `T-ESTADO-05` |
 | Novo prestador herda os P-01/P-02 globais vigentes **no instante do cadastro**; histórico dos perfis existentes preservado | `src/aplicacao/contas.js`, `src/infra/repositorios/usuarios.js` | `T-PARAM-05` |
-| `RASCUNHO` eliminado do CHECK em bancos novos; gatilhos impedem inserir/atualizar para `RASCUNHO` nos bancos legados | `src/infra/db/schema.sql` | `T-ESTADO-03` |
+| `RASCUNHO` eliminado do CHECK em bancos novos; gatilhos impedem inserir/atualizar para `RASCUNHO` nos bancos legados | `src/infra/db/schema.sql` | `T-ESTADO-06` |
 
 Os testes estão em `tests/integracao/trilha-a-spec001-alinhamento.test.js`.
 
