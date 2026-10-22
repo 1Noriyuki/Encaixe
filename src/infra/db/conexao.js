@@ -54,6 +54,7 @@ export function migrar() {
   const sql = readFileSync(resolve(AQUI, 'schema.sql'), 'utf8');
   bd().exec(sql);
   acrescentarReputacaoInicial();
+  acrescentarPrazoAutoconclusao();
   return bd();
 }
 
@@ -73,6 +74,19 @@ function acrescentarReputacaoInicial() {
        (SELECT CAST(valor AS INTEGER) FROM parametro WHERE chave = 'reputacao_inicial' AND escopo = 'GLOBAL'), ?)
      END`,
   ).run(PADROES.reputacao_inicial);
+}
+
+/**
+ * Os bancos antigos não possuíam o prazo de autoconclusão travado.
+ * O histórico não permite reconstruir qual P-17 estava vigente na confirmação:
+ * registros legados permanecem nulos e usam o fallback explicitamente documentado.
+ */
+function acrescentarPrazoAutoconclusao() {
+  const banco = bd();
+  const colunas = banco.prepare('PRAGMA table_info(agendamento)').all().map(c => c.name);
+  if (!colunas.includes('autoconclusao_prazo_em')) {
+    banco.exec('ALTER TABLE agendamento ADD COLUMN autoconclusao_prazo_em TEXT');
+  }
 }
 
 /**
