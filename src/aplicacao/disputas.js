@@ -16,6 +16,7 @@ import * as moderacaoRepo from '../infra/repositorios/moderacao.js';
 import * as agendamentosRepo from '../infra/repositorios/agendamentos.js';
 import * as financeiroRepo from '../infra/repositorios/financeiro.js';
 import * as auditoria from '../infra/auditoria.js';
+import * as comissoes from './comissao.js';
 import { notificar } from '../infra/notificacoes.js';
 import { transacao } from '../infra/db/conexao.js';
 import {
@@ -110,7 +111,7 @@ export function abrir({ usuarioId, agendamentoId, motivo, relato, evidencia }) {
 
     // ...a comissao e retida (RN-17, INV-12)...
     if (financeiroRepo.porAgendamento(agendamentoId)) {
-      financeiroRepo.atualizarEstado(agendamentoId, 'RETIDO');
+      comissoes.transicionar({ agendamentoId, para: 'RETIDO', atorId: usuarioId });
     }
 
     // ...e as penalidades ficam suspensas ate a decisao.
@@ -214,7 +215,7 @@ export function resolver({ adminId, disputaId, desfecho, justificativa }) {
     const outraParte = quemAbriu === ag.cliente_id ? ag.prestador_id : ag.cliente_id;
 
     const efeito = aplicarDesfecho({
-      desfecho, ag, anterior, quemAbriu, outraParte, agora,
+      desfecho, ag, anterior, quemAbriu, outraParte, agora, adminId,
     });
 
     assegurarTransicao('disputa', disputa.estado, 'RESOLVIDA');
@@ -246,7 +247,7 @@ export function resolver({ adminId, disputaId, desfecho, justificativa }) {
 }
 
 /** Traduz o desfecho em estado do agendamento, reputacao e comissao. */
-function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora }) {
+function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora, adminId }) {
   let estadoFinal;
   let comissao = 'inalterada';
 
@@ -263,7 +264,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
         origemTipo: 'agendamento',
         origemId: ag.id,
       });
-      comissao = restaurarComissao(ag, estadoFinal);
+      comissao = restaurarComissao(ag, estadoFinal, adminId);
       break;
     }
 
@@ -278,7 +279,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
         origemTipo: 'agendamento',
         origemId: ag.id,
       });
-      comissao = restaurarComissao(ag, estadoFinal);
+      comissao = restaurarComissao(ag, estadoFinal, adminId);
       break;
     }
 
@@ -286,7 +287,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
       estadoFinal = anterior;
       transicionar(ag, estadoFinal);
       // Efeitos de reputacao seguem revertidos: e exatamente o que "parcial" significa.
-      comissao = restaurarComissao(ag, estadoFinal);
+      comissao = restaurarComissao(ag, estadoFinal, adminId);
       break;
     }
 
@@ -295,7 +296,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora 
       estadoFinal = 'ARQUIVADO';
       transicionar(ag, estadoFinal);
       if (financeiroRepo.porAgendamento(ag.id)) {
-        financeiroRepo.atualizarEstado(ag.id, 'ESTORNADO');
+        comissoes.transicionar({ agendamentoId: ag.id, para: 'ESTORNADO', atorId: adminId });
         comissao = 'ESTORNADO';
       }
       break;
@@ -347,12 +348,12 @@ function aplicarEfeitosDe(estado, ag) {
 }
 
 /** RN-16 / RN-17 - a comissao so volta a valer se o desfecho for CONCLUIDO. */
-function restaurarComissao(ag, estadoFinal) {
+function restaurarComissao(ag, estadoFinal, adminId) {
   const lancamento = financeiroRepo.porAgendamento(ag.id);
   if (!lancamento) return 'inexistente';
 
   const novo = estadoFinal === 'CONCLUIDO' ? 'EFETIVADO' : 'ESTORNADO';
-  financeiroRepo.atualizarEstado(ag.id, novo);
+  comissoes.transicionar({ agendamentoId: ag.id, para: novo, atorId: adminId });
   return novo;
 }
 

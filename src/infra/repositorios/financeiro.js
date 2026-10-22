@@ -2,65 +2,29 @@
  * Repositorio financeiro: lancamentos de comissao, extrato e metricas.
  */
 
-import { um, varios, inserir, executar, transacao } from '../db/conexao.js';
-import { assegurarTransicao } from '../../dominio/estados.js';
-import * as auditoria from '../auditoria.js';
+import { um, varios, inserir, executar } from '../db/conexao.js';
 
 export function criarLancamento({
   agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
   valor_liquido, estado, competencia, criado_em,
 }) {
-  return transacao(() => {
-    if (estado !== 'EFETIVADO') {
-      throw new Error('Lançamento de comissão deve nascer EFETIVADO.');
-    }
-    const id = inserir(
-      `INSERT INTO lancamento_comissao
-         (agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
-          valor_liquido, estado, competencia, criado_em)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
-      valor_liquido, estado, competencia, criado_em,
-    );
-    auditoria.registrar({
-      atorId: null,
-      acao: 'COMISSAO_CRIADA',
-      entidade: 'comissao',
-      entidadeId: id,
-      de: null,
-      para: 'EFETIVADO',
-      detalhe: { agendamentoId: agendamento_id },
-    });
-    return id;
-  });
+  return inserir(
+    `INSERT INTO lancamento_comissao
+       (agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
+        valor_liquido, estado, competencia, criado_em)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    agendamento_id, valor_bruto, percentual_aplicado, valor_comissao,
+    valor_liquido, estado, competencia, criado_em,
+  );
 }
 
 export function porAgendamento(agendamentoId) {
   return um('SELECT * FROM lancamento_comissao WHERE agendamento_id = ?', agendamentoId);
 }
 
-/** SPEC-001 §9.7.1 / RF-084: toda mudança financeira respeita a máquina,
- * é auditada junto da escrita e não muda um lançamento inexistente. */
+/** So persiste: a maquina e a auditoria ficam em aplicacao/comissao.js. */
 export function atualizarEstado(agendamentoId, estado) {
-  return transacao(() => {
-    const lancamento = porAgendamento(agendamentoId);
-    if (!lancamento) {
-      throw new Error(`Lançamento de comissão inexistente para agendamento ${agendamentoId}.`);
-    }
-    if (lancamento.estado === estado) return lancamento;
-    assegurarTransicao('comissao', lancamento.estado, estado);
-    executar('UPDATE lancamento_comissao SET estado = ? WHERE id = ?', estado, lancamento.id);
-    auditoria.registrar({
-      atorId: null,
-      acao: 'COMISSAO_ESTADO_ALTERADO',
-      entidade: 'comissao',
-      entidadeId: lancamento.id,
-      de: lancamento.estado,
-      para: estado,
-      detalhe: { agendamentoId },
-    });
-    return porAgendamento(agendamentoId);
-  });
+  executar('UPDATE lancamento_comissao SET estado = ? WHERE agendamento_id = ?', estado, agendamentoId);
 }
 
 /** RF-061/RF-062 - extrato do prestador; itens RETIDO aparecem separados. */
