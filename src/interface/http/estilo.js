@@ -616,9 +616,15 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 
 /* Regua de desconto: como o preco caminha ate o horario. Todos os degraus
    vem do dominio (projetarRegua) - o navegador so desenha (INV-14). */
-.regua { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+/* As colunas moram na lista e cada degrau herda por subgrid: o rotulo ocupa a
+   largura do mais longo e as barras comecam todas no mesmo x. Coluna fixa
+   cortava "a partir de 4 h antes" por cima da barra. */
+.regua {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 2px;
+  grid-template-columns: max-content minmax(48px, 1fr) auto;
+}
 .regua-degrau {
-  display: grid; grid-template-columns: 96px 1fr auto; align-items: center;
+  display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center;
   gap: var(--e3); padding: 10px 12px; border-radius: var(--raio-p);
   font-size: var(--txt-peq);
 }
@@ -1068,7 +1074,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
   .cartao-flutuante { position: static; margin-top: var(--e4); animation: none; }
   .cartao-flutuante-alto { display: none; }
 
-  .regua-degrau { grid-template-columns: 74px 1fr auto; gap: var(--e2); padding: 9px 10px; }
+  .regua-degrau { gap: var(--e2); padding: 9px 10px; }
 
   /* Alvo de toque confortavel. */
   .botao { padding: 11px 18px; }
@@ -1083,7 +1089,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
   .heroi h1 { font-size: 2.05rem; }
   .busca-principal { flex-direction: column; }
   .busca-principal .botao { width: 100%; }
-  .regua-degrau { grid-template-columns: 1fr auto; }
+  .regua { grid-template-columns: 1fr auto; }
   .regua-degrau .regua-barra { display: none; }
 }
 

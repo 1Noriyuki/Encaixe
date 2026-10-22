@@ -121,9 +121,14 @@ function topo(usuario, naoLidas, caminho) {
   }
 
   // `aria-current` faz a pagina atual ser anunciada por leitor de tela; a
-  // cor sozinha nao cumpre esse papel.
+  // cor sozinha nao cumpre esse papel. So o link mais especifico fica ativo:
+  // '/prestador' tambem e prefixo de '/prestador/perfil', e o Painel acendia
+  // junto com a aba da pagina.
+  const casaCom = (href) => caminho === href || caminho.startsWith(`${href}/`);
+  const atual = links.map(([href]) => href).filter(casaCom)
+    .sort((a, b) => b.length - a.length)[0];
   const navegacao = juntar(links.map(([href, texto]) => {
-    const aqui = caminho === href || caminho.startsWith(`${href}/`);
+    const aqui = href === atual;
     return html`<a href="${href}"${aqui ? cru(' aria-current="page"') : cru('')}>${texto}</a>`;
   }));
 
