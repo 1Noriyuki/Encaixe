@@ -18,7 +18,7 @@
 | Item | Situação |
 |---|---|
 | Mapa de Specs | **Aprovado** (v1.0.0, etapa 11), na ordem original |
-| SPEC-001 Fundação | **Aprovada** (v1.0.0, etapa 11); v1.1.0 com as decisões da etapa 22. Falta a conferência do código (Trilha A) |
+| SPEC-001 Fundação | **Concluída** (v1.2.0, etapa 28): aprovada na etapa 11, decisões na 22, código conferido e com teste para todos os CA, INV e RNF. Issues #80 e #9 fechadas |
 | SPEC-002 Cadastro e autenticação | **Aprovada**; v1.2.0 com as decisões das OPEN-12/202/203 (etapa 12) e OPEN-01/02/210 (etapa 14). **Código conferido e corrigido** (etapa 15): CA-01 a CA-12 com teste |
 | SPEC-003 Autorização por perfil e titularidade | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md); questões da §13 seguem abertas |
 | SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
@@ -28,7 +28,7 @@
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23); canal de contato definido na etapa 25 |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 233/233 na etapa 27 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 235/235 na etapa 28 |
 | Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.9; histórico das alterações nas etapas 7, 12, 14, 22, 24 e 25 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
@@ -579,3 +579,23 @@
   rótulo tinha largura fixa e "a partir de 4 h antes" invadia a barra; agora a coluna se ajusta ao rótulo mais longo
   (subgrid) e as barras seguem alinhadas.
 - **Verificação:** `npm test`: 233/233; régua conferida em 1280 px e 600 px.
+
+### Etapa 28 — Conferência final da SPEC-001 e fechamento das issues #80 e #9 · 2026-10-22
+
+- **Pedido (Enzo):** ver se alguma issue podia ser fechada e, sendo o caso da SPEC-001, completar a conferência.
+- **Por que nada fechava:** nenhum PR usou `Closes #N`, e o critério combinado (etapa 26) é a Definition of Done
+  inteira da Spec. Das 48 issues abertas, só a #80 (SPEC-001) e a #9 (T-07) estavam perto: as demais dependem de
+  Spec ainda não aprovada (rascunhos da etapa 27), não escrita, ou de conferência pendente (SPEC-003 a 005).
+- **Conferência da seção 12 da SPEC-001:** 13 dos 14 testes existiam. Lendo cada um contra o critério:
+  - INV-001, CA-05 e RNF-07 já tinham cobertura completa em testes vizinhos (`T-PARAM-03b`, `T-PERFIL-02`,
+    `T-AUDIT-03b`), agora apontados na própria Spec;
+  - **faltava o `T-DOMINIO-01`** (INV-006). Escrito: o domínio só importa o próprio domínio, e só o relógio
+    injetável lê o agora. Verificado que ele falha com um import de `infra` e com um `Date.now()` injetados;
+  - **o `T-ESTADO-03` era fraco para o CA-11:** só lia o `CHECK` no esquema. Entrou o `T-ESTADO-03b`, que grava
+    estado inexistente nas quatro entidades e exige a recusa do próprio SQLite.
+- **Definition of Done:** CA-01 a 11, INV-001 a 007 e RNF-01/07/08/10 com teste; correções da OPEN-20 feitas
+  (P-07 em 0,5 h; P-12 e P-16 divididas). Divergência residual conhecida, fora do escopo da SPEC-001: agendamentos
+  confirmados antes do #124 não têm o prazo da P-17 gravado e releem o valor atual (registrado na etapa 27; é da
+  SPEC-020).
+- **Documentos:** SPEC-001 v1.2.0 (concluída, com a tabela de evidência), `tasks.md` T-07 ✅.
+- **Verificação:** `npm test`: 235/235.

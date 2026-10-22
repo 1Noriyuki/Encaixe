@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
-| Data | 2026-10-20 |
-| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões de 2026-10-20 sobre as OPEN-05, 06, 08, 15, 20, 101 a 105 (spec v0.1.7, registro etapa 22). Nenhuma OPEN desta Spec segue aberta |
+| Versão | 1.2.0 |
+| Data | 2026-10-22 |
+| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões de 2026-10-20 sobre as OPEN-05, 06, 08, 15, 20, 101 a 105 (spec v0.1.7, registro etapa 22). Nenhuma OPEN desta Spec segue aberta **Concluída** em 2026-10-22 (v1.2.0, registro etapa 28): código conferido, todos os CA, INV e RNF com teste; evidência na seção 12 |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 1 de 29 |
 | Baseline | `docs/spec.md` v0.1.7 · `docs/plan.md` v1.0.0 · ADR-001, ADR-002 |
 
@@ -302,7 +302,7 @@ persistência física já tem decisão em ADR-002 e plan §6. Nenhuma rota HTTP 
 
 ## 12. Casos de teste derivados
 
-Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <comportamento>`). Os testes não são implementados nesta etapa.
+Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <comportamento>`).
 
 | Teste | Cobre |
 |---|---|
@@ -320,6 +320,19 @@ Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <compor
 | `T-AUDIT-04 \| RNF-08: instantes de auditoria e vigencia gravados em UTC` | INV-005, RNF-08 |
 | `T-ESTADO-03 \| INV-13: banco rejeita estado inexistente` | CA-11, INV-007 |
 | `T-DOMINIO-01 \| plan §2: modulos de dominio nao importam I/O nem relogio real` | INV-006 |
+
+
+**Evidência (etapa 28, 2026-10-22).** Todos os testes acima existem e passam. Alguns critérios têm cobertura
+complementar em outro teste:
+
+| Critério | Onde está a cobertura completa |
+|---|---|
+| INV-001 (limite aceito e um passo além recusado, para **cada** parâmetro com faixa) | `T-PARAM-03b`, que percorre o catálogo inteiro; o `T-PARAM-03` cobre só a P-03 |
+| CA-05 (valor do perfil prevalece; fora de 5 a 60 é recusado) | `T-PARAM-05` (nasce com o padrão vigente, não retroage), `T-PERFIL-01` e `T-PERFIL-02` |
+| RNF-07 (requisições diferentes não compartilham correlação) | `T-AUDIT-03b` |
+| CA-11, INV-007 (gravação direta rejeitada pelo banco) | `T-ESTADO-03b` grava estado inexistente nas quatro entidades; o `T-ESTADO-03` só confere o `CHECK` no esquema |
+| INV-006 | `T-DOMINIO-01`: só imports do próprio domínio, e nenhum módulo além do relógio injetável (`tempo.js`) lê o agora |
+| RNF-10 (alterar não exige reinício) | `T-PARAM-02`: a leitura seguinte já devolve o novo valor |
 
 ## 13. Questões em aberto
 
