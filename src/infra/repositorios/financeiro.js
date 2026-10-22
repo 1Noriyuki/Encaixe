@@ -22,6 +22,7 @@ export function porAgendamento(agendamentoId) {
   return um('SELECT * FROM lancamento_comissao WHERE agendamento_id = ?', agendamentoId);
 }
 
+/** So persiste: a maquina e a auditoria ficam em aplicacao/comissao.js. */
 export function atualizarEstado(agendamentoId, estado) {
   executar('UPDATE lancamento_comissao SET estado = ? WHERE agendamento_id = ?', estado, agendamentoId);
 }

@@ -73,6 +73,14 @@ export const ESTADOS_DISPUTA = {
   RESOLVIDA: [],
 };
 
+// ------------------------------------------- lancamento de comissao (SPEC-001)
+
+export const ESTADOS_COMISSAO = {
+  EFETIVADO: ['RETIDO'],
+  RETIDO: ['EFETIVADO', 'ESTORNADO'],
+  ESTORNADO: [],
+};
+
 // ------------------------------------------------------------------ helpers
 
 const MAQUINAS = {
@@ -80,6 +88,7 @@ const MAQUINAS = {
   horario: ESTADOS_HORARIO,
   conta: ESTADOS_CONTA,
   disputa: ESTADOS_DISPUTA,
+  comissao: ESTADOS_COMISSAO,
 };
 
 export function transicoesDe(maquina, estado) {

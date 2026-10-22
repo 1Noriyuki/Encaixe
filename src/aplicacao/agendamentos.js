@@ -573,7 +573,7 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
     horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
   }
 
-  const lancamento = apurarComissao(ag, agora);
+  const lancamento = apurarComissao(ag, agora, atorId);
 
   // +1 para os dois lados: atendimento concluido sem incidente (RN-23).
   for (const id of [ag.cliente_id, ag.prestador_id]) {
@@ -613,13 +613,13 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
 }
 
 /** RN-14 a RN-16 - lancamento de comissao sobre o valor final travado. */
-function apurarComissao(ag, agora) {
+function apurarComissao(ag, agora, atorId) {
   const existente = financeiroRepo.porAgendamento(ag.id);
   if (existente) return existente;
 
   const calculo = calcularComissao(ag.valor_travado, ag.percentual_comissao);
 
-  financeiroRepo.criarLancamento({
+  const lancamentoId = financeiroRepo.criarLancamento({
     agendamento_id: ag.id,
     valor_bruto: calculo.valorBruto,
     percentual_aplicado: calculo.percentualAplicado,
@@ -630,9 +630,11 @@ function apurarComissao(ag, agora) {
     criado_em: agora,
   });
 
+  // RF-084 / §9.7.1: o nascimento EFETIVADO abre a trilha do proprio lancamento,
+  // com o ator que concluiu (null so na conclusao automatica).
   auditoria.registrar({
-    atorId: null, acao: 'COMISSAO_APURADA', entidade: 'agendamento', entidadeId: ag.id,
-    detalhe: calculo,
+    atorId, acao: 'COMISSAO_APURADA', entidade: 'comissao', entidadeId: lancamentoId,
+    de: null, para: 'EFETIVADO', detalhe: { agendamentoId: ag.id, ...calculo },
   });
 
   return financeiroRepo.porAgendamento(ag.id);
