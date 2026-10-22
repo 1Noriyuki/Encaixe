@@ -418,6 +418,9 @@ img { max-width: 100%; }
   transition: transform var(--medio), box-shadow var(--medio), border-color var(--medio);
 }
 .cartao + .cartao { margin-top: var(--e3); }
+/* Na grade o espaco vem do gap; a margem acima empurrava o 2o e o 3o cartao da
+   linha 12 px para baixo do primeiro. */
+.grade > .cartao + .cartao { margin-top: 0; }
 .cartao > :first-child { margin-top: 0; }
 .cartao > :last-child { margin-bottom: 0; }
 .cartao-vivo:hover {
