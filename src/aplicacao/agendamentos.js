@@ -343,7 +343,7 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
 
     const antecedencia = minutosEntre(agora, ag.inicio);
     const faixa = faixaDeCancelamento(antecedencia, p);
-    const penalidade = penalidadeDeCancelamento(faixa, papel); // lanca se ja comecou
+    const penalidade = penalidadeDeCancelamento(faixa, papel, p); // lanca se ja comecou
 
     const novoEstado = papel === 'CLIENTE' ? 'CANCELADO_CLIENTE' : 'CANCELADO_PRESTADOR';
     assegurarTransicao('agendamento', ag.estado, novoEstado);
@@ -442,10 +442,11 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
       horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
     }
 
+    const deltaNoShow = p.delta_reputacao_noshow ?? DELTA_NO_SHOW;
     reputacao.aplicarEvento({
       usuarioId: alvoId,
       tipo: TIPO_EVENTO.NO_SHOW,
-      delta: DELTA_NO_SHOW,
+      delta: deltaNoShow,
       origemTipo: 'agendamento',
       origemId: ag.id,
     });
@@ -453,7 +454,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     auditoria.registrar({
       atorId: usuarioId, acao: 'NO_SHOW_REGISTRADO', entidade: 'agendamento',
       entidadeId: ag.id, de: ag.estado, para: novoEstado,
-      detalhe: { acusador: papel, alvoId, delta: DELTA_NO_SHOW, regra: 'RN-20' },
+      detalhe: { acusador: papel, alvoId, delta: deltaNoShow, regra: 'RN-20' },
     });
 
     const prazo = prazoDisputa(ag.inicio, ag.duracao_min, p);
@@ -462,7 +463,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
       titulo: 'Registraram sua ausência em um atendimento',
       agendamentoId: ag.id,
       mensagem: `Foi registrada sua ausência no atendimento de ${formatarDataHora(ag.inicio)}. `
-        + `Sua reputação caiu ${Math.abs(DELTA_NO_SHOW)} pontos. `
+        + `Sua reputação caiu ${Math.abs(deltaNoShow)} pontos. `
         + `Se você discorda, abra uma disputa até ${formatarDataHora(prazo)}.`,
     });
 
@@ -580,12 +581,13 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
 
   const lancamento = apurarComissao(ag, agora, atorId);
 
-  // +1 para os dois lados: atendimento concluido sem incidente (RN-23).
+  // P-22 vigente ao concluir, congelado em cada evento do livro-razão (RN-23).
+  const deltaConclusao = params().delta_reputacao_conclusao ?? DELTA_CONCLUSAO;
   for (const id of [ag.cliente_id, ag.prestador_id]) {
     reputacao.aplicarEvento({
       usuarioId: id,
       tipo: TIPO_EVENTO.CONCLUSAO,
-      delta: DELTA_CONCLUSAO,
+      delta: deltaConclusao,
       origemTipo: 'agendamento',
       origemId: ag.id,
     });

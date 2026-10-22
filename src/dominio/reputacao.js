@@ -27,12 +27,12 @@ export const DELTA_DISPUTA_CONTRA = -8;
 /** RN-23 - tabela de deltas por nota recebida. */
 const DELTA_POR_NOTA = { 5: 3, 4: 1, 3: 0, 2: -2, 1: -4 };
 
-export function deltaPorAvaliacao(nota) {
+export function deltaPorAvaliacao(nota, params = {}) {
   const n = Number(nota);
   if (!(n in DELTA_POR_NOTA)) {
     throw new RangeError(`Nota fora da escala 1-5: ${nota}`);
   }
-  return DELTA_POR_NOTA[n];
+  return params[`delta_reputacao_avaliacao_${n}`] ?? DELTA_POR_NOTA[n];
 }
 
 /** Tipos de evento que contam como ocorrencia negativa do prestador (RN-21). */

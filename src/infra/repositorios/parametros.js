@@ -6,6 +6,7 @@
 
 import { varios, um, executar, transacao } from '../db/conexao.js';
 import { PARAMETROS, normalizarParametro, comPadroes } from '../../dominio/parametros.js';
+import { ErroDeRegra } from '../../dominio/erros.js';
 import { agoraIso } from '../../dominio/tempo.js';
 
 /** Todos os parametros globais atuais, com os padroes do catalogo. */
@@ -60,6 +61,20 @@ export function lerGlobalEm(chave, instante = agoraIso()) {
 export function salvarGlobal(chave, valorBruto, atorId, instante = agoraIso()) {
   const valor = normalizarParametro(chave, valorBruto);
   assegurarUtc(instante);
+
+  // RN-19 / P-22: a penalidade configurada do prestador nunca pode
+  // ser menor em magnitude que a do cliente na mesma faixa.
+  if (chave.startsWith('delta_reputacao_cancelamento_')) {
+    const hipotetico = { ...carregarGlobais(), [chave]: valor };
+    for (const faixa of ['livre', 'parcial', 'total']) {
+      const cliente = hipotetico[`delta_reputacao_cancelamento_cliente_${faixa}`];
+      const prestador = hipotetico[`delta_reputacao_cancelamento_prestador_${faixa}`];
+      if (Math.abs(prestador) < Math.abs(cliente)) {
+        throw new ErroDeRegra('RN-19',
+          `P-22: penalidade do prestador não pode ser inferior à do cliente na faixa ${faixa}.`);
+      }
+    }
+  }
 
   return transacao(() => {
     executar(
