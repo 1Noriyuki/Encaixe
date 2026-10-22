@@ -55,7 +55,10 @@ export function calcularReputacao(eventos, { inicial, janelaDias, agora }) {
   const limiteMin = janelaDias * 24 * 60;
   const soma = (eventos ?? [])
     .filter((e) => !e.revertido_em)
-    .filter((e) => minutosEntre(e.criado_em, agora) <= limiteMin)
+    .filter((e) => {
+      const idadeMin = minutosEntre(e.criado_em, agora);
+      return idadeMin >= 0 && idadeMin <= limiteMin;
+    })
     .reduce((acc, e) => acc + Number(e.delta), 0);
 
   return limitar(inicial + soma);
