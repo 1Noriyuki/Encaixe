@@ -8,22 +8,26 @@
 
 import { ErroDeRegra } from './erros.js';
 
-/** P-22 — deltas inteiros configuráveis; mesmo sinal e faixa de metade ao dobro. */
+/**
+ * P-22 — deltas inteiros configuráveis; mesmo sinal e faixa de metade ao dobro.
+ * Na spec é um parâmetro só (a tabela da RN-23), então todos levam o id P-22 e se
+ * distinguem pelo rótulo.
+ */
 const DELTAS_REPUTACAO = {
-  delta_reputacao_conclusao: 1,
-  delta_reputacao_avaliacao_5: 3,
-  delta_reputacao_avaliacao_4: 1,
-  delta_reputacao_avaliacao_3: 0,
-  delta_reputacao_avaliacao_2: -2,
-  delta_reputacao_avaliacao_1: -4,
-  delta_reputacao_cancelamento_cliente_livre: 0,
-  delta_reputacao_cancelamento_cliente_parcial: -3,
-  delta_reputacao_cancelamento_cliente_total: -6,
-  delta_reputacao_cancelamento_prestador_livre: -1,
-  delta_reputacao_cancelamento_prestador_parcial: -5,
-  delta_reputacao_cancelamento_prestador_total: -10,
-  delta_reputacao_noshow: -12,
-  delta_reputacao_disputa_contra: -8,
+  delta_reputacao_conclusao: [1, 'atendimento concluído'],
+  delta_reputacao_avaliacao_5: [3, 'avaliação nota 5'],
+  delta_reputacao_avaliacao_4: [1, 'avaliação nota 4'],
+  delta_reputacao_avaliacao_3: [0, 'avaliação nota 3'],
+  delta_reputacao_avaliacao_2: [-2, 'avaliação nota 2'],
+  delta_reputacao_avaliacao_1: [-4, 'avaliação nota 1'],
+  delta_reputacao_cancelamento_cliente_livre: [0, 'cliente cancela na faixa livre'],
+  delta_reputacao_cancelamento_cliente_parcial: [-3, 'cliente cancela na faixa parcial'],
+  delta_reputacao_cancelamento_cliente_total: [-6, 'cliente cancela na faixa total'],
+  delta_reputacao_cancelamento_prestador_livre: [-1, 'prestador cancela na faixa livre'],
+  delta_reputacao_cancelamento_prestador_parcial: [-5, 'prestador cancela na faixa parcial'],
+  delta_reputacao_cancelamento_prestador_total: [-10, 'prestador cancela na faixa total'],
+  delta_reputacao_noshow: [-12, 'no-show'],
+  delta_reputacao_disputa_contra: [-8, 'disputa decidida contra'],
 };
 
 export const PARAMETROS = {
@@ -138,14 +142,14 @@ export const PARAMETROS = {
     padrao: 20, min: 1, max: 200, unidade: 'buscas',
     ajuda: 'Trava de custo do provedor de LLM.',
   },
-  ...Object.fromEntries(Object.entries(DELTAS_REPUTACAO).map(([chave, padrao]) => {
+  ...Object.fromEntries(Object.entries(DELTAS_REPUTACAO).map(([chave, [padrao, evento]]) => {
     const min = padrao < 0 ? 2 * padrao : (padrao > 0 ? Math.ceil(padrao / 2) : 0);
     const max = padrao < 0 ? Math.floor(padrao / 2) : (padrao > 0 ? 2 * padrao : 0);
     return [chave, {
-      id: `P-22-${chave.slice('delta_reputacao_'.length)}`,
-      rotulo: `Delta de reputação: ${chave.slice('delta_reputacao_'.length)}`,
+      id: 'P-22',
+      rotulo: `Reputação: ${evento}`,
       padrao, min, max, unidade: 'pts',
-      ajuda: 'Delta inteiro: mesmo sinal e de metade ao dobro do padrão aprovado.',
+      ajuda: 'Pontos somados à reputação (negativo tira). Mesmo sinal do padrão, de metade ao dobro.',
     }];
   })),
 };
