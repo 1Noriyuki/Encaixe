@@ -68,6 +68,8 @@ export function cadastrar({ nome, email, senha, perfil, nomeExibicao, telefone, 
         usuario_id: id,
         nome_exibicao: String(nomeExibicao ?? nome).trim(),
         regiao_id: regiaoId ? Number(regiaoId) : null,
+        janela_confirmacao_min: p.janela_confirmacao_min,
+        politica_expiracao: p.politica_expiracao,
       });
     } else {
       usuarios.criarPerfilCliente({

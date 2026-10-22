@@ -42,7 +42,9 @@ export function executar() {
 
   // RF-060 - conclusao automatica sem contestacao.
   for (const ag of agendamentosRepo.confirmadosComAtendimentoEncerrado(agora)) {
-    if (antesDe(agora, prazoAutoConclusao(ag.inicio, ag.duracao_min, p))) continue;
+    // Registros históricos anteriores à migração usam a regra de fallback.
+    const prazo = ag.autoconclusao_prazo_em ?? prazoAutoConclusao(ag.inicio, ag.duracao_min, p);
+    if (antesDe(agora, prazo)) continue;
     const r = seguro(() => agendamentos.concluirAutomaticamente(ag), 'autoconclusao', ag.id);
     if (r) resumo.concluidosAutomaticamente += 1;
   }

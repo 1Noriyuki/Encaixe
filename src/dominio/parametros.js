@@ -59,7 +59,7 @@ export const PARAMETROS = {
   },
   cancelamento_total_h: {
     id: 'P-07', rotulo: 'Penalidade total abaixo de (Y)',
-    padrao: 2, min: 1, max: 6, unidade: 'h',
+    padrao: 2, min: 0.5, max: 6, unidade: 'h', decimal: true,
     ajuda: 'Abaixo desta antecedência, a penalidade é a máxima.',
   },
   reputacao_inicial: {

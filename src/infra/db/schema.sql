@@ -152,11 +152,27 @@ CREATE TABLE IF NOT EXISTS horario_vago (
   preco_base_snapshot INTEGER NOT NULL CHECK (preco_base_snapshot > 0),
   preco_minimo_snapshot INTEGER NOT NULL DEFAULT 0,
   estado              TEXT NOT NULL CHECK (estado IN
-                        ('RASCUNHO','PUBLICADO','BLOQUEADO','OCUPADO','ENCERRADO','CANCELADO','EXPIRADO')),
+                        ('PUBLICADO','BLOQUEADO','OCUPADO','ENCERRADO','CANCELADO','EXPIRADO')),
   criado_em           TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_horario_busca   ON horario_vago (estado, inicio);
 CREATE INDEX IF NOT EXISTS ix_horario_agenda  ON horario_vago (prestador_id, inicio);
+
+-- SPEC-001 INV-13: bancos anteriores podem manter RASCUNHO no CHECK legado.
+-- Os gatilhos impedem novas insercoes ou transicoes a esse estado sem reconstruir
+-- uma tabela com referencias historicas. Dados existentes sao preservados.
+CREATE TRIGGER IF NOT EXISTS horario_sem_rascunho_insert
+BEFORE INSERT ON horario_vago
+WHEN NEW.estado = 'RASCUNHO'
+BEGIN
+  SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
+END;
+CREATE TRIGGER IF NOT EXISTS horario_sem_rascunho_update
+BEFORE UPDATE OF estado ON horario_vago
+WHEN NEW.estado = 'RASCUNHO'
+BEGIN
+  SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
+END;
 
 -- ----------------------------------------------------------- transacao
 CREATE TABLE IF NOT EXISTS agendamento (
@@ -173,6 +189,7 @@ CREATE TABLE IF NOT EXISTS agendamento (
   prazo_confirmacao_em        TEXT NOT NULL,
   criado_em                   TEXT NOT NULL,
   confirmado_em               TEXT,
+  autoconclusao_prazo_em       TEXT,
   encerrado_em                TEXT,
   estado_cobranca             TEXT NOT NULL DEFAULT 'PENDENTE'
                                 CHECK (estado_cobranca IN ('PENDENTE','PAGO_PRESENCIAL','NAO_PAGO')),

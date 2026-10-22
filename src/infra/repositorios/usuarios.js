@@ -55,11 +55,15 @@ export function atualizarSenha(id, senhaHash) {
 
 // ------------------------------------------------------------------ perfis
 
-export function criarPerfilPrestador({ usuario_id, nome_exibicao, descricao = '', regiao_id = null }) {
+export function criarPerfilPrestador({
+  usuario_id, nome_exibicao, descricao = '', regiao_id = null,
+  janela_confirmacao_min, politica_expiracao,
+}) {
   executar(
-    `INSERT INTO perfil_prestador (usuario_id, nome_exibicao, descricao, regiao_id)
-     VALUES (?, ?, ?, ?)`,
-    usuario_id, nome_exibicao, descricao, regiao_id,
+    `INSERT INTO perfil_prestador
+       (usuario_id, nome_exibicao, descricao, regiao_id, janela_confirmacao_min, politica_expiracao)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    usuario_id, nome_exibicao, descricao, regiao_id, janela_confirmacao_min, politica_expiracao,
   );
 }
 
