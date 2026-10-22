@@ -686,6 +686,9 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
   text-align: right;
 }
 .vaga-lado form { width: 100%; }
+/* .preco e flex: text-align nao o move. Sem desconto a linha tem so o valor e
+   ficava encostada a esquerda, fora da simetria dos cartoes com desconto. */
+.vaga-lado .preco { justify-content: flex-end; }
 
 /* ==============================================================
    13. AGENDA DO PRESTADOR
@@ -1070,6 +1073,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
     padding-top: var(--e3); border-top: 1px solid var(--borda);
   }
   .vaga-lado > * { flex: 1 1 auto; }
+  .vaga-lado .preco { justify-content: flex-start; }
   .vaga-lado form, .vaga-lado > .botao { max-width: 210px; }
 
   .heroi-numeros { gap: var(--e4) var(--e5); }
