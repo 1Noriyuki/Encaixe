@@ -23,11 +23,12 @@
 | SPEC-003 Autorização por perfil e titularidade | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md); questões da §13 seguem abertas |
 | SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
 | SPEC-005 Aprovação e reprovação de prestador | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md); questões da §13 seguem abertas |
-| Próxima etapa | Conferir o código contra as SPEC-003, 004 e 005 (Trilha C, 2dart5). Próxima Spec a gerar: SPEC-006 (Trilha A) |
+| SPEC-006 a 009, 011, 020, 021, 024 e 026 | **Rascunhos, não aprovados** (etapa 27). Na `main` pelos PRs #122, #126 e #127; o merge não aprova. Aprovação pela equipe, uma Spec por vez |
+| Próxima etapa | Conferir o código contra as SPEC-003, 004 e 005 (Trilha C, 2dart5). Trilha A: levar a SPEC-006 (rascunho) à aprovação |
 | Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23); canal de contato definido na etapa 25 |
 | Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
 | Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 208/208 na etapa 25 |
+| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 233/233 na etapa 27 |
 | Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.9; histórico das alterações nas etapas 7, 12, 14, 22, 24 e 25 |
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
@@ -553,3 +554,28 @@
 - **Próxima Spec:** rascunho completo da SPEC-006 preparado na branch `gostislavs-spec006-rascunho` (base `main`) com 14 seções; aguarda aprovação explícita de Enzo/equipe e questões da §13. Nenhuma regra de reputação foi modificada por esse rascunho.
 - **Ainda pendente:** P-22 e classificação/notificação aguardam SPEC-006; máquina/auditoria financeira aguardam fluxo de SPEC-020/022/023; P-17 congelada no nascimento da obrigação exige alinhar SPEC-020. Não foram tomadas decisões implícitas.
 - **Verificação:** commits enviados ao GitHub; resultados de CI da nova branch devem ser anexados após a execução. Não confundir testes escritos com testes executados.
+
+### Etapa 27 — Revisão e merge dos PRs da Trilha A (#121 a #129) · 2026-10-22
+
+- **Pedido (Enzo):** revisar e mergear os nove PRs abertos por gostislavs.
+- **Revisão:** os nove entram na `main` sem conflito e com a suíte verde a cada passo. Os PRs de código cumprem os
+  itens da etapa 22: #121 (itens 1–4 e 8), #125 (item 5, P-22), #123 (item 6, máquina da comissão) e #124 (item 7,
+  P-17). O #128 (total retido fora do período, RF-062) e o #129 (evento de reputação atômico, alerta aos admins,
+  RF-057/INV-08) corrigem divergências contra a baseline.
+- **Correção no #123, aprovada por Enzo antes do merge:** toda transição da comissão era auditada com ator nulo, que
+  pela §9.2 (OPEN-104) é o sistema. Agora `aplicacao/comissao.js` exige o ator: a retenção leva quem abriu a
+  disputa, e a liberação e o estorno levam o admin. A máquina e a auditoria saíram do repositório, e a apuração passou
+  a ter um único registro de nascimento (`COMISSAO_APURADA`, na trilha da comissão). Testes `T-COMISSAO-ESTADO-07`
+  e `08`. Com isso o #125 conflitou em `aplicarDesfecho`; resolvido mantendo as duas mudanças.
+- **Specs:** os PRs #122, #126 e #127 trazem rascunhos das SPEC-006 a 009, 011, 020, 021, 024 e 026. Entraram como
+  **não aprovados**: o merge não substitui a aprovação, que segue uma Spec por vez, começando pela SPEC-006. Nenhum
+  dos rascunhos tem layout, embora a SPEC-008 (simulador da régua) tenha tela.
+- **Ressalvas registradas, sem bloqueio:** a etapa 26 dizia que P-22, comissão e P-17 aguardavam Specs, e os PRs
+  #123–#125 as implementaram com base na etapa 22; esta etapa substitui aquele texto. Os agendamentos anteriores ao
+  #124 ficam com o prazo de autoconclusão nulo e releem a P-17 atual. Os IDs `T-COMISSAO-06`, `T-PRECO-06` e
+  `T-PRECO-07` já estavam duplicados antes destes PRs.
+- **Ajustes visuais no mesmo dia:** a navegação marcava "Painel" junto com a aba atual, porque `/prestador` é prefixo
+  de todas as rotas do prestador; agora só o link mais específico fica ativo. Na régua de desconto, a coluna de
+  rótulo tinha largura fixa e "a partir de 4 h antes" invadia a barra; agora a coluna se ajusta ao rótulo mais longo
+  (subgrid) e as barras seguem alinhadas.
+- **Verificação:** `npm test`: 233/233; régua conferida em 1280 px e 600 px.

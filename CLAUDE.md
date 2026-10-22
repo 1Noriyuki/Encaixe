@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 208 testes, ~5 s
+npm test             # suíte completa (node --test), 233 testes, ~7 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -89,10 +89,10 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
   `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões (gerado
   com a lib `docx` fora do repositório, porque o projeto não tem dependências).
-- **Estado em 2026-10-20 (etapa 25):** spec v0.1.9; SPEC-001 a 005 aprovadas; SPEC-002 conferida,
-  sem OPEN e sem pendência (o canal da conta suspensa é o e-mail `CONTATO_SUPORTE`). A próxima Spec a
-  gerar é a SPEC-006. Pendentes: as oito correções de código da SPEC-001 (Gustavo, lista em
-  `docs/specs/propostas-decisoes-trilha-a.md`) e a conferência do código contra as SPEC-003 a 005 (2dart5).
+- **Estado em 2026-10-22 (etapa 27):** spec v0.1.9; SPEC-001 a 005 aprovadas; SPEC-002 sem pendência.
+  As correções da Trilha A (PRs #121 a #129) estão na `main`. As SPEC-006 a 009, 011, 020, 021, 024 e 026 estão
+  na `main` como **rascunhos não aprovados**; a próxima a aprovar é a SPEC-006. Pendente: a conferência do
+  código contra as SPEC-003 a 005 (2dart5).
 
 ## Arquitetura
 
