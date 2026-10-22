@@ -33,7 +33,7 @@
 | Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
 | Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
 | Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 20) |
-| Documento de passagem | `docs/proximos-passos.docx` (etapa 13) |
+| Documento de passagem | `docs/proximos-passos.docx`, reescrito com o estado de 2026-10-22 (etapa 28) |
 
 ### Decisões humanas pendentes
 
@@ -598,4 +598,6 @@
   confirmados antes do #124 não têm o prazo da P-17 gravado e releem o valor atual (registrado na etapa 27; é da
   SPEC-020).
 - **Documentos:** SPEC-001 v1.2.0 (concluída, com a tabela de evidência), `tasks.md` T-07 ✅.
+- **Decisão (Enzo):** a conferência das SPEC-003 a 005 continua com o 2dart5; as issues #82 a #84 ficam abertas.
+- **Encerramento do dia:** `docs/proximos-passos.docx` reescrito (estado, próximos passos por pessoa e o que mudou nas etapas 25 a 28) e CLAUDE.md atualizado.
 - **Verificação:** `npm test`: 235/235.

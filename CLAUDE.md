@@ -83,17 +83,21 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
   | Trilha | Responsável | Specs abertas |
   |---|---|---|
-  | A: domínio e financeiro | gostislavs | SPEC-001, 006–009, 011, 020, 021, 024, 026 |
+  | A: domínio e financeiro | gostislavs | SPEC-006–009, 011, 020, 021, 024, 026 |
   | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
   | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
 
-  `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões (gerado
-  com a lib `docx` fora do repositório, porque o projeto não tem dependências).
-- **Estado em 2026-10-22 (etapa 28):** spec v0.1.9; SPEC-001 a 005 aprovadas; SPEC-001 e SPEC-002 concluídas
-  (código conferido, issues #80 e #9 fechadas).
-  As correções da Trilha A (PRs #121 a #129) estão na `main`. As SPEC-006 a 009, 011, 020, 021, 024 e 026 estão
-  na `main` como **rascunhos não aprovados**; a próxima a aprovar é a SPEC-006. Pendente: a conferência do
-  código contra as SPEC-003 a 005 (2dart5).
+  `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões. É gerado
+  com a lib `docx` instalada numa pasta temporária, nunca no projeto (ADR-001). Esta máquina não tem
+  pandoc, LibreOffice nem pdftoppm: para conferir o resultado, exporte para PDF pelo Word via COM
+  (PowerShell) e renderize as páginas com a API `Windows.Data.Pdf`.
+- **Fechar issue:** o GitHub só fecha no merge se o PR disser `Closes #N`, e o critério é a Definition of
+  Done inteira da Spec, não a aprovação do texto. Modelo: a seção 12 da SPEC-001, com tabela de evidência
+  dizendo qual teste cobre cada CA, INV e RNF. **Rascunho mergeado não é Spec aprovada.**
+- **Estado em 2026-10-22 (etapa 28):** spec v0.1.9. SPEC-001 e 002 concluídas; 003 a 005 aprovadas, com
+  a conferência do código pendente (2dart5, que o Enzo decidiu não assumir). SPEC-006 a 009, 011, 020,
+  021, 024 e 026 estão na `main` como **rascunhos não aprovados**; a próxima a aprovar é a SPEC-006.
+  Issues: 61 fechadas, 46 abertas.
 
 ## Arquitetura
 
@@ -109,7 +113,10 @@ são recebe o tempo como parâmetro. É isso que torna as regras temporais test�
 
 Todo método de `aplicacao/` que muda estado segue a mesma ordem, e vale seguir ao adicionar um novo:
 autoriza → valida no domínio → `assegurarTransicao` na máquina de estados → grava em transação →
-registra auditoria e notifica.
+registra auditoria e notifica. Nessa ordem, a máquina e a auditoria ficam na aplicação, não no
+repositório. A auditoria leva o **ator real**: `atorId: null` significa "o sistema" (§9.2, OPEN-104) e
+só vale para rotina temporal. A comissão passa por `aplicacao/comissao.js`, cujo `transicionar()`
+exige o ator explícito.
 
 Cálculo que a tela precisa mostrar é composto na **aplicação**, não na view: `horarios.detalhe()`
 devolve o preço vigente *e* a projeção da régua (`projetarRegua`), e a interface só desenha. Se uma
@@ -161,6 +168,10 @@ o intervalo falhar.
   `vazio(texto, { titulo, acoes: [[href, rótulo]] })` — estado vazio sem ação é um beco.
 - **`grade-2/3/4` usam `minmax(min(Xpx, 100%), 1fr)`.** O `min()` não é enfeite: sem ele a coluna
   fica mais larga que a viewport em 320 px e a página inteira rola para o lado.
+- **Dentro de `.grade`, o espaço vem do `gap`.** Margem de irmão desalinha a linha: `.cartao + .cartao`
+  descia o 2º e o 3º cartão 12 px, e o último `.campo` (sem margem) descia o botão. Por isso existem
+  `.grade > .cartao + .cartao` e `.grade-campos`. Do mesmo jeito, `.preco` é flex: `text-align` não o
+  move, e quem alinha é `justify-content`.
 - **A Bricolage é mais larga que a fonte do sistema.** Texto novo pode quebrar mal em 320 px (a
   etiqueta do hero deixava "h" sozinho; resolvido com `&nbsp;`). Confira nessa largura.
 - **Chrome headless não desce abaixo de 500 px de janela**: um print com `--window-size=320` é só um
