@@ -579,7 +579,7 @@ async function buscar(ctx) {
         </div>
       </div>
 
-      <div class="grade grade-4">
+      <div class="grade grade-4 grade-campos">
         <div class="campo">
           <label for="categoriaId">Categoria</label>
           <select id="categoriaId" name="categoriaId">

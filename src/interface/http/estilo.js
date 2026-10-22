@@ -522,6 +522,9 @@ img { max-width: 100%; }
 }
 .campo .ajuda { font-size: var(--txt-mini); color: var(--texto-fraco); margin-top: 5px; }
 .campo-fim { display: flex; align-items: flex-end; }
+/* Grade de campos lado a lado: o espaco entre linhas ja vem do gap. Com a
+   margem do .campo, o ultimo (sem margem) descia 16 px abaixo dos outros. */
+.grade-campos > .campo { margin-bottom: 0; }
 
 input, select, textarea {
   width: 100%; padding: 10px 12px;
@@ -816,8 +819,10 @@ a.chip-neutro:hover { background: var(--superficie-3); color: var(--texto); }
   font-family: var(--fonte-mono); font-size: var(--txt-peq); font-weight: 700;
   color: var(--primaria); letter-spacing: .08em;
 }
+/* O traco fica sobre a borda de cima e comeca depois da curva do canto: em
+   top/left 0 ele nascia dentro do arredondamento e escapava do contorno. */
 .passo::after {
-  content: ''; position: absolute; top: 0; left: 0; height: 2px; width: 36px;
+  content: ''; position: absolute; top: -1px; left: var(--raio); height: 2px; width: 36px;
   background: linear-gradient(90deg, var(--primaria), transparent); border-radius: 2px;
 }
 .passo h3 { margin: 0 0 6px; font-size: var(--txt-md); }
