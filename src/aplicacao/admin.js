@@ -9,6 +9,7 @@ import * as catalogoRepo from '../infra/repositorios/catalogo.js';
 import * as interpretacoesRepo from '../infra/repositorios/interpretacoes.js';
 import * as social from '../infra/repositorios/social.js';
 import * as auditoria from '../infra/auditoria.js';
+import { transacao } from '../infra/db/conexao.js';
 import { assegurarPercentualValido } from '../dominio/comissao.js';
 import { agoraIso, adicionarDias } from '../dominio/tempo.js';
 import { params, salvarGlobal, listarGlobais } from './parametros.js';
@@ -42,7 +43,11 @@ export function metricas({ dias = 30, categoriaId = null, prestadorId = null } =
       categoriaId: categoriaId ? Number(categoriaId) : null,
       prestadorId: prestadorId ? Number(prestadorId) : null,
     }),
-    porCategoria: financeiroRepo.comissaoPorCategoria({ de, ate: agora }),
+    porCategoria: financeiroRepo.comissaoPorCategoria({
+      de, ate: agora,
+      categoriaId: categoriaId ? Number(categoriaId) : null,
+      prestadorId: prestadorId ? Number(prestadorId) : null,
+    }),
     categorias: catalogoRepo.listarCategorias(),
     prestadores: usuariosRepo.listarPorPerfil('PRESTADOR'),
   };
@@ -50,23 +55,29 @@ export function metricas({ dias = 30, categoriaId = null, prestadorId = null } =
 
 /** RF-080 / RF-081 - percentual de comissao por categoria, com vigencia futura. */
 export function ajustarComissao({ adminId, categoriaId, percentual }) {
-  const categoria = catalogoRepo.categoriaPorId(Number(categoriaId));
-  if (!categoria) throw new Error('Categoria não encontrada.');
-
   const novo = assegurarPercentualValido(Number(percentual));
-  catalogoRepo.atualizarComissaoCategoria(categoria.id, novo);
+  return transacao(() => {
+    const categoria = catalogoRepo.categoriaPorId(Number(categoriaId));
+    if (!categoria) throw new Error('Categoria não encontrada.');
+    if (categoria.percentual_comissao === novo) return categoria;
+    const vigenteDesde = agoraIso();
 
-  auditoria.registrar({
-    atorId: adminId,
-    acao: 'COMISSAO_CATEGORIA_ALTERADA',
-    entidade: 'categoria',
-    entidadeId: categoria.id,
-    de: String(categoria.percentual_comissao),
-    para: String(novo),
-    detalhe: { regra: 'RN-15', vigencia: 'agendamentos concluídos a partir de agora' },
+    catalogoRepo.atualizarComissaoCategoria(categoria.id, novo, vigenteDesde);
+    catalogoRepo.registrarHistoricoComissaoCategoria(
+      categoria.id, novo, vigenteDesde, adminId, 'ALTERACAO',
+    );
+    auditoria.registrar({
+      atorId: adminId,
+      acao: 'COMISSAO_CATEGORIA_ALTERADA',
+      entidade: 'categoria',
+      entidadeId: categoria.id,
+      de: String(categoria.percentual_comissao),
+      para: String(novo),
+      detalhe: { regra: 'RN-15', vigenteDesde, vigencia: 'conclusões posteriores' },
+    });
+
+    return catalogoRepo.categoriaPorId(categoria.id);
   });
-
-  return catalogoRepo.categoriaPorId(categoria.id);
 }
 
 /** RN-00 - alteracao de parametro global. */
