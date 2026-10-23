@@ -144,11 +144,15 @@ export function metricasPlataforma({ de = null, ate = null, categoriaId = null, 
 }
 
 /** Comissao por categoria, para a quebra do painel. */
-export function comissaoPorCategoria({ de = null, ate = null } = {}) {
+export function comissaoPorCategoria({
+  de = null, ate = null, categoriaId = null, prestadorId = null,
+} = {}) {
   const filtros = ["l.estado = 'EFETIVADO'"];
   const params = [];
   if (de) { filtros.push('l.criado_em >= ?'); params.push(de); }
   if (ate) { filtros.push('l.criado_em <= ?'); params.push(ate); }
+  if (categoriaId) { filtros.push('s.categoria_id = ?'); params.push(categoriaId); }
+  if (prestadorId) { filtros.push('a.prestador_id = ?'); params.push(prestadorId); }
 
   return varios(
     `SELECT c.id, c.nome, c.percentual_comissao,
