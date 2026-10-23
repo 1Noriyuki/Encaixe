@@ -601,3 +601,11 @@
 - **Decisão (Enzo):** a conferência das SPEC-003 a 005 continua com o 2dart5; as issues #82 a #84 ficam abertas.
 - **Encerramento do dia:** `docs/proximos-passos.docx` reescrito (estado, próximos passos por pessoa e o que mudou nas etapas 25 a 28) e CLAUDE.md atualizado.
 - **Verificação:** `npm test`: 235/235.
+
+### Etapa 30 — Consistência do catálogo, perfil e régua (Trilha A) · 2026-10-22
+
+- **Pedido (gostislavs):** avançar nas issues ainda abertas após a SPEC-001 concluída, preservando o SDD e as decisões já tomadas.
+- **PR #137 — SPEC-007/009:** `desativarServico()` desativava o registro antes de escrever a auditoria, sem transação; se a auditoria falhasse, o serviço ficava desativado sem rastreio. `salvarPerfilPrestador()` tinha a mesma lacuna e registrava sucesso para perfil inexistente. Corrigido com transações e checagem de existência, preservando os contratos atuais. Testes de rollback e ausência de falso sucesso.
+- **PR #138 — SPEC-008:** `normalizarFaixas()` usava `parseInt`, que aceitava entradas malformadas (`240abc` → 240, `20.5` → 20) e descartava linhas não numéricas sem erro. Agora somente linhas totalmente em branco são ignoradas; textos inválidos, campos incompletos e decimais são recusados por RF-018/RN-02, inclusive na simulação. Cinco testes novos.
+- **Limites:** nenhuma das SPEC-007/008/009 foi formalmente aprovada por esta etapa. As divergências de comportamento foram corrigidas contra a baseline vigente; questões OPEN-10/11/16 permanecem em aberto. Sem fechamento das issues #86/#87/#88 e correlatas antes da Definition of Done.
+- **Verificação:** consultar os resultados do GitHub Actions por commit de cada PR; não presumir que testes verdes isolados provam a integração futura após merges.
