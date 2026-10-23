@@ -7,7 +7,7 @@
  * evento - e reconstituivel a qualquer momento a partir do livro-razao.
  */
 
-import { minutosEntre } from './tempo.js';
+import { paraDate } from './tempo.js';
 
 export const TIPO_EVENTO = {
   CONCLUSAO: 'CONCLUSAO_SEM_INCIDENTE',
@@ -52,12 +52,15 @@ export const TIPOS_OCORRENCIA_NEGATIVA = [
  * @param {Date|string} opcoes.agora  instante de referencia
  */
 export function calcularReputacao(eventos, { inicial, janelaDias, agora }) {
-  const limiteMin = janelaDias * 24 * 60;
+  // Comparação em milissegundos: minutosEntre() arredonda para baixo e
+  // admitia eventos alguns segundos *fora* da janela P-20.
+  const agoraMs = paraDate(agora).getTime();
+  const inicioMs = agoraMs - janelaDias * 24 * 60 * 60 * 1000;
   const soma = (eventos ?? [])
     .filter((e) => !e.revertido_em)
     .filter((e) => {
-      const idadeMin = minutosEntre(e.criado_em, agora);
-      return idadeMin >= 0 && idadeMin <= limiteMin;
+      const eventoMs = paraDate(e.criado_em).getTime();
+      return eventoMs >= inicioMs && eventoMs <= agoraMs;
     })
     .reduce((acc, e) => acc + Number(e.delta), 0);
 
