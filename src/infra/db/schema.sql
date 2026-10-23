@@ -115,6 +115,26 @@ CREATE TABLE IF NOT EXISTS categoria_servico (
   vigente_desde        TEXT NOT NULL
 );
 
+-- SPEC-026 / RF-080: histórico de percentuais com proveniência. Bancos antigos
+-- guardam apenas o último snapshot: não reconstruir versões desconhecidas.
+CREATE TABLE IF NOT EXISTS historico_comissao_categoria (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  categoria_id     INTEGER NOT NULL REFERENCES categoria_servico(id),
+  percentual       INTEGER NOT NULL CHECK (percentual BETWEEN 8 AND 15),
+  vigente_desde    TEXT NOT NULL,
+  autor_id         INTEGER REFERENCES usuario(id),
+  origem           TEXT NOT NULL CHECK (origem IN ('CRIACAO','ALTERACAO','SNAPSHOT_LEGADO'))
+);
+CREATE INDEX IF NOT EXISTS ix_comissao_categoria_vigencia
+  ON historico_comissao_categoria (categoria_id, vigente_desde, id);
+
+INSERT INTO historico_comissao_categoria (categoria_id, percentual, vigente_desde, autor_id, origem)
+SELECT c.id, c.percentual_comissao, c.vigente_desde, NULL, 'SNAPSHOT_LEGADO'
+  FROM categoria_servico c
+ WHERE NOT EXISTS (
+   SELECT 1 FROM historico_comissao_categoria h WHERE h.categoria_id = c.id
+ );
+
 CREATE TABLE IF NOT EXISTS servico (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   prestador_id  INTEGER NOT NULL REFERENCES usuario(id) ON DELETE CASCADE,
