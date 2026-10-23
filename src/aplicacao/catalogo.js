@@ -74,13 +74,15 @@ export function salvarServico({ prestadorId, servicoId = null, nome, categoriaId
 }
 
 export function desativarServico({ prestadorId, servicoId }) {
-  const servico = catalogoRepo.servicoPorId(servicoId);
-  if (!servico) throw new NaoEncontrado('Serviço não encontrado.');
-  if (servico.prestador_id !== prestadorId) throw new ErroDeAutorizacao();
+  return transacao(() => {
+    const servico = catalogoRepo.servicoPorId(servicoId);
+    if (!servico) throw new NaoEncontrado('Serviço não encontrado.');
+    if (servico.prestador_id !== prestadorId) throw new ErroDeAutorizacao();
 
-  catalogoRepo.atualizarServico(servicoId, { ...servico, ativo: 0 });
-  auditoria.registrar({
-    atorId: prestadorId, acao: 'SERVICO_DESATIVADO', entidade: 'servico', entidadeId: servicoId,
+    catalogoRepo.atualizarServico(servicoId, { ...servico, ativo: 0 });
+    auditoria.registrar({
+      atorId: prestadorId, acao: 'SERVICO_DESATIVADO', entidade: 'servico', entidadeId: servicoId,
+    });
   });
 }
 
