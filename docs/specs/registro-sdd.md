@@ -601,3 +601,13 @@
 - **Decisão (Enzo):** a conferência das SPEC-003 a 005 continua com o 2dart5; as issues #82 a #84 ficam abertas.
 - **Encerramento do dia:** `docs/proximos-passos.docx` reescrito (estado, próximos passos por pessoa e o que mudou nas etapas 25 a 28) e CLAUDE.md atualizado.
 - **Verificação:** `npm test`: 235/235.
+
+### Etapa 29 — Evidências complementares da SPEC-006 (Trilha A) · 2026-10-22
+
+- **Pedido (gostislavs):** continuar o máximo possível das issues da Trilha A, sem repetir alterações incorporadas por Enzo na etapa 27.
+- **Situação da SPEC-006:** `SPEC-006-reputacao-livro-razao-classificacao-conta.md` atualizado factualmente para v0.1.1, **ainda rascunho/não aprovado**. Não foram tomadas decisões de mérito da §13. A matriz `evidencias-SPEC-006-trilha-a-20261022.md` relaciona CA-01..10 a código e testes existentes/novos.
+- **Divergência INV-08/RNF-01:** na `main`, o registro de evento já era transacional (#129), mas `recalcular()` e `reverterEventosDoAgendamento()`, chamados isoladamente, não possuíam proteção completa contra falha entre atualização de histórico/cache/classificação. PR #136 cria transações aninháveis e testes com gatilhos SQLite injetando falhas.
+- **Divergência temporal P-20:** filtragem da idade por `minutosEntre()` arredondava em minutos inteiros e incluía eventos de segundos imediatamente fora da janela. PR #136 compara instantes em milissegundos; mantém fronteira exata inclusiva e exclui eventos futuros, com teste da borda.
+- **Cobertura CA:** testes novos exercitam proveniência/UTC, inclusão e exclusão de eventos, exclusividade de RESTRITO para cliente, revisões/suspensões sem reativação automática, auditoria, rollback de recálculo/reversão e mudança de janela preservando o livro-razão. Os testes existentes são referenciados, não duplicados.
+- **Pendente:** o texto de rascunho ainda requer aprovação da equipe, confirmação do contrato físico P-22, política de avisos para admin, estratégia de reincidência e OPEN-03. Não fechar #85 enquanto faltar a Definition of Done.
+- **CI:** verificar a execução do GitHub Actions associada ao último commit do PR #136 antes de merge; não declarar resultados sem execução.
