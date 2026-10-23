@@ -127,18 +127,28 @@ export function salvarRegua({ prestadorId, reguaId = null, nome, faixas }) {
  */
 function normalizarFaixas(faixas) {
   const lista = Array.isArray(faixas) ? faixas : [];
-  const limpas = lista
-    .map((f) => ({
-      antecedencia_min: Number.parseInt(f.antecedencia_min ?? f.antecedencia, 10),
-      percentual_desconto: Number.parseInt(f.percentual_desconto ?? f.percentual, 10),
-    }))
-    .filter((f) => Number.isFinite(f.antecedencia_min) || Number.isFinite(f.percentual_desconto));
+  const limpas = [];
 
-  for (const faixa of limpas) {
-    if (!Number.isFinite(faixa.antecedencia_min) || !Number.isFinite(faixa.percentual_desconto)) {
+  for (const faixa of lista) {
+    const antecedencia = faixa?.antecedencia_min ?? faixa?.antecedencia;
+    const percentual = faixa?.percentual_desconto ?? faixa?.percentual;
+    const vazia = (valor) => valor == null || String(valor).trim() === '';
+
+    // Somente uma linha realmente em branco pode ser ignorada.
+    if (vazia(antecedencia) && vazia(percentual)) continue;
+    if (vazia(antecedencia) || vazia(percentual)) {
       throw new ErroDeValidacao('Preencha antecedência e desconto em todas as faixas.', 'faixas');
     }
+
+    // parseInt("240abc") ou parseInt("20,5") truncava entradas inválidas.
+    const ant = Number(String(antecedencia).trim());
+    const pct = Number(String(percentual).trim());
+    if (!Number.isFinite(ant) || !Number.isFinite(pct)) {
+      throw new ErroDeValidacao('Informe números válidos nas faixas de desconto.', 'faixas');
+    }
+    limpas.push({ antecedencia_min: ant, percentual_desconto: pct });
   }
+
   return limpas;
 }
 
