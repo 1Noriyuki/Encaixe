@@ -86,23 +86,30 @@ export function avaliar({ usuarioId, agendamentoId, nota, comentario = '' }) {
 
 /** RN-25 - torna as notas do agendamento visiveis para ambos. */
 export function revelar(agendamentoId, agendamento = null) {
-  social.revelarAvaliacoes(agendamentoId);
+  return transacao(() => {
+    // Executar uma segunda vez não deve duplicar log ou notificação.
+    const pendentes = social.avaliacoesDoAgendamento(agendamentoId)
+      .some(avaliacao => avaliacao.visivel === 0);
+    if (!pendentes) return false;
 
-  const ag = agendamento ?? agendamentosRepo.porId(agendamentoId);
-  auditoria.registrar({
-    atorId: null, acao: 'AVALIACOES_REVELADAS', entidade: 'agendamento', entidadeId: agendamentoId,
-  });
+    social.revelarAvaliacoes(agendamentoId);
+    const ag = agendamento ?? agendamentosRepo.porId(agendamentoId);
+    auditoria.registrar({
+      atorId: null, acao: 'AVALIACOES_REVELADAS', entidade: 'agendamento', entidadeId: agendamentoId,
+    });
 
-  if (ag) {
-    for (const destino of [ag.cliente_id, ag.prestador_id]) {
-      notificar(destino, {
-        tipo: 'AVALIACAO_REVELADA',
-        titulo: 'As avaliações ficaram visíveis',
-        agendamentoId,
-        mensagem: 'As duas partes avaliaram (ou a janela encerrou). Veja as notas no detalhe do agendamento.',
-      });
+    if (ag) {
+      for (const destino of [ag.cliente_id, ag.prestador_id]) {
+        notificar(destino, {
+          tipo: 'AVALIACAO_REVELADA',
+          titulo: 'As avaliações ficaram visíveis',
+          agendamentoId,
+          mensagem: 'As duas partes avaliaram (ou a janela encerrou). Veja as notas no detalhe do agendamento.',
+        });
+      }
     }
-  }
+    return true;
+  });
 }
 
 /**

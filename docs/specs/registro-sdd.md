@@ -601,3 +601,31 @@
 - **Decisão (Enzo):** a conferência das SPEC-003 a 005 continua com o 2dart5; as issues #82 a #84 ficam abertas.
 - **Encerramento do dia:** `docs/proximos-passos.docx` reescrito (estado, próximos passos por pessoa e o que mudou nas etapas 25 a 28) e CLAUDE.md atualizado.
 - **Verificação:** `npm test`: 235/235.
+
+### Etapa 29 — Evidências complementares da SPEC-006 (Trilha A) · 2026-10-22
+
+- **Pedido (gostislavs):** continuar o máximo possível das issues da Trilha A, sem repetir alterações incorporadas por Enzo na etapa 27.
+- **Situação da SPEC-006:** `SPEC-006-reputacao-livro-razao-classificacao-conta.md` atualizado factualmente para v0.1.1, **ainda rascunho/não aprovado**. Não foram tomadas decisões de mérito da §13. A matriz `evidencias-SPEC-006-trilha-a-20261022.md` relaciona CA-01..10 a código e testes existentes/novos.
+- **Divergência INV-08/RNF-01:** na `main`, o registro de evento já era transacional (#129), mas `recalcular()` e `reverterEventosDoAgendamento()`, chamados isoladamente, não possuíam proteção completa contra falha entre atualização de histórico/cache/classificação. PR #136 cria transações aninháveis e testes com gatilhos SQLite injetando falhas.
+- **Divergência temporal P-20:** filtragem da idade por `minutosEntre()` arredondava em minutos inteiros e incluía eventos de segundos imediatamente fora da janela. PR #136 compara instantes em milissegundos; mantém fronteira exata inclusiva e exclui eventos futuros, com teste da borda.
+- **Cobertura CA:** testes novos exercitam proveniência/UTC, inclusão e exclusão de eventos, exclusividade de RESTRITO para cliente, revisões/suspensões sem reativação automática, auditoria, rollback de recálculo/reversão e mudança de janela preservando o livro-razão. Os testes existentes são referenciados, não duplicados.
+- **Pendente:** o texto de rascunho ainda requer aprovação da equipe, confirmação do contrato físico P-22, política de avisos para admin, estratégia de reincidência e OPEN-03. Não fechar #85 enquanto faltar a Definition of Done.
+- **CI:** verificar a execução do GitHub Actions associada ao último commit do PR #136 antes de merge; não declarar resultados sem execução.
+
+### Etapa 30 — Consistência do catálogo, perfil e régua (Trilha A) · 2026-10-22
+
+- **Pedido (gostislavs):** avançar nas issues ainda abertas após a SPEC-001 concluída, preservando o SDD e as decisões já tomadas.
+- **PR #137 — SPEC-007/009:** `desativarServico()` desativava o registro antes de escrever a auditoria, sem transação; se a auditoria falhasse, o serviço ficava desativado sem rastreio. `salvarPerfilPrestador()` tinha a mesma lacuna e registrava sucesso para perfil inexistente. Corrigido com transações e checagem de existência, preservando os contratos atuais. Testes de rollback e ausência de falso sucesso.
+- **PR #138 — SPEC-008:** `normalizarFaixas()` usava `parseInt`, que aceitava entradas malformadas (`240abc` → 240, `20.5` → 20) e descartava linhas não numéricas sem erro. Agora somente linhas totalmente em branco são ignoradas; textos inválidos, campos incompletos e decimais são recusados por RF-018/RN-02, inclusive na simulação. Cinco testes novos.
+- **Limites:** nenhuma das SPEC-007/008/009 foi formalmente aprovada por esta etapa. As divergências de comportamento foram corrigidas contra a baseline vigente; questões OPEN-10/11/16 permanecem em aberto. Sem fechamento das issues #86/#87/#88 e correlatas antes da Definition of Done.
+- **Verificação:** consultar os resultados do GitHub Actions por commit de cada PR; não presumir que testes verdes isolados provam a integração futura após merges.
+
+### Etapa 31 — Integração técnica dos PRs #136 a #141 (Trilha A) · 2026-10-22
+
+- **Pedido:** completar o máximo possível das tarefas do gostislavs, consolidando código em vez de depender apenas de CI isolado por branch.
+- **Integração:** PR #142, branch `gostislavs-trilha-a-integrada-20261022`, incorporando sem sobrescrita de mudanças os PRs #136 (SPEC-006), #137 (SPEC-007/009), #138 (SPEC-008), #139 (SPEC-026), #140 (SPEC-011) e #141 (SPEC-021).
+- **Conflitos conciliados:** `src/aplicacao/catalogo.js` (desativação transacional + números da régua) e `registro-sdd.md` (etapas 29+30).
+- **Evidência:** `evidencias-integracao-trilha-a-20261022.md`, com escopo, matriz de tarefas, limitações e decisões ainda em aberto.
+- **Teste de integração:** GitHub Actions Node 24, execução #39884130601, `261 testes aprovados, 0 falhas, 0 ignorados` no commit de integração anterior à inclusão destes documentos.
+- **Estado do SDD:** as SPEC-006/007/008/009/011/020/021/024/026 continuam rascunhos até decisões explícitas da equipe; as issues correspondentes não foram fechadas por esta etapa. O merge dos PRs originais não deve duplicar arquivos após uma eventual incorporação do PR #142.
+- **CI após documentação:** a execução do novo commit deve ser verificada separadamente.

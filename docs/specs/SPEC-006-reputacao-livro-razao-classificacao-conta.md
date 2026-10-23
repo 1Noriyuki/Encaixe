@@ -2,11 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
+| Versão | 0.1.1 (rascunho atualizado com a implementação de 22/10) |
+| Data | 2026-10-22 |
 | Status | **Rascunho — aguardando aprovação explícita da equipe**; não autoriza alterações de regra de negócio |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 6 de 29 |
-| Baseline | [`docs/spec.md`](../spec.md) v0.1.8, RN-00, RN-22, RN-23, RF-057, RF-069; ADR-002 |
+| Baseline | [`docs/spec.md`](../spec.md) v0.1.9, RN-00, RN-22, RN-23, RF-057, RF-069; ADR-002 |
 | Responsável pela preparação | gostislavs — Trilha A |
 | Dependências | SPEC-001, SPEC-002 e SPEC-004 aprovadas; eventos gerados por Specs posteriores têm contratos próprios |
 
@@ -118,7 +118,7 @@ A reversão definida pelo produtor de uma disputa deve marcar `revertido_em` e r
 - `src/aplicacao/reputacao.js`: orquestra registro de eventos, projeção, auditoria e notificação.
 - `src/infra/repositorios/social.js`: armazenamento do livro-razão e reversões.
 - `src/infra/repositorios/usuarios.js`: atualização do cache de reputação e estado.
-- `src/dominio/parametros.js` e repositório de parâmetros: P-22 parametrizado, versionado e validado (a implementação atual ainda usa constantes fixas).
+- `src/dominio/parametros.js` e repositório de parâmetros: P-22 parametrizado, versionado e validado (atualmente implementado com 14 chaves de P-22; representação final pendente de aprovação).
 - As transações devem impedir evento gravado sem a projeção e os efeitos obrigatórios coerentes. Não se deve introduzir acesso a banco ou relógio dentro do módulo puro do domínio.
 
 ## 9. Contratos necessários (conceituais)
@@ -178,10 +178,10 @@ A reversão definida pelo produtor de uma disputa deve marcar `revertido_em` e r
 
 ## 13. Questões em aberto para decisão humana
 
-1. **P-22 — representação configurável:** será um conjunto de parâmetros individuais com IDs derivados, uma tabela por evento/perfil/faixa ou uma estrutura validada? A SPEC-001 aprovou a política e a faixa, **não** o esquema físico. Preservar todos os deltas existentes ao migrar.
-2. **Notificação ao admin (RF-057):** enviar um evento à central de todos os administradores, criar fila administrativa consultável ou ambos? O código atual notifica o titular, mas não há evidência de notificação ao admin no gatilho por reputação. Resolver em alinhamento com SPEC-004/SPEC-025.
-3. **Atomicidade (RF-069/INV-08):** `aplicarEvento` deve abrir a própria transação ou exigir uma transação do chamador? Garantir rollback ao testar uma falha depois da inserção.
-4. **P-20 — inclusão de limites e eventos futuros:** confirmar se a fronteira de P-20 dias é inclusiva e se eventos com data posterior ao instante de apuração precisam ser explicitamente excluídos.
+1. **P-22 — representação configurável:** o código já usa 14 chaves configuráveis com o identificador P-22 (PR #125); confirmar se esta é a representação definitiva ou se a equipe quer outra estrutura. A SPEC-001 aprovou a política e a faixa, **não** o esquema físico. Preservar todos os deltas históricos.
+2. **Notificação ao admin (RF-057):** o código já cria notificações na central do titular e dos administradores (PR #129); confirmar se basta a central, se também deve haver fila dedicada ou ambos, em alinhamento com SPEC-004/SPEC-025.
+3. **Atomicidade (RF-069/INV-08):** `aplicarEvento`, `recalcular` e reversão usam transações aninháveis (PRs #129/#136), com testes de rollback. Formalizar na aprovação se esta responsabilidade fica na aplicação ou é exigida do chamador.
+4. **P-20 — inclusão de limites e eventos futuros:** a implementação exclui eventos futuros e inclui o instante exato da fronteira P-20, medido em milissegundos (PR #136); confirmar se esta convenção deve entrar no contrato aprovado.
 5. **Classificação após alteração administrativa:** o estado `ATIVO` restaurado pelo admin continua sujeito à avaliação automática no evento seguinte; confirmar se é necessário tratamento de reincidência ou trava adicional.
 6. **OPEN-03:** drivers arquiteturais seguem derivados das restrições e da constituição, sem catálogo formal aprovado.
 

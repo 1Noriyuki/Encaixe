@@ -241,23 +241,29 @@ export function salvarPerfilPrestador({ prestadorId, nomeExibicao, descricao, re
     throw new ErroDeValidacao('Política de expiração inválida.', 'politicaExpiracao');
   }
 
-  usuarios.atualizarPerfilPrestador(prestadorId, {
-    nome_exibicao: nome,
-    descricao: String(descricao ?? '').trim(),
-    regiao_id: regiaoId ? Number(regiaoId) : null,
-    janela_confirmacao_min: janela,
-    politica_expiracao: politicaExpiracao,
-  });
+  return transacao(() => {
+    // Não auditar como sucesso uma atualização em perfil inexistente.
+    if (!usuarios.prestador(prestadorId)) {
+      throw new NaoEncontrado('Perfil do prestador não encontrado.');
+    }
+    usuarios.atualizarPerfilPrestador(prestadorId, {
+      nome_exibicao: nome,
+      descricao: String(descricao ?? '').trim(),
+      regiao_id: regiaoId ? Number(regiaoId) : null,
+      janela_confirmacao_min: janela,
+      politica_expiracao: politicaExpiracao,
+    });
 
-  auditoria.registrar({
-    atorId: prestadorId,
-    acao: 'PERFIL_PRESTADOR_ATUALIZADO',
-    entidade: 'conta',
-    entidadeId: prestadorId,
-    detalhe: { janela, politicaExpiracao },
-  });
+    auditoria.registrar({
+      atorId: prestadorId,
+      acao: 'PERFIL_PRESTADOR_ATUALIZADO',
+      entidade: 'conta',
+      entidadeId: prestadorId,
+      detalhe: { janela, politicaExpiracao },
+    });
 
-  return usuarios.prestador(prestadorId);
+    return usuarios.prestador(prestadorId);
+  });
 }
 
 export function salvarPerfilCliente({ clienteId, telefone, regiaoId }) {

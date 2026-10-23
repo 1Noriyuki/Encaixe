@@ -2,7 +2,7 @@
  * Repositorio de catalogo: regioes, categorias, servicos e reguas de desconto.
  */
 
-import { um, varios, inserir, executar } from '../db/conexao.js';
+import { um, varios, inserir, executar, transacao } from '../db/conexao.js';
 import { agoraIso } from '../../dominio/tempo.js';
 
 // ------------------------------------------------------------------ regioes
@@ -34,17 +34,40 @@ export function categoriaPorNome(nome) {
 }
 
 export function criarCategoria(nome, percentualComissao) {
+  return transacao(() => {
+    const agora = agoraIso();
+    const id = inserir(
+      'INSERT INTO categoria_servico (nome, percentual_comissao, vigente_desde) VALUES (?, ?, ?)',
+      nome, percentualComissao, agora,
+    );
+    registrarHistoricoComissaoCategoria(id, percentualComissao, agora, null, 'CRIACAO');
+    return id;
+  });
+}
+
+/** RF-080 / RF-081: histórico sem sobrescrever os percentuais anteriores. */
+export function registrarHistoricoComissaoCategoria(categoriaId, percentual, vigenteDesde, autorId, origem = 'ALTERACAO') {
   return inserir(
-    'INSERT INTO categoria_servico (nome, percentual_comissao, vigente_desde) VALUES (?, ?, ?)',
-    nome, percentualComissao, agoraIso(),
+    `INSERT INTO historico_comissao_categoria
+       (categoria_id, percentual, vigente_desde, autor_id, origem)
+     VALUES (?, ?, ?, ?, ?)`,
+    categoriaId, percentual, vigenteDesde, autorId, origem,
   );
 }
 
-/** RF-080 - alteracao de percentual vale a partir de agora (RN-15, RF-081). */
-export function atualizarComissaoCategoria(id, percentual) {
+export function historicoComissaoCategoria(categoriaId) {
+  return varios(
+    `SELECT * FROM historico_comissao_categoria
+      WHERE categoria_id = ?
+      ORDER BY vigente_desde ASC, id ASC`, categoriaId,
+  );
+}
+
+/** RF-080 - alteracao de percentual vale a partir do instante registrado. */
+export function atualizarComissaoCategoria(id, percentual, vigenteDesde = agoraIso()) {
   executar(
     'UPDATE categoria_servico SET percentual_comissao = ?, vigente_desde = ? WHERE id = ?',
-    percentual, agoraIso(), id,
+    percentual, vigenteDesde, id,
   );
 }
 
