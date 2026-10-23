@@ -619,3 +619,13 @@
 - **PR #138 — SPEC-008:** `normalizarFaixas()` usava `parseInt`, que aceitava entradas malformadas (`240abc` → 240, `20.5` → 20) e descartava linhas não numéricas sem erro. Agora somente linhas totalmente em branco são ignoradas; textos inválidos, campos incompletos e decimais são recusados por RF-018/RN-02, inclusive na simulação. Cinco testes novos.
 - **Limites:** nenhuma das SPEC-007/008/009 foi formalmente aprovada por esta etapa. As divergências de comportamento foram corrigidas contra a baseline vigente; questões OPEN-10/11/16 permanecem em aberto. Sem fechamento das issues #86/#87/#88 e correlatas antes da Definition of Done.
 - **Verificação:** consultar os resultados do GitHub Actions por commit de cada PR; não presumir que testes verdes isolados provam a integração futura após merges.
+
+### Etapa 31 — Integração técnica dos PRs #136 a #141 (Trilha A) · 2026-10-22
+
+- **Pedido:** completar o máximo possível das tarefas do gostislavs, consolidando código em vez de depender apenas de CI isolado por branch.
+- **Integração:** PR #142, branch `gostislavs-trilha-a-integrada-20261022`, incorporando sem sobrescrita de mudanças os PRs #136 (SPEC-006), #137 (SPEC-007/009), #138 (SPEC-008), #139 (SPEC-026), #140 (SPEC-011) e #141 (SPEC-021).
+- **Conflitos conciliados:** `src/aplicacao/catalogo.js` (desativação transacional + números da régua) e `registro-sdd.md` (etapas 29+30).
+- **Evidência:** `evidencias-integracao-trilha-a-20261022.md`, com escopo, matriz de tarefas, limitações e decisões ainda em aberto.
+- **Teste de integração:** GitHub Actions Node 24, execução #39884130601, `261 testes aprovados, 0 falhas, 0 ignorados` no commit de integração anterior à inclusão destes documentos.
+- **Estado do SDD:** as SPEC-006/007/008/009/011/020/021/024/026 continuam rascunhos até decisões explícitas da equipe; as issues correspondentes não foram fechadas por esta etapa. O merge dos PRs originais não deve duplicar arquivos após uma eventual incorporação do PR #142.
+- **CI após documentação:** a execução do novo commit deve ser verificada separadamente.
