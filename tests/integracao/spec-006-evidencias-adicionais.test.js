@@ -120,3 +120,26 @@ test('T-SPEC006-CA10 | RN-00: mudar P-20 recalcula projeção, preservando event
   const [atual] = social.eventosDoUsuario(c.cliente.id);
   assert.deepEqual(atual, original);
 });
+
+test('T-SPEC006-CA07 | RF-057: reclassificacao audita estados e notifica titular/admin', () => {
+  const c = cenarioBasico();
+  reputacao.aplicarEvento({ ...origem(c), delta: -31 });
+  const logs = auditoria.historicoDe('conta', c.cliente.id)
+    .filter(e => e.acao === 'CONTA_RECLASSIFICADA_POR_REPUTACAO');
+  assert.equal(logs.length, 1);
+  assert.equal(logs[0].estado_anterior, 'ATIVO');
+  assert.equal(logs[0].estado_novo, 'EM_REVISAO');
+  assert.equal(logs[0].ator_id, null);
+  assert.ok(social.notificacoesDoUsuario(c.cliente.id).some(n => n.tipo === 'CONTA_EM_REVISAO'));
+  assert.ok(social.notificacoesDoUsuario(c.adminId).some(n => n.tipo === 'CONTA_EM_REVISAO'));
+  reputacao.recalcular(c.cliente.id);
+  assert.equal(auditoria.historicoDe('conta', c.cliente.id)
+    .filter(e => e.acao === 'CONTA_RECLASSIFICADA_POR_REPUTACAO').length, 1);
+});
+
+test('T-SPEC006-CA08b | RN-22: conta suspensa nao volta automaticamente mesmo com reputacao alta', () => {
+  const c = cenarioBasico();
+  usuarios.atualizarEstadoConta(c.cliente.id, 'SUSPENSO');
+  assert.equal(reputacao.aplicarEvento({ ...origem(c), delta: 10 }), 80);
+  assert.equal(usuarios.porId(c.cliente.id).estado_conta, 'SUSPENSO');
+});
