@@ -41,6 +41,8 @@ export function aplicarEvento({ usuarioId, tipo, delta, origemTipo, origemId }) 
 
 /** Recalcula a reputacao a partir dos eventos e reclassifica a conta (RN-22). */
 export function recalcular(usuarioId) {
+  // A projeção e a classificação não podem divergir em caso de falha.
+  return transacao(() => {
   const p = params();
   const usuario = usuarios.porId(usuarioId);
   if (!usuario) return null;
@@ -67,6 +69,7 @@ export function recalcular(usuarioId) {
 
   reclassificarConta({ ...usuario, reputacao: nova }, p);
   return nova;
+  });
 }
 
 /**
@@ -161,6 +164,7 @@ export function verificarOcorrenciasDoPrestador(prestadorId) {
 
 /** RN-27 - a resolucao de disputa reverte os eventos daquele agendamento. */
 export function reverterEventosDoAgendamento(agendamentoId, usuarioId = null) {
+  return transacao(() => {
   const afetados = social.eventosDaOrigem('agendamento', agendamentoId)
     .filter((e) => !e.revertido_em)
     .filter((e) => !usuarioId || e.usuario_id === usuarioId)
@@ -170,4 +174,5 @@ export function reverterEventosDoAgendamento(agendamentoId, usuarioId = null) {
 
   for (const id of new Set(afetados)) recalcular(id);
   return [...new Set(afetados)];
+  });
 }
