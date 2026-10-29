@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 8 testes da §12 existem com o identificador proposto |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-007; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005 |
@@ -76,18 +76,27 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 **CA-08** — Dado o cenário de catálogo de serviços do prestador, quando operações bem-sucedidas são auditadas e atomicamente persistidas., então o resultado deve satisfazer os invariantes de domínio, ser verificável em banco e não causar efeitos colaterais não previstos.
 
 ## 12. Casos de teste derivados
-| Teste | Critério |
+
+Testes em `tests/integracao/spec-007-evidencia.test.js`, com os IDs propostos.
+
+| Teste | Cobre |
 |---|---|
 | `T-SPEC007-01 \| RF-012: criar serviço com categoria existente, nome válido, duração múltiplo de 5 e base/piso em centavos` | CA-01 |
 | `T-SPEC007-02 \| RF-012: rejeitar nome vazio, duração zero, fracionária ou não múltipla de cinco` | CA-02 |
-| `T-SPEC007-03 \| RF-012: rejeitar preço-base não positivo e preço mínimo acima da base sem gravar` | CA-03 |
-| `T-SPEC007-04 \| RF-012: editar serviço mantém seu identificador e só altera seus dados atuais` | CA-04 |
-| `T-SPEC007-05 \| RF-012: desativação marca ativo=0 sem excluir nem reescrever históricos` | CA-05 |
-| `T-SPEC007-06 \| RF-012: prestador a não edita/desativa serviço de b` | CA-06 |
-| `T-SPEC007-07 \| RF-012: categoria não cadastrada é recusada` | CA-07 |
-| `T-SPEC007-08 \| RF-012: operações bem-sucedidas são auditadas e atomicamente persistidas` | CA-08 |
+| `T-SPEC007-03 \| RF-012: rejeitar preço-base não positivo e preço mínimo acima da base sem gravar` | CA-03, INV-001 |
+| `T-SPEC007-04 \| RF-012: editar serviço mantém seu identificador e só altera seus dados atuais` | CA-04, INV-004 |
+| `T-SPEC007-05 \| RF-012: desativação marca ativo=0 sem excluir nem reescrever históricos` | CA-05, INV-004 |
+| `T-SPEC007-06 \| RF-012: prestador a não edita/desativa serviço de b` | CA-06, INV-002 |
+| `T-SPEC007-07 \| RF-012: categoria não cadastrada é recusada` | CA-07, INV-006 |
+| `T-SPEC007-08 \| RF-012: operações bem-sucedidas são auditadas e atomicamente persistidas`<br>`T-SPEC007-ATOMIC01 \| RF-013: auditoria falha impede desativacao persistida do servico` | CA-08, INV-001, INV-005 |
 
-A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
+
+**Cobertura complementar:** `T-SERVICO-01` a `04` e `T-HORARIO-04` (snapshot do horário reservado).
+
+**INV-003** (sem constante comercial inventada) é conferência de código: a duração múltipla de 5 e o preço em centavos vêm da baseline (RF-012, ADR-002).
+
+**Divergências corrigidas nesta etapa:** um preço malformado ou negativo gerava erro sem o campo, e a tela não apontava a entrada (§5); um preço mínimo negativo passado como número era gravado. `paraCentavos()` passou a recusar número negativo e a levar o campo no erro.
 
 ## 13. Questões decididas
 

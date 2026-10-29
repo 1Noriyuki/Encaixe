@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 4 de 9 testes da §12 existem com o identificador proposto |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-017, SPEC-019, SPEC-020, SPEC-023 |
 | Responsável | gostislavs |
@@ -97,19 +97,27 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 - **Dado** o cenário pertinente de métricas de comissão e percentual por categoria, **quando** a operação de domínio acima ocorrer, **então** o sistema satisfaz lançamentos antigos mantêm percentual e valores originais. sem modificar registros fora do escopo.
 
 ## 12. Casos de teste derivados
-| Teste proposto | Critério |
-|---|---|
-| `T-SPEC026-01 \| RN-00: painel sem movimentação devolve zeros válidos` | CA-01 |
-| `T-SPEC026-02 \| RN-00: painel com conclusão efetivada soma bruto, comissão e ticket corretamente` | CA-02 |
-| `T-SPEC026-03 \| RN-00: retido/estornado não contam como receita` | CA-03 |
-| `T-SPEC026-04 \| RN-00: recortes por categoria e prestador incluem apenas agendamentos correspondentes` | CA-04 |
-| `T-SPEC026-05 \| RN-00: cancelamento e no-show têm taxas coerentes e nunca dividem por zero` | CA-05 |
-| `T-SPEC026-06 \| RN-00: admin altera percentual dentro de 8% a 15%` | CA-06 |
-| `T-SPEC026-07 \| RN-00: percentual inválido é recusado e não persistido` | CA-07 |
-| `T-SPEC026-08 \| RN-00: mudança de categoria é auditável com estado anterior e novo` | CA-08 |
-| `T-SPEC026-09 \| RN-00: lançamentos antigos mantêm percentual e valores originais` | CA-09 |
 
-A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
+Os IDs `T-SPEC026-01` a `03` já identificam testes do histórico da comissão (`spec-026-comissao-historico.test.js`), que seguem como cobertura complementar. O CA-04 é coberto pelo `T-SPEC026-04` existente; os demais critérios usam `T-SPEC026-CAnn`, em `tests/integracao/spec-026-evidencia.test.js`.
+
+| Teste | Cobre |
+|---|---|
+| `T-SPEC026-CA01 \| RF-063: painel sem movimentação devolve zeros válidos` | CA-01 |
+| `T-SPEC026-CA02 \| RF-063: painel com conclusão efetivada soma bruto, comissão e ticket corretamente` | CA-02, INV-004 |
+| `T-SPEC026-CA03 \| RF-063: retido/estornado não contam como receita` | CA-03 |
+| `T-SPEC026-04 \| RF-064: totais e divisão por categoria respeitam prestador e categoria` | CA-04 |
+| `T-SPEC026-CA05 \| RF-063: cancelamento e no-show têm taxas coerentes e nunca dividem por zero` | CA-05 |
+| `T-SPEC026-CA06 \| RN-15: admin altera percentual dentro de 8% a 15%`<br>`T-SPEC026-01 \| RF-080: criação e alteração preservam versões e autor` | CA-06 |
+| `T-SPEC026-CA07 \| RN-15: percentual inválido é recusado e não persistido` | CA-07 |
+| `T-SPEC026-CA08 \| RF-080: mudança de categoria é auditável com estado anterior e novo` | CA-08, INV-003 |
+| `T-SPEC026-CA09 \| RF-081: lançamentos antigos mantêm percentual e valores originais`<br>`T-CATEGORIA-03 \| RF-081: mudança de comissão não recalcula lançamento já concluído` | CA-09, INV-001 |
+| `T-SPEC026-02 \| RF-080: falha da auditoria não altera o percentual nem o histórico` | INV-005 |
+
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
+
+**INV-002** (só o admin altera a comissão) é da SPEC-003, conforme a §13, item 3. **INV-006 e INV-007** são conferência.
+
+**Divergência corrigida nesta etapa:** categoria inexistente em `ajustarComissao` lançava `Error` genérico (resposta 500); agora é `NaoEncontrado`.
 
 ## 13. Questões decididas
 

@@ -33,10 +33,10 @@ export function salvarServico({ prestadorId, servicoId = null, nome, categoriaId
     throw new ErroDeValidacao('A duração deve ser um múltiplo de 5 minutos maior que zero.', 'duracaoMin');
   }
 
-  const base = paraCentavos(precoBase);
+  const base = paraCentavos(precoBase, 'precoBase');
   if (base <= 0) throw new ErroDeValidacao('O preço-base precisa ser maior que zero.', 'precoBase');
 
-  const minimo = precoMinimo === '' || precoMinimo == null ? 0 : paraCentavos(precoMinimo);
+  const minimo = precoMinimo === '' || precoMinimo == null ? 0 : paraCentavos(precoMinimo, 'precoMinimo');
   if (minimo > base) {
     throw new ErroDeValidacao('O preço mínimo não pode ser maior que o preço-base.', 'precoMinimo');
   }
@@ -157,8 +157,8 @@ function normalizarFaixas(faixas) {
 /** RF-027 - simulacao sem persistir. */
 export function simularRegua({ precoBase, precoMinimo, faixas }) {
   const p = params();
-  const base = paraCentavos(precoBase);
-  const minimo = precoMinimo === '' || precoMinimo == null ? 0 : paraCentavos(precoMinimo);
+  const base = paraCentavos(precoBase, 'precoBase');
+  const minimo = precoMinimo === '' || precoMinimo == null ? 0 : paraCentavos(precoMinimo, 'precoMinimo');
   const validadas = validarRegua(normalizarFaixas(faixas), p.desconto_maximo_pct);
 
   return projetarRegua({

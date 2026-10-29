@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 9 testes da §12 existem com o identificador proposto |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-009; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005, SPEC-007 e SPEC-008 |
@@ -80,19 +80,28 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 **CA-09** — Dado o cenário de perfil do prestador e elegibilidade para publicar, quando suspenso/reprovado não publica, independentemente da completude., então o resultado deve satisfazer os invariantes de domínio, ser verificável em banco e não causar efeitos colaterais não previstos.
 
 ## 12. Casos de teste derivados
-| Teste | Critério |
+
+Testes em `tests/integracao/spec-009-evidencia.test.js`, com os IDs propostos.
+
+| Teste | Cobre |
 |---|---|
 | `T-SPEC009-01 \| RF-010: novo perfil herda p-01/p-02 globais do momento do cadastro` | CA-01 |
-| `T-SPEC009-02 \| RF-010: mudanças posteriores nos padrões globais não alteram o perfil já criado` | CA-02 |
-| `T-SPEC009-03 \| RF-010: perfil aceita valores p-01 5 e 60 e apenas políticas permitidas` | CA-03 |
-| `T-SPEC009-04 \| RF-010: perfil rejeita nome vazio, valor de janela fora da faixa e política inválida` | CA-04 |
+| `T-SPEC009-02 \| RF-010: mudanças posteriores nos padrões globais não alteram o perfil já criado` | CA-02, INV-004 |
+| `T-SPEC009-03 \| RF-010: perfil aceita valores p-01 5 e 60 e apenas políticas permitidas` | CA-03, INV-005 |
+| `T-SPEC009-04 \| RF-010: perfil rejeita nome vazio, valor de janela fora da faixa e política inválida`<br>`T-SPEC009-ATOMIC01 \| RF-010: auditoria falha reverte atualizacao do perfil`<br>`T-SPEC009-ATOMIC02 \| RF-010: nao registra sucesso para perfil inexistente` | CA-04, INV-001 |
 | `T-SPEC009-05 \| RF-010: sem região/serviço/régua retorna lista completa de pendências` | CA-05 |
 | `T-SPEC009-06 \| RF-010: prestador completo e ativo pode publicar` | CA-06 |
 | `T-SPEC009-07 \| RF-010: prestador pendente não publica, embora possa configurar catálogo` | CA-07 |
 | `T-SPEC009-08 \| RF-010: conta em revisão não publica e informa o motivo` | CA-08 |
 | `T-SPEC009-09 \| RF-010: suspenso/reprovado não publica, independentemente da completude` | CA-09 |
 
-A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
+
+**Cobertura complementar:** `T-PERFIL-01` a `03` e `T-PUBLICAR-01` a `03`.
+
+**INV-002** é garantida por construção: `salvarPerfilPrestador` só recebe o `prestadorId` da sessão, sem identificador de outro perfil. **INV-003 e INV-006** são conferência de código.
+
+**Divergência corrigida nesta etapa:** uma região inexistente estourava `FOREIGN KEY constraint failed` em vez de erro de campo, contra a decisão da §13, item 3. `salvarPerfilPrestador` agora recusa com `regiaoId`.
 
 ## 13. Questões decididas
 

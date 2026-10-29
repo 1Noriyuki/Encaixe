@@ -11,6 +11,7 @@ import * as social from '../infra/repositorios/social.js';
 import * as auditoria from '../infra/auditoria.js';
 import { transacao } from '../infra/db/conexao.js';
 import { assegurarPercentualValido } from '../dominio/comissao.js';
+import { NaoEncontrado } from '../dominio/erros.js';
 import { agoraIso, adicionarDias } from '../dominio/tempo.js';
 import { params, salvarGlobal, listarGlobais } from './parametros.js';
 import * as disputas from './disputas.js';
@@ -58,7 +59,7 @@ export function ajustarComissao({ adminId, categoriaId, percentual }) {
   const novo = assegurarPercentualValido(Number(percentual));
   return transacao(() => {
     const categoria = catalogoRepo.categoriaPorId(Number(categoriaId));
-    if (!categoria) throw new Error('Categoria não encontrada.');
+    if (!categoria) throw new NaoEncontrado('Categoria não encontrada.');
     if (categoria.percentual_comissao === novo) return categoria;
     const vigenteDesde = agoraIso();
 

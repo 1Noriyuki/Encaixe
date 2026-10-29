@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 9 testes da §12 existem com o identificador proposto |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-016, SPEC-019 |
 | Responsável | gostislavs |
@@ -99,19 +99,27 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 - **Dado** o cenário pertinente de conclusão do atendimento e apuração de comissão, **quando** a operação de domínio acima ocorrer, **então** o sistema satisfaz nAO_PAGO registra cobrança pendente sem alegar pagamento. sem modificar registros fora do escopo.
 
 ## 12. Casos de teste derivados
-| Teste proposto | Critério |
-|---|---|
-| `T-SPEC020-01 \| RN-14: prestador não conclui antes do fim do serviço` | CA-01 |
-| `T-SPEC020-02 \| RN-14: agendamento não confirmado não conclui` | CA-02 |
-| `T-SPEC020-03 \| RN-14: estado de cobrança inválido é recusado` | CA-03 |
-| `T-SPEC020-04 \| RN-14: conclusão manual cria um único lançamento com identidade financeira e percentual correto` | CA-04 |
-| `T-SPEC020-05 \| RN-14: duas tentativas de conclusão não duplicam lançamento` | CA-05 |
-| `T-SPEC020-06 \| RN-14: conclusão automática respeita prazo p-17 congelado` | CA-06 |
-| `T-SPEC020-07 \| RN-14: alterar p-17 depois da confirmação não altera prazo já existente` | CA-07 |
-| `T-SPEC020-08 \| RN-14: eventos de reputação preservam deltas do momento da conclusão` | CA-08 |
-| `T-SPEC020-09 \| RN-14: nao_pago registra cobrança pendente sem alegar pagamento` | CA-09 |
 
-A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
+Testes em `tests/integracao/spec-020-evidencia.test.js`, com os IDs propostos e o `T-SPEC020-10` para a titularidade.
+
+| Teste | Cobre |
+|---|---|
+| `T-SPEC020-01 \| RN-16: prestador não conclui antes do fim do serviço` | CA-01, INV-006 |
+| `T-SPEC020-02 \| RN-16: agendamento não confirmado não conclui` | CA-02 |
+| `T-SPEC020-03 \| RN-33: estado de cobrança inválido é recusado` | CA-03 |
+| `T-SPEC020-04 \| RN-14: conclusão manual cria um único lançamento com identidade financeira e percentual correto` | CA-04, INV-004 |
+| `T-SPEC020-05 \| INV-05: duas tentativas de conclusão não duplicam lançamento` | CA-05 |
+| `T-SPEC020-06 \| RF-060: conclusão automática respeita prazo p-17 congelado` | CA-06, INV-006 |
+| `T-SPEC020-07 \| RN-00: alterar p-17 depois da confirmação não altera prazo já existente`<br>`T-P17-04 \| RN-00/SPEC-020: migração trava a P-17 vigente nos confirmados legados` | CA-07, INV-001 |
+| `T-SPEC020-08 \| RN-00/P-22: eventos de reputação preservam deltas do momento da conclusão` | CA-08, INV-001 |
+| `T-SPEC020-09 \| RN-33: nao_pago registra cobrança pendente sem alegar pagamento` | CA-09 |
+| `T-SPEC020-10 \| RNF-03: outro prestador não conclui agendamento alheio` | INV-002 |
+| `T-COMISSAO-ESTADO-06 \| RF-084: o lançamento nasce EFETIVADO, auditado uma vez, com quem concluiu` | INV-003 |
+| `T-COMISSAO-ESTADO-05 \| INV-13: falha de auditoria reverte mudanca financeira` | INV-005 |
+
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
+
+**INV-007** é conferência de dependências: retenção e estorno pertencem às SPEC-022/023.
 
 ## 13. Questões decididas
 
