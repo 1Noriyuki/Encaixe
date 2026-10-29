@@ -7,8 +7,8 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.9 |
-| Data | 2026-10-20 |
+| Versão da spec | 0.1.10 |
+| Data | 2026-10-29 |
 | Status | Em validação com o grupo e com o professor |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
@@ -16,6 +16,7 @@
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.10 | 2026-10-29 | Equipe | Decisões da aprovação das Specs da Trilha A (etapa 32). **§9.2 e QA-07:** a régua é do prestador e cada horário escolhe uma ao ser publicado (OPEN-10). **RF-010 e RF-011:** as categorias atendidas derivam dos serviços ativos e "perfil completo" é a lista da RN-08 (OPEN-16). **§9.2 `Regiao` e `CategoriaServico`:** no MVP são listas carregadas pela implantação (OPEN-11). **RN-03:** o teto P-05 vale no cálculo de horário ainda não reservado; a reserva trava o preço (RN-04). **RN-00 e §9.2 `Agendamento`:** a conclusão trava o prazo de avaliação (P-14), em `avaliacao_prazo_em`; `autoconclusao_prazo_em` (P-17) passa a constar da tabela |
 | 0.1.9 | 2026-10-20 | Equipe | Canal de contato da conta suspensa (SPEC-002, layout). **RF-004:** a recusa da conta `SUSPENSO` informa o canal de contato com a administração, um e-mail definido na configuração de implantação; não é parâmetro de regra, porque não é número de regra nem é editado pelo admin |
 | 0.1.8 | 2026-10-20 | Equipe | Decisões da SPEC-002. **RF-001:** política de senha (OPEN-201), campos obrigatórios e opcionais (OPEN-205) e conta de admin só por implantação (OPEN-206). **RF-002:** e-mail comparado sem espaços nas pontas e sem diferenciar maiúsculas (OPEN-208); revelar que o e-mail está em uso é risco residual aceito (OPEN-209). **RF-005a:** logout (OPEN-204). **RN-23, INV-08 e §9.2:** a reputação parte da P-08 vigente na criação da conta, gravada nela (OPEN-207) |
 | 0.1.7 | 2026-10-20 | Equipe | Decisões da Trilha A (SPEC-001). **§6.1:** escopo `P` é o perfil do prestador dentro da faixa global e P-13 passa a ser por categoria (OPEN-103); P-12 vira P-12a/P-12b e P-16 vira P-16a/P-16b, o limite do RNF-13 vira P-21 e fecha a QA-10 (OPEN-20); os deltas de reputação viram P-22 (OPEN-05). **RN-00:** define "fato ocorrido" e declara a exceção da P-20 (OPEN-101, OPEN-102). **RN-27 e §9.4:** efeito de cada desfecho de disputa (OPEN-06, incluindo a acusação mútua). **§9.5:** sai `RASCUNHO` (OPEN-15). **§9.6:** suspensão a partir de qualquer estado operante e `RESTRITO` só para cliente (OPEN-08). **§9.7.1:** máquina do `LancamentoComissao` (OPEN-105). **§9.2:** `ator_id` nulo identifica o sistema (OPEN-104) |
@@ -358,7 +359,8 @@ faixa global (o valor padrão vale para perfis novos); `C` = por categoria de se
 configuração, e a alteração de um parâmetro DEVE valer somente para fatos ocorridos após a alteração.
 **Fato ocorrido** é o evento que cria a obrigação regida pelo parâmetro: o valor vigente nesse instante fica
 gravado no registro, e alterações posteriores não o mudam. Exemplos: a reserva trava o prazo de confirmação
-(P-01) e o preço; a conclusão trava o percentual de comissão (P-13); cada evento de reputação grava o delta
+(P-01) e o preço; a confirmação trava o prazo de conclusão automática (P-17); a conclusão trava o percentual
+de comissão (P-13) e o prazo de avaliação (P-14); cada evento de reputação grava o delta
 aplicado (P-22). **Exceção declarada:** a janela da reputação (P-20) é aplicada sobre eventos passados por
 natureza. Alterá-la muda a pontuação calculada dali em diante, mas nenhum evento é reescrito.
 *Justificativa:* o enunciado exige regras explícitas e configuráveis; retroagir parâmetro reescreveria história financeira.
@@ -380,6 +382,8 @@ do horário, maior ou igual o desconto). Régua inválida não pode ser salva.
 
 **RN-03 — Piso de preço.** O preço vigente nunca é inferior ao preço mínimo declarado pelo prestador para o
 serviço, nem inferior ao preço-base menos o teto global de desconto (P-05). Vence o mais restritivo dos dois.
+O teto aplicado é o vigente no cálculo: alterar a P-05 muda o preço de horário publicado e ainda sem reserva,
+porque ele não é obrigação firmada; o agendamento já reservado mantém o preço travado (RN-04).
 *Rastreio:* RF-021, RF-025.
 
 **RN-04 — Preço travado na reserva.** O valor de um agendamento é o preço vigente no **instante da reserva**,
@@ -611,8 +615,8 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-007** *(Indesejado)* — **SE** uma sessão tentar executar operação não permitida ao seu perfil, **ENTÃO** o sistema DEVE negar a operação, retornar erro de autorização e registrar a tentativa na trilha de auditoria. ↳ *US-03, RF-084*
 - **RF-008** *(Evento)* — **QUANDO** o admin aprovar um prestador `PENDENTE_APROVACAO`, o sistema DEVE mover a conta para `ATIVO` e notificar o prestador. ↳ *RN-28, US-04, UC-01*
 - **RF-009** *(Evento)* — **QUANDO** o admin reprovar um cadastro, o sistema DEVE exigir justificativa textual, mover a conta para `REPROVADO` e notificar o prestador com o motivo. ↳ *RN-28, US-04*
-- **RF-010** *(Evento)* — **QUANDO** um prestador salvar seu perfil, o sistema DEVE persistir nome de exibição, descrição, região de atendimento e categorias atendidas. ↳ *US-05*
-- **RF-011** *(Estado)* — **ENQUANTO** um prestador não tiver perfil completo, ao menos um serviço cadastrado e uma régua de desconto válida, o sistema DEVE impedir a publicação de horários e indicar o que falta. ↳ *RN-08, US-05*
+- **RF-010** *(Evento)* — **QUANDO** um prestador salvar seu perfil, o sistema DEVE persistir nome de exibição, descrição e região de atendimento. As categorias atendidas não são gravadas no perfil: são as categorias dos serviços ativos do prestador. ↳ *US-05*
+- **RF-011** *(Estado)* — **ENQUANTO** um prestador não tiver o que a RN-08 exige (nome de exibição, região, ao menos um serviço ativo e uma régua de desconto válida), o sistema DEVE impedir a publicação de horários e indicar o que falta. ↳ *RN-08, US-05*
 
 ### 7.2 Serviços e horários vagos
 
@@ -756,15 +760,15 @@ negócio se materializam, e é o seu estado que o sistema protege.
 | `Usuario` | `id`, `nome`, `email` (único), `senha_hash`, `perfil` (`CLIENTE`\|`PRESTADOR`\|`ADMIN`), `estado_conta`, `reputacao` (0–100), `reputacao_inicial` (P-08 na criação), `criado_em` | Reputação é **derivada** de `EventoReputacao`, nunca editada à mão (`RN-23`) |
 | `PerfilPrestador` | `usuario_id`, `nome_exibicao`, `descricao`, `regiao_id`, `plano` (`BASICO`\|`PREMIUM`), `janela_confirmacao_min` (P-01), `politica_expiracao` (P-02), `aprovado_em`, `aprovado_por` | Extensão 1–1 de `Usuario` quando o perfil é Prestador |
 | `PerfilCliente` | `usuario_id`, `telefone`, `regiao_preferida_id` | Extensão 1–1 de `Usuario` quando o perfil é Cliente |
-| `Regiao` | `id`, `cidade`, `bairro` | Lista controlada; substitui geolocalização no MVP |
+| `Regiao` | `id`, `cidade`, `bairro` | Lista controlada; substitui geolocalização no MVP. Carregada pela implantação; manutenção pelo admin fica fora do MVP (OPEN-11) |
 
 #### Catálogo e oferta
 
 | Entidade | Atributos | Observações |
 |---|---|---|
-| `CategoriaServico` | `id`, `nome`, `percentual_comissao_vigente`, `vigente_desde` | Percentual dentro da faixa P-13 (`RN-15`) |
+| `CategoriaServico` | `id`, `nome`, `percentual_comissao_vigente`, `vigente_desde` | Percentual dentro da faixa P-13 (`RN-15`). Lista carregada pela implantação; o admin edita só o percentual (OPEN-11) |
 | `Servico` | `id`, `prestador_id`, `categoria_id`, `nome`, `duracao_min`, `preco_base`, `preco_minimo`, `ativo` | `preco_minimo` é o piso de `RN-03` |
-| `ReguaDesconto` | `id`, `prestador_id`, `nome`, `ativa` | Um prestador pode ter várias réguas, uma ativa por serviço |
+| `ReguaDesconto` | `id`, `prestador_id`, `nome`, `ativa` | Pertence ao prestador, que pode ter várias; cada horário escolhe uma ao ser publicado (`HorarioVago.regua_id`, QA-07, OPEN-10) |
 | `FaixaDesconto` | `id`, `regua_id`, `antecedencia_min`, `percentual_desconto` | Conjunto validado por `RN-02` |
 | `HorarioVago` | `id`, `prestador_id`, `servico_id`, `regua_id`, `inicio`, `duracao_min`, `preco_base_snapshot`, `estado`, `criado_em` | `preco_base_snapshot` isola o horário de edições futuras do serviço |
 
@@ -772,7 +776,7 @@ negócio se materializam, e é o seu estado que o sistema protege.
 
 | Entidade | Atributos | Observações |
 |---|---|---|
-| `Agendamento` | `id`, `horario_id`, `cliente_id`, `prestador_id`, `estado`, `valor_travado`, `percentual_desconto_aplicado`, `prazo_confirmacao_em`, `criado_em`, `confirmado_em`, `encerrado_em`, `estado_cobranca`, `motivo_encerramento`, `observacao` | `valor_travado` implementa `RN-04`; `prazo_confirmacao_em` implementa `RN-10` |
+| `Agendamento` | `id`, `horario_id`, `cliente_id`, `prestador_id`, `estado`, `valor_travado`, `percentual_desconto_aplicado`, `prazo_confirmacao_em`, `criado_em`, `confirmado_em`, `autoconclusao_prazo_em`, `encerrado_em`, `avaliacao_prazo_em`, `estado_cobranca`, `motivo_encerramento`, `observacao` | `valor_travado` implementa `RN-04`; `prazo_confirmacao_em` implementa `RN-10`; `autoconclusao_prazo_em` (P-17) e `avaliacao_prazo_em` (P-14) são os prazos travados de `RN-00` |
 | `LancamentoComissao` | `id`, `agendamento_id`, `valor_bruto`, `percentual_aplicado`, `valor_comissao`, `valor_liquido`, `estado` (`EFETIVADO`\|`RETIDO`\|`ESTORNADO`), `competencia` | Criado só na conclusão (`RN-16`) |
 | `Avaliacao` | `id`, `agendamento_id`, `autor_id`, `alvo_id`, `nota` (1–5), `comentario`, `criada_em`, `visivel_em` | Unicidade por (`agendamento_id`, `autor_id`) — `RN-24` |
 | `EventoReputacao` | `id`, `usuario_id`, `tipo`, `delta`, `origem_tipo`, `origem_id`, `revertido_em`, `criado_em` | Livro-razão da reputação; reversão de disputa marca `revertido_em` (`RN-27`) |
@@ -1409,7 +1413,7 @@ fechadas até o marco indicado — e as marcadas com **ADR** viram registro form
 | QA-04 | Modelo de autenticação (sessão x token) e granularidade de permissão | **ADR-004** | M1 | Resolvida: ADR-004 aceito (ver `OPEN-12` em `docs/specs/` sobre a expiração da sessão) |
 | QA-05 | Escopo financeiro: registrar pagamento sem gateway | **ADR-005**, formalizando RN-33 | M2 | Resolvida: ADR-005 aceito |
 | QA-06 | Penalidade financeira em cancelamento (multa) além da reputação | Fora do MVP; sem gateway, não há como cobrar. Reavaliar se QA-05 mudar | M2 | Aberta (fora do MVP) |
-| QA-07 | Régua de desconto por serviço ou por prestador | MVP: régua por prestador, selecionável por horário. Revisar se aparecer necessidade real | M1 | Aberta (ver `OPEN-10` em `docs/specs/`) |
+| QA-07 | Régua de desconto por serviço ou por prestador | MVP: régua por prestador, selecionável por horário. Revisar se aparecer necessidade real | M1 | **Resolvida na v0.1.10:** régua por prestador (`OPEN-10`) |
 | QA-08 | Execução das rotinas temporais (expiração, conclusão automática) | Definir no `plan.md`: agendador interno x verificação sob demanda na leitura | M1 | Resolvida: `plan.md` §5.2, estratégia dupla |
 | QA-09 | Anexos de evidência em disputa: arquivo real ou apenas texto e URL | Iniciar com texto + URL; arquivo se houver tempo | M3 | Aberta |
 | QA-10 | Limite de interpretações por usuário (RNF-13) | Definir número junto com o provedor escolhido em ADR-003 | M3 | **Resolvida na v0.1.7:** P-21 |

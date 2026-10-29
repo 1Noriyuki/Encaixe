@@ -32,7 +32,7 @@ import {
 } from '../dominio/cancelamento.js';
 import {
   assegurarJanelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
-  prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAutoConclusao,
+  prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAvaliacaoDo, prazoAutoConclusao,
 } from '../dominio/prazos.js';
 import { calcularComissao, competenciaDe } from '../dominio/comissao.js';
 import {
@@ -566,9 +566,12 @@ export function concluirAutomaticamente(ag) {
 
 function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
   assegurarTransicao('agendamento', ag.estado, 'CONCLUIDO');
+  // RN-00 / P-14: a conclusão trava o prazo de avaliação.
+  const prazoDeAvaliar = prazoAvaliacao(agora, params());
   agendamentosRepo.atualizar(ag.id, {
     estado: 'CONCLUIDO',
     encerrado_em: agora,
+    avaliacao_prazo_em: prazoDeAvaliar,
     estado_cobranca: estadoCobranca,
     observacao: observacao || ag.observacao,
   });
@@ -599,8 +602,7 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
     detalhe: { comissao: lancamento.valor_comissao, liquido: lancamento.valor_liquido },
   });
 
-  const p = params();
-  const ate = formatarDataHora(prazoAvaliacao(agora, p));
+  const ate = formatarDataHora(prazoDeAvaliar);
   notificar(ag.cliente_id, {
     tipo: 'AGENDAMENTO_CONCLUIDO',
     titulo: 'Atendimento concluído - avalie',
@@ -686,7 +688,7 @@ function enriquecer(ag) {
     prazoDisputa: prazoDisputa(ag.inicio, ag.duracao_min, p),
     podeAbrirDisputa: ['CONCLUIDO', 'NO_SHOW_CLIENTE', 'NO_SHOW_PRESTADOR'].includes(ag.estado)
       && antesDe(agora, prazoDisputa(ag.inicio, ag.duracao_min, p)),
-    prazoAvaliacao: ag.encerrado_em ? prazoAvaliacao(ag.encerrado_em, p) : null,
+    prazoAvaliacao: ag.encerrado_em ? prazoAvaliacaoDo(ag, p) : null,
   };
 }
 

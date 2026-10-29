@@ -13,7 +13,7 @@ import * as horariosRepo from '../infra/repositorios/horarios.js';
 import * as social from '../infra/repositorios/social.js';
 import * as auditoria from '../infra/auditoria.js';
 import { assegurarTransicao } from '../dominio/estados.js';
-import { prazoAutoConclusao, prazoAvaliacao } from '../dominio/prazos.js';
+import { prazoAutoConclusao, prazoAvaliacaoDo } from '../dominio/prazos.js';
 import { agoraIso, antesDe } from '../dominio/tempo.js';
 import { params } from './parametros.js';
 import * as agendamentos from './agendamentos.js';
@@ -42,7 +42,8 @@ export function executar() {
 
   // RF-060 - conclusao automatica sem contestacao.
   for (const ag of agendamentosRepo.confirmadosComAtendimentoEncerrado(agora)) {
-    // Registros históricos anteriores à migração usam a regra de fallback.
+    // A migração preenche os legados; o cálculo abaixo só cobre um banco que
+    // ainda não passou por ela.
     const prazo = ag.autoconclusao_prazo_em ?? prazoAutoConclusao(ag.inicio, ag.duracao_min, p);
     if (antesDe(agora, prazo)) continue;
     const r = seguro(() => agendamentos.concluirAutomaticamente(ag), 'autoconclusao', ag.id);
@@ -77,7 +78,7 @@ export function executar() {
   // RN-25 - janela de avaliacao encerrada: revela o que estava oculto.
   for (const ag of agendamentosRepo.comAvaliacaoOculta()) {
     if (!ag.encerrado_em) continue;
-    if (antesDe(agora, prazoAvaliacao(ag.encerrado_em, p))) continue;
+    if (antesDe(agora, prazoAvaliacaoDo(ag, p))) continue;
     seguro(() => {
       avaliacoes.revelar(ag.id);
       resumo.avaliacoesReveladas += 1;

@@ -23,7 +23,7 @@ import {
   ErroDeRegra, ErroDeValidacao, ErroDeAutorizacao, NaoEncontrado,
 } from '../dominio/erros.js';
 import { assegurarTransicao } from '../dominio/estados.js';
-import { assegurarPrazoDisputa, prazoSlaDisputa } from '../dominio/prazos.js';
+import { assegurarPrazoDisputa, prazoSlaDisputa, prazoAvaliacao } from '../dominio/prazos.js';
 import {
   TIPO_EVENTO, DELTA_NO_SHOW, DELTA_CONCLUSAO, DELTA_DISPUTA_CONTRA,
 } from '../dominio/reputacao.js';
@@ -304,7 +304,12 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
     }
   }
 
-  agendamentosRepo.atualizar(ag.id, { encerrado_em: agora });
+  // A decisão reabre a janela de avaliação a partir de agora; quando o desfecho
+  // é CONCLUIDO, ela é o fato que trava a P-14 (RN-00).
+  agendamentosRepo.atualizar(ag.id, {
+    encerrado_em: agora,
+    ...(estadoFinal === 'CONCLUIDO' ? { avaliacao_prazo_em: prazoAvaliacao(agora, params()) } : {}),
+  });
   return { estadoFinal, comissao };
 }
 

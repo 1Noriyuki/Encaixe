@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 4 de 9 testes da §12 existem com o identificador proposto |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-017, SPEC-019, SPEC-020, SPEC-023 |
 | Responsável | gostislavs |
@@ -111,12 +111,13 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 
 A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
 
-## 13. Questões e lacunas documentadas
-1. P-13 de escopo global/categoria deve manter uma única fonte operacional, conforme OPEN-103 já decidida.
-2. Definir exatamente o significado de receita 'acumulada' quando há competência e retenções, sem contabilização monetária efetiva.
-3. Permissões do admin e autenticação são responsabilidade da SPEC-003 e sua interface, não deste cálculo.
+## 13. Questões decididas
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+1. **Fonte da P-13:** já decidida na OPEN-103: uma única fonte operacional por categoria.
+2. **Receita acumulada:** Decidida em 2026-10-29 (etapa 32): soma das comissões `EFETIVADO` no recorte, com as `RETIDO` à parte, como no extrato (SPEC-024).
+3. **Permissões do admin:** restrição confirmada, sem decisão nova: pertencem à SPEC-003.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

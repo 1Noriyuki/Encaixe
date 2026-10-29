@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Status | **Especificação derivada da baseline para conferência do código — decisões em aberto preservadas** |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 9 testes da §12 existem com o identificador proposto |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-009; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005, SPEC-007 e SPEC-008 |
@@ -94,12 +94,13 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 
 A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
 
-## 13. Questões em aberto
-1. OPEN-16: a baseline pede categorias atendidas no perfil, mas PerfilPrestador não possui atributo separado; esclarecer se categorias derivam de serviços ativos.
-2. OPEN-11: origem e governança da lista controlada de regiões.
-3. Definir o comportamento de nome de exibição e região inválidos em alterações que já possuam horários publicados; não reescrever horários existentes.
+## 13. Questões decididas
 
-As questões acima não foram decididas neste arquivo e não autorizam alteração silenciosa da baseline.
+1. **OPEN-16:** Decidida em 2026-10-29 (etapa 32): as categorias atendidas derivam dos serviços ativos, sem atributo no perfil; RF-011 passa a citar a lista da RN-08. Spec v0.1.10.
+2. **OPEN-11:** Decidida em 2026-10-29 (etapa 32): ver SPEC-007 §13, item 1.
+3. **Nome ou região inválidos com horários publicados:** Decidida em 2026-10-29 (etapa 32): a validação vale sempre e recusa o dado inválido. Alteração válida aparece nos horários, que leem esses dados do perfil; nenhum horário é reescrito.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 1. Cada CA tem evidência identificada e resultado automatizado quando aplicável.

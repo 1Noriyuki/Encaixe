@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Status | **Especificação derivada da baseline para conferência do código — decisões em aberto preservadas** |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 5 de 9 testes da §12 existem com o identificador proposto |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-008; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005 e SPEC-007 |
@@ -93,12 +93,13 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 
 A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
 
-## 13. Questões em aberto
-1. OPEN-10: a baseline menciona régua por serviço, mas QA-07 fala em régua por prestador selecionável por horário. A implementação atual usa régua de prestador selecionável; decisão permanece necessária.
-2. Caso P-05 seja reduzido abaixo de descontos já publicados, definir efeito em réguas preexistentes sem reescrever preços travados.
-3. Decidir limites de número de faixas para operação comercial; não estão definidos na baseline.
+## 13. Questões decididas
 
-As questões acima não foram decididas neste arquivo e não autorizam alteração silenciosa da baseline.
+1. **OPEN-10:** Decidida em 2026-10-29 (etapa 32): a régua é do prestador e cada horário escolhe uma ao ser publicado. Spec v0.1.10 corrige a §9.2 e fecha a QA-07.
+2. **P-05 reduzido abaixo de descontos já configurados:** Decidida em 2026-10-29 (etapa 32): o teto vigente vale no cálculo de horário ainda sem reserva; o agendamento reservado mantém o preço travado (RN-04). Spec v0.1.10, RN-03.
+3. **Limite de faixas:** Decidida em 2026-10-29 (etapa 32): sem limite no MVP.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 1. Cada CA tem evidência identificada e resultado automatizado quando aplicável.

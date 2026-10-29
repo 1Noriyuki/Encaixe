@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 2 de 9 testes da §12 existem com o identificador proposto |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-016, SPEC-020 |
 | Responsável | gostislavs |
@@ -111,12 +111,13 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 
 A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
 
-## 13. Questões e lacunas documentadas
-1. Definir se os comentários também permanecem ocultos até a revelação, considerando o comportamento atual do repositório.
-2. Regra de visualização de avaliações para usuários não autenticados deve seguir RNF-04.
-3. Alterar P-14 depois da conclusão pode afetar avaliações existentes; a precedência temporal requer alinhamento com RN-00.
+## 13. Questões decididas
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+1. **Comentários antes da revelação:** Decidida em 2026-10-29 (etapa 32): ficam ocultos junto com a nota; a coluna `visivel` vale para a avaliação inteira.
+2. **Visitante sem login:** Decidida em 2026-10-29 (etapa 32): vê só avaliações reveladas, conforme RNF-04.
+3. **P-14 alterada depois da conclusão:** Decidida em 2026-10-29 (etapa 32): a conclusão trava o prazo de avaliação em `agendamento.avaliacao_prazo_em` (RN-00, spec v0.1.10). O código calculava o prazo com a P-14 do momento da leitura e foi corrigido, com os testes T-P14-01 a 04.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

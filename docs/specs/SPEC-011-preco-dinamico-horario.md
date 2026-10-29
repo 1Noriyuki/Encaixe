@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 3 de 8 testes da §12 existem com o identificador proposto |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-008, SPEC-010 |
 | Responsável | gostislavs |
@@ -105,12 +105,13 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 
 A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
 
-## 13. Questões e lacunas documentadas
-1. Confirmar precisão e regra de arredondamento monetário da baseline sem introduzir flutuante no dinheiro.
-2. Regra quando o teto global P-05 diminui para ofertas já publicadas: preservar reservas travadas e definir reflexo em ofertas ainda não reservadas.
-3. Limites comerciais por segmento não constam da baseline; não adicionar sem decisão.
+## 13. Questões decididas
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+1. **Precisão monetária:** Decidida em 2026-10-29 (etapa 32): dinheiro é inteiro de centavos com arredondamento meio para cima (ADR-002, RN-14), como o código já faz.
+2. **P-05 reduzido com ofertas publicadas:** Decidida em 2026-10-29 (etapa 32): ver SPEC-008 §13, item 2.
+3. **Limites por segmento:** Decidida em 2026-10-29 (etapa 32): fora do MVP.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.
