@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 5 de 9 testes da §12 existem com o identificador proposto |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-008; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005 e SPEC-007 |
@@ -79,19 +79,25 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 **CA-09** — Dado o cenário de régua de desconto e simulador, quando prestador A não altera régua de B., então o resultado deve satisfazer os invariantes de domínio, ser verificável em banco e não causar efeitos colaterais não previstos.
 
 ## 12. Casos de teste derivados
-| Teste | Critério |
-|---|---|
-| `T-SPEC008-01 \| RF-018: criar régua com faixas válidas e titularidade do prestador` | CA-01 |
-| `T-SPEC008-02 \| RF-018: não admitir ausência de faixas, antecedência zero, percentual negativo nem acima do teto` | CA-02 |
-| `T-SPEC008-03 \| RF-018: não admitir antecedências duplicadas` | CA-03 |
-| `T-SPEC008-04 \| RF-018: impedir desconto menor conforme o horário se aproxima` | CA-04 |
-| `T-SPEC008-05 \| RF-018: atualização válida substitui faixas sem duplicidade e é auditada` | CA-05 |
-| `T-SPEC008-06 \| RF-018: atualização inválida preserva todas as faixas anteriores` | CA-06 |
-| `T-SPEC008-07 \| RF-018: simulador retorna preço sem ultrapassar o desconto teto ou o piso do prestador` | CA-07 |
-| `T-SPEC008-08 \| RF-018: simulação não altera contadores do banco` | CA-08 |
-| `T-SPEC008-09 \| RF-018: prestador a não altera régua de b` | CA-09 |
 
-A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
+Os IDs `T-SPEC008-01` a `05` já identificam testes de leitura de números da régua (`spec-008-validacao-regua.test.js`), que seguem como cobertura complementar. Os critérios usam `T-SPEC008-CAnn`, em `tests/integracao/spec-008-evidencia.test.js`.
+
+| Teste | Cobre |
+|---|---|
+| `T-SPEC008-CA01 \| RF-018: criar régua com faixas válidas e titularidade do prestador` | CA-01 |
+| `T-SPEC008-CA02 \| RF-018: não admitir ausência de faixas, antecedência zero, percentual negativo nem acima do teto`<br>`T-SPEC008-04 \| RNF-01: regua invalida nao cria faixas nem modifica banco` | CA-02, INV-001 |
+| `T-SPEC008-CA03 \| RF-018: não admitir antecedências duplicadas` | CA-03 |
+| `T-SPEC008-CA04 \| RF-018: impedir desconto menor conforme o horário se aproxima` | CA-04 |
+| `T-SPEC008-CA05 \| RF-018: atualização válida substitui faixas sem duplicidade e é auditada` | CA-05, INV-005 |
+| `T-SPEC008-CA06 \| RF-018: atualização inválida preserva todas as faixas anteriores` | CA-06, INV-001 |
+| `T-SPEC008-CA07 \| RF-018: simulador retorna preço sem ultrapassar o desconto teto ou o piso do prestador` | CA-07 |
+| `T-SPEC008-CA08 \| RF-018: simulação não altera contadores do banco` | CA-08 |
+| `T-SPEC008-CA09 \| RF-018: prestador a não altera régua de b` | CA-09, INV-002 |
+| `T-SPEC011-CA08 \| RN-01: preço travado de reserva anterior não muda quando o relógio avança`<br>`T-HORARIO-04 \| RN-05: servico alterado nao modifica snapshots de horario reservado` | INV-004 (a régua editada não muda o preço já travado) |
+
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
+
+**INV-003 e INV-006** são conferência de código: o teto vem da P-05 e a faixa de 0 a 100% da RN-02; as faixas dependem da régua por chave estrangeira.
 
 ## 13. Questões decididas
 

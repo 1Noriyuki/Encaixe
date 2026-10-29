@@ -672,3 +672,30 @@
 
   Parte dos critérios pode estar coberta por testes antigos com outro nome (a própria SPEC-024 pede esse mapeamento), mas isso precisa ser demonstrado numa tabela de evidência como a da SPEC-001 §12. Por isso, as nove issues são **reabertas**, com o motivo e a contagem em comentário.
 - **Verificação:** `npm test`: 267/267 em quatro rodadas consecutivas. Numa rodada anterior, 1 teste falhou e a falha não se reproduziu; o nome do teste não foi capturado. Fica como suspeita de teste intermitente, a investigar se reaparecer. O seed do zero e a migração de uma cópia de `dados/encaixe.db` rodaram sem erro.
+
+### Etapa 33 — Evidência das Specs da Trilha A · 2026-10-29
+
+- **Pedido (Enzo):** resolver as nove issues reabertas na etapa 32 (#85, #86, #87, #88, #90, #99, #100, #103 e #105). Elas estão atribuídas ao gostislavs, que não tinha PR aberto nem branch recente sobre o tema; o PR avisa para evitar trabalho duplicado.
+- **Correção da contagem da etapa 32:** a etapa anterior contou 22 testes existentes procurando só pelo identificador. Ao comparar o título, quase todos testavam outra coisa, porque os IDs `T-SPEC008-01..05`, `T-SPEC011-01..03`, `T-SPEC021-01..02`, `T-SPEC026-01..03` e `T-REPUT-01..10` tinham sido dados a testes de outro assunto. Só `T-REPUT-07`, `T-REPUT-09`, `T-SPEC026-04` e, em parte, `T-REPUT-03` correspondiam ao critério. Os comentários de reabertura das issues repetem a contagem errada; o PR desta etapa a corrige.
+- **Regra adotada:** um identificador não pode nomear dois testes, senão a rastreabilidade por `grep` quebra. Onde havia colisão, os critérios usam `T-SPECnnn-CAnn` (SPEC-008, 011, 021 e 026). Onde não havia, ficaram os IDs propostos (SPEC-007, 009, 020 e 024).
+- **SPEC-006:** a evidência já existia na matriz `evidencias-SPEC-006-trilha-a-20261022.md`, com outros IDs (`T-SPEC006-CAnn`, `T-CONTA-01l`, `T-P22-0n` etc.). Os 20 testes foram conferidos e passam; só a §12 estava errada.
+- **Testes novos:** 69, em `tests/integracao/spec-0nn-evidencia.test.js`.
+
+  | Spec | Testes novos |
+  |---|---|
+  | 007 | 8 |
+  | 008 | 9 |
+  | 009 | 9 |
+  | 011 | 8 |
+  | 020 | 10 |
+  | 021 | 9 |
+  | 024 | 8 |
+  | 026 | 8 |
+
+  A §12 de cada Spec passou a ser a tabela de evidência no modelo da SPEC-001, ligando cada CA e cada INV ao teste que a cobre. As invariantes que não cabem em teste aparecem como conferência de código.
+- **Divergências encontradas e corrigidas:**
+  - **SPEC-007 §5:** um preço malformado ou negativo gerava erro sem o campo, e a tela não apontava a entrada. Além disso, um preço mínimo negativo passado como número era gravado. `paraCentavos(entrada, campo)` agora recusa número negativo e leva o campo no erro.
+  - **SPEC-009 §13, item 3:** uma região inexistente no perfil estourava `FOREIGN KEY constraint failed`. `salvarPerfilPrestador` agora recusa com erro no campo `regiaoId`.
+  - **SPEC-026:** uma categoria inexistente em `ajustarComissao` lançava `Error` genérico, que vira resposta 500. Agora lança `NaoEncontrado`.
+- **Pendente:** a DoD da SPEC-006 exige revisão do PR por outro integrante, então o merge espera essa revisão. A tela do extrato não oferece filtro de período, embora o repositório o suporte. Isso é interface e fica fora destas Specs.
+- **Verificação:** `npm test` passou com 336/336 em duas rodadas.

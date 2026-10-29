@@ -8,14 +8,19 @@
 
 import { ErroDeValidacao } from './erros.js';
 
-/** Converte '80', '80,50', 'R$ 80,50', 80.5 em centavos. */
-export function paraCentavos(entrada) {
+/**
+ * Converte '80', '80,50', 'R$ 80,50', 80.5 em centavos. `campo` vai no erro para
+ * a tela apontar a entrada inválida (SPEC-007 §5).
+ */
+export function paraCentavos(entrada, campo = null) {
   if (typeof entrada === 'number') {
-    if (!Number.isFinite(entrada)) throw new ErroDeValidacao('Valor monetário inválido.');
+    if (!Number.isFinite(entrada) || entrada < 0) {
+      throw new ErroDeValidacao(`Valor monetário inválido: "${entrada}"`, campo);
+    }
     return Math.round(entrada * 100);
   }
   const texto = String(entrada ?? '').trim().replace(/^R\$\s*/i, '');
-  if (texto === '') throw new ErroDeValidacao('Informe um valor.');
+  if (texto === '') throw new ErroDeValidacao('Informe um valor.', campo);
 
   // Aceita '1.234,56' (pt-BR) e '1234.56' (en-US).
   let normalizado = texto;
@@ -24,7 +29,7 @@ export function paraCentavos(entrada) {
   }
   const numero = Number(normalizado);
   if (!Number.isFinite(numero) || numero < 0) {
-    throw new ErroDeValidacao(`Valor monetário inválido: "${entrada}"`);
+    throw new ErroDeValidacao(`Valor monetário inválido: "${entrada}"`, campo);
   }
   return Math.round(numero * 100);
 }

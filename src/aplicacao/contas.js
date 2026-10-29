@@ -240,6 +240,10 @@ export function salvarPerfilPrestador({ prestadorId, nomeExibicao, descricao, re
   if (!['LIBERAR', 'AUTOCONFIRMAR'].includes(politicaExpiracao)) {
     throw new ErroDeValidacao('Política de expiração inválida.', 'politicaExpiracao');
   }
+  // SPEC-009 §13: região fora da lista controlada é erro de campo, não falha do banco.
+  if (regiaoId && !catalogo.regiaoPorId(Number(regiaoId))) {
+    throw new ErroDeValidacao('Escolha uma região da lista.', 'regiaoId');
+  }
 
   return transacao(() => {
     // Não auditar como sucesso uma atualização em perfil inexistente.

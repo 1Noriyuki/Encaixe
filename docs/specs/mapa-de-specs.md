@@ -578,5 +578,5 @@ O mapa e a ordem foram aprovados em 2026-10-01. OPEN-01 e OPEN-02 foram decidida
 e ratificadas pela Trilha C em 2026-10-18; a OPEN-210 também foi decidida em 2026-10-08. As Specs
 seguem uma por vez, na ordem aprovada: SPEC-001 a SPEC-005 estão aprovadas (as três últimas
 em 2026-10-20). Em 2026-10-29 (etapa 32) foram aprovadas, fora da ordem porque o código já estava
-integrado, as SPEC-006 a 009, 011, 020, 021, 024 e 026; a Definition of Done delas segue pendente de
-evidência. A próxima a gerar é a SPEC-010. A implementação de uma Spec depende de aprovação explícita.
+integrado, as SPEC-006 a 009, 011, 020, 021, 024 e 026, com a evidência completada na etapa 33; o merge
+aguarda a revisão de outro integrante. A próxima a gerar é a SPEC-010. A implementação de uma Spec depende de aprovação explícita.
