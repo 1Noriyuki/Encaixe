@@ -393,3 +393,10 @@
   - [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md): RF-003/RF-008/RF-009, fila, transições administrativas, justificativa e notificação.
 - **Estado:** as três estão em rascunho e aguardam revisão/aprovação explícita da equipe. Nenhuma implementação nova ou teste de comportamento ainda não aprovado foi iniciado. Os testes de T-11 existentes constituem evidência da conferência da SPEC-002.
 - **Questões mantidas explícitas:** auditoria de tentativas por titularidade (SPEC-003), matriz/atomicidade/paginação de notificações (SPEC-004), limite mínimo da justificativa e significado de “notificar a fila” (SPEC-005).
+
+### Etapa 21 — Busca por categoria, região e janela (T-28) · 2026-10-29
+
+- **Pedido:** concluir a T-28 e verificar os filtros RF-028 a RF-030.
+- **Produzido:** a busca limita a consulta ao primeiro horário que já atende P-04, preservando a janela solicitada quando ela começa depois; os filtros de estado `PUBLICADO` e conta `ATIVO` permanecem no repositório.
+- **Evidência:** `T-BUSCA-03` cobre categoria, região, janela e elegibilidade; `T-BUSCA-03b` cobre P-04, o limite inclusivo e as exclusões de horário cancelado e prestador inativo.
+- **Spec:** sem alteração; o comportamento implementa os RF-028 a RF-030 já aprovados em `docs/spec.md`.
