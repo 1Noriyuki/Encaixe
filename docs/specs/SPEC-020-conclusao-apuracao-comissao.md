@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 9 testes da §12 existem com o identificador proposto |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-016, SPEC-019 |
 | Responsável | gostislavs |
@@ -113,12 +113,13 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 
 A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
 
-## 13. Questões e lacunas documentadas
-1. Bancos legados sem P-17 histórico não permitem reconstrução exata do prazo original; fallback deve ficar documentado.
-2. Confirmar relação de apresentação entre estado de cobrança NAO_PAGO e comissão apurada, conforme RN-33 existente.
-3. O fluxo financeiro deve manter a máquina e auditoria da SPEC-001 §9.7.1, sem antecipar desfechos de disputa.
+## 13. Questões decididas
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+1. **Bancos legados sem P-17 gravada:** Decidida em 2026-10-29 (etapa 32): a migração grava nos confirmados legados a P-17 vigente naquele momento, e dali em diante o prazo fica travado (`acrescentarPrazoAutoconclusao`, teste T-P17-04).
+2. **NAO_PAGO e comissão apurada:** Decidida em 2026-10-29 (etapa 32): são estados independentes. O estado de cobrança não altera o lançamento, e os dois aparecem lado a lado (RN-33).
+3. **Máquina e auditoria:** restrição confirmada, sem decisão nova: o fluxo financeiro segue a SPEC-001 §9.7.1.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

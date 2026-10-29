@@ -629,3 +629,46 @@
 - **Teste de integração:** GitHub Actions Node 24, execução #39884130601, `261 testes aprovados, 0 falhas, 0 ignorados` no commit de integração anterior à inclusão destes documentos.
 - **Estado do SDD:** as SPEC-006/007/008/009/011/020/021/024/026 continuam rascunhos até decisões explícitas da equipe; as issues correspondentes não foram fechadas por esta etapa. O merge dos PRs originais não deve duplicar arquivos após uma eventual incorporação do PR #142.
 - **CI após documentação:** a execução do novo commit deve ser verificada separadamente.
+
+### Etapa 32 — Aprovação das Specs da Trilha A e correção da P-14 · 2026-10-29
+
+- **Pedido (Enzo):** verificar os PRs abertos e fechar o que fosse possível; em seguida, decidir as questões da §13 das nove Specs da Trilha A.
+- **PRs:** nenhum aberto. O #142 (integração dos #136 a #141) foi mergeado em 2026-10-23 e os seis PRs individuais foram fechados como substituídos, como ele pedia. O #143 (2dart5, P-04 e filtros na busca, `Closes #30`) foi fechado em 2026-10-29 sem merge e sem comentário; a #30 segue aberta. Falta perguntar ao 2dart5 se o trabalho foi abandonado ou vai voltar com outra base.
+- **Divergência de processo registrada:** em 2026-10-23, depois do merge do #142, o gostislavs fechou as issues #85, #86, #87, #88, #90, #99, #100, #103 e #105 como "encerramento administrativo" pedido pelo responsável do projeto. O comentário de fechamento reconhece que as Specs ainda eram rascunho. Isso contraria a regra de fechar issue só com a Definition of Done inteira, e o fechamento não tinha sido registrado aqui.
+- **Decisões aprovadas por Enzo** (proposta do agente, aprovada sem alteração):
+  - **OPEN-10:** a régua é do prestador, e cada horário escolhe uma. A §9.2 é corrigida e a QA-07 é fechada.
+  - **OPEN-16:** as categorias atendidas derivam dos serviços ativos. O RF-010 deixa de persisti-las e o RF-011 passa a citar a lista da RN-08, que é a que o código já confere.
+  - **OPEN-11:** no MVP, categorias e regiões são listas carregadas pela implantação; o admin edita só o percentual de comissão da categoria.
+  - **OPEN-03:** fica aceita a leitura do mapa (spec §1.5 e constituição).
+  - **P-05 reduzido** (SPEC-008 e SPEC-011): o teto vigente vale no cálculo de horário ainda sem reserva, e a reserva mantém o preço travado. A RN-03 ganha esse texto.
+  - **P-14** (SPEC-021): a conclusão trava o prazo de avaliação, conforme a RN-00.
+  - **Demais questões:** as outras 23 confirmam o comportamento atual e estão escritas na §13 de cada Spec.
+- **Correção de código (P-14):** `prazoAvaliacao()` usava a P-14 do momento da leitura, então alterar o parâmetro movia prazos que já estavam correndo, o que contraria a RN-00. A partir desta etapa:
+  - `agendamento.avaliacao_prazo_em` é gravado na conclusão e na decisão de disputa com desfecho `CONCLUIDO`;
+  - `migrar()` preenche os concluídos antigos com a P-14 vigente;
+  - `prazoAvaliacaoDo(ag)` é a única leitura do prazo.
+  - Testes: T-P14-01 a 04 e T-AVAL-02b.
+- **Premissa corrigida (SPEC-020 Q1):** a proposta dizia que os registros legados usavam "a P-17 vigente na migração", mas o código deixava o prazo nulo e o calculava na leitura. Para cumprir a decisão aprovada, `acrescentarPrazoAutoconclusao()` passou a gravar a P-17 vigente nos confirmados legados (T-P17-04).
+- **Spec v0.1.10:**
+  - RN-00: novos exemplos (P-17 e P-14);
+  - RN-03: regra do teto vigente;
+  - RF-010 e RF-011;
+  - §9.2: `Regiao`, `CategoriaServico`, `ReguaDesconto` e `Agendamento`;
+  - QA-07 resolvida.
+  - O mapa marca as OPEN-03, 10, 11 e 16 como resolvidas.
+- **Conferência da Definition of Done:** as nove Specs estão **aprovadas no texto**, mas nenhuma está concluída. Dos 79 testes que as §12 propõem, só 22 existem com o identificador proposto:
+
+  | Spec | Testes da §12 que existem |
+  |---|---|
+  | 006 | 8 de 10 |
+  | 007 | 0 de 8 |
+  | 008 | 5 de 9 |
+  | 009 | 0 de 9 |
+  | 011 | 3 de 8 |
+  | 020 | 0 de 9 |
+  | 021 | 2 de 9 |
+  | 024 | 0 de 8 |
+  | 026 | 4 de 9 |
+
+  Parte dos critérios pode estar coberta por testes antigos com outro nome (a própria SPEC-024 pede esse mapeamento), mas isso precisa ser demonstrado numa tabela de evidência como a da SPEC-001 §12. Por isso, as nove issues são **reabertas**, com o motivo e a contagem em comentário.
+- **Verificação:** `npm test`: 267/267 em quatro rodadas consecutivas. Numa rodada anterior, 1 teste falhou e a falha não se reproduziu; o nome do teste não foi capturado. Fica como suspeita de teste intermitente, a investigar se reaparecer. O seed do zero e a migração de uma cópia de `dados/encaixe.db` rodaram sem erro.

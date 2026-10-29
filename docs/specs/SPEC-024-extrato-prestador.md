@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Definition of Done **pendente**: 0 de 8 testes da §12 existem com o identificador proposto |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-020, SPEC-023 |
 | Responsável | gostislavs |
@@ -107,12 +107,13 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 
 A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
 
-## 13. Questões e lacunas documentadas
-1. As consultas por período devem usar criado_em do lançamento ou competência financeira? Implementação atual utiliza criado_em; explicitar decisão.
-2. Totais de retenções respeitam o mesmo filtro temporal dos itens efetivados? O código atual precisa ser conferido quanto a isso.
-3. Pagamentos e repasses efetivos estão fora do MVP e não devem ser anunciados.
+## 13. Questões decididas
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+1. **Base do período:** Decidida em 2026-10-29 (etapa 32): `criado_em` do lançamento; o MVP não tem competência financeira.
+2. **Filtro das retenções:** Decidida em 2026-10-29 (etapa 32): usam o mesmo intervalo dos efetivados, como o código já faz (`totaisPrestador`, RF-062).
+3. **Pagamentos e repasses:** restrição confirmada, sem decisão nova: fora do MVP e não anunciados.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

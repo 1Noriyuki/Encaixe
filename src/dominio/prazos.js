@@ -61,17 +61,25 @@ export function prazoAvaliacao(concluidoEmIso, params) {
   return adicionarDias(concluidoEmIso, params.janela_avaliacao_dias);
 }
 
-export function dentroDaJanelaAvaliacao(concluidoEmIso, agoraIso, params) {
-  return antesDe(agoraIso, prazoAvaliacao(concluidoEmIso, params));
+/**
+ * RN-00 / P-14 - o prazo do agendamento e o gravado na conclusao; alterar a P-14
+ * depois nao o move. Sem o prazo gravado, cai na P-14 vigente.
+ */
+export function prazoAvaliacaoDo(ag, params) {
+  return ag.avaliacao_prazo_em ?? prazoAvaliacao(ag.encerrado_em, params);
 }
 
-export function assegurarJanelaAvaliacao(concluidoEmIso, agoraIso, params) {
-  if (!dentroDaJanelaAvaliacao(concluidoEmIso, agoraIso, params)) {
+export function dentroDaJanelaAvaliacao(ag, agoraIso, params) {
+  return antesDe(agoraIso, prazoAvaliacaoDo(ag, params));
+}
+
+export function assegurarJanelaAvaliacao(ag, agoraIso, params) {
+  if (!dentroDaJanelaAvaliacao(ag, agoraIso, params)) {
+    const prazo = prazoAvaliacaoDo(ag, params);
     throw new ErroDeRegra(
       'RN-24',
-      `A janela de avaliação deste atendimento encerrou em `
-      + `${formatarDataHora(prazoAvaliacao(concluidoEmIso, params))}.`,
-      { prazo: prazoAvaliacao(concluidoEmIso, params) },
+      `A janela de avaliação deste atendimento encerrou em ${formatarDataHora(prazo)}.`,
+      { prazo },
     );
   }
 }

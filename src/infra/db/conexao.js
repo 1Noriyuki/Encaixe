@@ -11,6 +11,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PADROES } from '../../dominio/parametros.js';
+import { adicionarDias, adicionarHoras, adicionarMinutos } from '../../dominio/tempo.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../../..');
@@ -55,6 +56,7 @@ export function migrar() {
   bd().exec(sql);
   acrescentarReputacaoInicial();
   acrescentarPrazoAutoconclusao();
+  acrescentarPrazoAvaliacao();
   return bd();
 }
 
@@ -79,7 +81,9 @@ function acrescentarReputacaoInicial() {
 /**
  * Os bancos antigos não possuíam o prazo de autoconclusão travado.
  * O histórico não permite reconstruir qual P-17 estava vigente na confirmação:
- * registros legados permanecem nulos e usam o fallback explicitamente documentado.
+ * os confirmados legados recebem a P-17 em vigor na migração e dali em diante
+ * ficam travados (SPEC-020, decisão de 2026-10-29). Toda confirmação nova já
+ * grava o prazo, então só registros legados chegam aqui sem ele.
  */
 function acrescentarPrazoAutoconclusao() {
   const banco = bd();
@@ -87,6 +91,40 @@ function acrescentarPrazoAutoconclusao() {
   if (!colunas.includes('autoconclusao_prazo_em')) {
     banco.exec('ALTER TABLE agendamento ADD COLUMN autoconclusao_prazo_em TEXT');
   }
+
+  const legados = banco.prepare(
+    `SELECT a.id, h.inicio, h.duracao_min FROM agendamento a JOIN horario_vago h ON h.id = a.horario_id
+      WHERE a.estado = 'CONFIRMADO' AND a.autoconclusao_prazo_em IS NULL`,
+  ).all();
+  if (legados.length === 0) return;
+  const vigente = banco.prepare(
+    "SELECT CAST(valor AS INTEGER) AS horas FROM parametro WHERE chave = 'autoconclusao_h' AND escopo = 'GLOBAL'",
+  ).get()?.horas ?? PADROES.autoconclusao_h;
+  const gravar = banco.prepare('UPDATE agendamento SET autoconclusao_prazo_em = ? WHERE id = ?');
+  for (const ag of legados) {
+    gravar.run(adicionarHoras(adicionarMinutos(ag.inicio, ag.duracao_min), vigente), ag.id);
+  }
+}
+
+/**
+ * Bancos anteriores a spec v0.1.10 calculavam o prazo de avaliacao com a P-14 do
+ * momento da leitura. Os concluidos antigos recebem a P-14 em vigor agora, que e
+ * o prazo que ja valia para eles, e dali em diante ficam travados (RN-00).
+ */
+function acrescentarPrazoAvaliacao() {
+  const banco = bd();
+  const colunas = banco.prepare('PRAGMA table_info(agendamento)').all().map((c) => c.name);
+  if (colunas.includes('avaliacao_prazo_em')) return;
+
+  banco.exec('ALTER TABLE agendamento ADD COLUMN avaliacao_prazo_em TEXT');
+  const vigente = banco.prepare(
+    "SELECT CAST(valor AS INTEGER) AS dias FROM parametro WHERE chave = 'janela_avaliacao_dias' AND escopo = 'GLOBAL'",
+  ).get()?.dias ?? PADROES.janela_avaliacao_dias;
+  const gravar = banco.prepare('UPDATE agendamento SET avaliacao_prazo_em = ? WHERE id = ?');
+  const concluidos = banco.prepare(
+    "SELECT id, encerrado_em FROM agendamento WHERE estado = 'CONCLUIDO' AND encerrado_em IS NOT NULL",
+  ).all();
+  for (const ag of concluidos) gravar.run(adicionarDias(ag.encerrado_em, vigente), ag.id);
 }
 
 /**

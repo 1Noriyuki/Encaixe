@@ -211,6 +211,7 @@ CREATE TABLE IF NOT EXISTS agendamento (
   confirmado_em               TEXT,
   autoconclusao_prazo_em       TEXT,
   encerrado_em                TEXT,
+  avaliacao_prazo_em          TEXT,
   estado_cobranca             TEXT NOT NULL DEFAULT 'PENDENTE'
                                 CHECK (estado_cobranca IN ('PENDENTE','PAGO_PRESENCIAL','NAO_PAGO')),
   motivo_encerramento         TEXT,

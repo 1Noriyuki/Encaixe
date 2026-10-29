@@ -36,7 +36,7 @@ export function avaliar({ usuarioId, agendamentoId, nota, comentario = '' }) {
         `Só é possível avaliar um atendimento concluído (estado atual: ${ag.estado}).`,
       );
     }
-    assegurarJanelaAvaliacao(ag.encerrado_em, agora, p);
+    assegurarJanelaAvaliacao(ag, agora, p);
 
     if (social.avaliacaoDoAutor(agendamentoId, usuarioId)) {
       throw new ErroDeRegra('RN-24', 'Você já avaliou este atendimento.');
@@ -124,7 +124,7 @@ export function situacao({ agendamentoId, usuarioId }) {
 
   const todas = social.avaliacoesDoAgendamento(agendamentoId);
   const minha = todas.find((a) => a.autor_id === usuarioId) ?? null;
-  const naJanela = ag.encerrado_em ? dentroDaJanelaAvaliacao(ag.encerrado_em, agora, p) : false;
+  const naJanela = ag.encerrado_em ? dentroDaJanelaAvaliacao(ag, agora, p) : false;
 
   return {
     podeAvaliar: ag.estado === 'CONCLUIDO' && naJanela && !minha,
