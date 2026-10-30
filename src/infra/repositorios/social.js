@@ -89,9 +89,11 @@ export function criarNotificacao({ usuario_id, tipo, agendamento_id = null, titu
   );
 }
 
+// RF-083 - mais recente primeiro; no mesmo instante, a gravada por ultimo
+// (SPEC-004 §13 deixa o desempate em aberto: premissa registrada na etapa 41).
 export function notificacoesDoUsuario(usuarioId, limite = 50) {
   return varios(
-    'SELECT * FROM notificacao WHERE usuario_id = ? ORDER BY criada_em DESC LIMIT ?',
+    'SELECT * FROM notificacao WHERE usuario_id = ? ORDER BY criada_em DESC, id DESC LIMIT ?',
     usuarioId, limite,
   );
 }

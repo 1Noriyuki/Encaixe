@@ -745,3 +745,24 @@
 - **Divergência corrigida (RF-038/RNF-05):** o SDK repete a chamada 2 vezes por padrão e trata timeout como repetível; com `LLM_TIMEOUT_MS` de 15 s a espera real chegava a 45 s. O pedido agora leva `maxRetries: 0`. Também: `LLM_MODELO` ou `LLM_TIMEOUT_MS` definidos vazios viravam modelo `''` e timeout de 0 ms; passam a valer como ausentes.
 - **Testabilidade:** `criar()` aceita `sdk` injetado, e `tests/unidade/llm-anthropic.test.js` confere o pedido sem rede nem pacote: `T-LLM-ANTHROPIC-01` (modelo, esquema, effort, sem amostragem), `02` (timeout configurável, sem repetição, variáveis vazias) e `03` (timeout, recusa, resposta sem texto, JSON quebrado e confiança fora da faixa viram FALHA).
 - **Propostas para a equipe, não aplicadas (decisão de mérito):** (1) o modelo atual da linha Opus é `claude-opus-5-5`, mais barato que o `claude-opus-5` da ADR-003; trocar exige rever a ADR. (2) A API oferece `fallbacks: "default"` (beta) para reexecutar uma recusa em outro modelo; hoje a recusa cai no formulário (RN-31), que é o comportamento especificado.
+
+### Etapa 41 — Notificações por evento e central do usuário (T-66) · 2026-10-30
+
+- **Conferência:** cada categoria de transição do RF-082 tem aviso no código. Faltava evidência de conjunto e não havia teste nenhum da central `/notificacoes` (RF-083).
+- **Evidência nova** (`tests/integracao/notificacoes.test.js`): `T-NOTIF-MATRIZ-01/02/03` percorrem as nove categorias e conferem destinatário, vínculo com o agendamento e instante UTC; `T-NOTIF-03/04/05/07` (IDs da SPEC-004 §12) provam pela tela ordem decrescente e isolamento, marcar lidas com CSRF, só os avisos próprios e de forma idempotente, estado vazio e escape.
+- **Matriz praticada pelo código** (proposta para a questão em aberto da SPEC-004 §13, **não aprovada**): quem age recebe a resposta na tela e a outra parte recebe o aviso; transição que muda a situação das duas partes avisa as duas.
+
+| Transição | Destinatário | Tipo |
+|---|---|---|
+| Reserva | prestador | `RESERVA_RECEBIDA` |
+| Confirmação manual / automática | cliente / cliente e prestador | `AGENDAMENTO_CONFIRMADO` |
+| Recusa | cliente, com o motivo | `AGENDAMENTO_RECUSADO` |
+| Expiração (LIBERAR) | cliente e prestador | `RESERVA_EXPIRADA` |
+| Cancelamento | a outra parte | `AGENDAMENTO_CANCELADO` |
+| No-show / no-show mútuo | quem foi acusado / as duas partes | `NO_SHOW_REGISTRADO` / `DISPUTA_ABERTA` |
+| Conclusão | cliente e prestador | `AGENDAMENTO_CONCLUIDO` |
+| Abertura / resolução de disputa | a outra parte / as duas partes | `DISPUTA_ABERTA` / `DISPUTA_RESOLVIDA` |
+| Aprovação, reprovação, revisão, restrição, reativação, suspensão | o titular (revisão também os admins) | `CADASTRO_*`, `CONTA_*` |
+
+- **Premissa do agente, a confirmar:** o desempate da central, aberto na SPEC-004 §13, passa a ser `id DESC` (a gravada por último primeiro), como o RF-031 faz na busca. Antes a ordem de dois avisos no mesmo instante ficava a critério do SQLite.
+- **Verificação:** `npm test`, 358/358.
