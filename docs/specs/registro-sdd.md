@@ -849,3 +849,10 @@
 - **SPEC-018:** [`SPEC-018-revisao-por-ocorrencias.md`](SPEC-018-revisao-por-ocorrencias.md), RF-056.
 - **Divergência corrigida:** `verificarOcorrenciasDoPrestador()` não conferia o perfil. Os três chamadores atuais só a usam para prestador, mas, chamada para um cliente com três ausências, ela o moveria para `EM_REVISAO` com o aviso "publicação de horários suspensa". A RN-21 é regra do prestador; a função agora ignora outros perfis.
 - **Evidência:** `T-REVISAO-03` a `05`, além de `T-REVISAO-01`. Questões: "consecutivas" × acumuladas, e se a reativação pelo admin zera a contagem.
+
+### Etapa 54 — Rascunho e conferência da SPEC-019 · 2026-10-30
+
+- **SPEC-019:** [`SPEC-019-registro-de-no-show.md`](SPEC-019-registro-de-no-show.md), RF-052 a RF-054.
+- **Divergência corrigida (RF-052):** o reporte sobre agendamento fora de `CONFIRMADO` era recusado sem informar a janela válida; agora a recusa traz a janela, como nos outros dois casos.
+- **Questão nova, para a Trilha A:** as faixas permitem P-17 (conclusão automática) menor que P-16b (prazo de no-show); a rotina então conclui o agendamento com a janela de no-show ainda aberta. Proposta registrada na §13 da SPEC-019, sem alteração de código, porque a regra é da SPEC-020, aprovada.
+- **Evidência:** `T-NOSHOW-05` a `07`, além de `T-NOSHOW-01i` a `03`.

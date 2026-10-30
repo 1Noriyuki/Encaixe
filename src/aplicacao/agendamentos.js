@@ -31,7 +31,7 @@ import {
   faixaDeCancelamento, penalidadeDeCancelamento, previaDeCancelamento as previaDominio, FAIXA,
 } from '../dominio/cancelamento.js';
 import {
-  assegurarJanelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
+  assegurarJanelaNoShow, janelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
   prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAvaliacaoDo, prazoAutoConclusao,
 } from '../dominio/prazos.js';
 import { calcularComissao, competenciaDe } from '../dominio/comissao.js';
@@ -439,7 +439,14 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     // RF-055 - acusacao mutua: quem ja foi acusado responde acusando de volta.
     const jaAcusado = ag.estado === `NO_SHOW_${papel}`;
     if (!jaAcusado && ag.estado !== 'CONFIRMADO') {
-      throw new ErroDeRegra('RN-20', `Não é possível registrar ausência neste estado (${ag.estado}).`);
+      // RF-052: a recusa informa a janela valida, inclusive quando o motivo e o estado.
+      const { abreEm, fechaEm } = janelaNoShow(ag.inicio, ag.duracao_min, p);
+      throw new ErroDeRegra(
+        'RN-20',
+        `Não é possível registrar ausência neste estado (${ag.estado}). O registro vale só para agendamento `
+        + `confirmado, de ${formatarDataHora(abreEm)} a ${formatarDataHora(fechaEm)}.`,
+        { abreEm, fechaEm },
+      );
     }
 
     assegurarJanelaNoShow(ag.inicio, ag.duracao_min, agora, p);
