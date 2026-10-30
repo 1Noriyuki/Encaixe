@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-10-30 |
-| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. **Código conferido** em 2026-10-30 (v1.1.0, etapa 43): todos os CA e INV com teste, evidência na §12. **Não concluída:** a DoD 1 depende das questões da §13 (auditoria das tentativas sobre recurso alheio, duas linhas da matriz sem caminho no código, OPEN-03) |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 3 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · ADR-004 · constituição |
 
