@@ -18,6 +18,10 @@ import * as disputas from '../../src/aplicacao/disputas.js';
 import * as rotinas from '../../src/aplicacao/rotinas.js';
 import * as notificacoes from '../../src/infra/notificacoes.js';
 import { criarAplicacao } from '../../src/interface/http/servidor.js';
+import { abrir, fechar, migrar, executar, um } from '../../src/infra/db/conexao.js';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { adicionarHoras, adicionarMinutos } from '../../src/dominio/tempo.js';
 
 let servidor;
@@ -163,6 +167,66 @@ test('T-NOTIF-MATRIZ-03 | RF-082: decisoes administrativas avisam o titular, sem
     adminId: c.adminId, usuarioId: c.cliente.id, decisao: 'SUSPENSO', justificativa: 'Fraude confirmada em disputa.',
   });
   assegurarAviso(c.cliente.id, 'CONTA_SUSPENSA', null, 'suspensao');
+});
+
+// ---------------------------------------------------------------- SPEC-004: persistencia
+
+test('T-NOTIF-01 | RF-082: aviso so existe para usuario existente e nao nasce orfao', () => {
+  cenarioBasico();
+  const antes = um('SELECT COUNT(*) AS n FROM notificacao').n;
+
+  // §5.1 1a: sem destinatario, nada e gravado.
+  assert.equal(notificacoes.notificar(null, { tipo: 'TESTE', titulo: 'x', mensagem: 'y' }), null);
+  // INV-001: o banco recusa destinatario inexistente, mesmo por fora da aplicacao.
+  assert.throws(() => executar(
+    `INSERT INTO notificacao (usuario_id, tipo, titulo, mensagem, criada_em)
+     VALUES (999999, 'TESTE', 'x', 'y', '2026-09-10T13:00:00.000Z')`,
+  ), /FOREIGN KEY/);
+  assert.equal(um('SELECT COUNT(*) AS n FROM notificacao').n, antes);
+});
+
+test('T-NOTIF-09 | RNF-01: avisos e leitura sobrevivem a reabertura da base', () => {
+  const pasta = mkdtempSync(join(tmpdir(), 'encaixe-spec004-'));
+  const caminho = join(pasta, 'teste.db');
+  try {
+    fechar();
+    abrir(caminho);
+    migrar();
+    const c = cenarioBasico();
+    avisar(c.cliente.id, 'Aviso persistido');
+    avisar(c.cliente.id, 'Aviso lido');
+    notificacoes.marcarLidas(c.cliente.id);
+    avisar(c.cliente.id, 'Aviso nao lido');
+    fechar();
+
+    abrir(caminho);
+    migrar();
+    const titulos = notificacoes.listar(c.cliente.id).filter((n) => n.tipo === 'TESTE').map((n) => n.titulo);
+    assert.deepEqual(titulos, ['Aviso nao lido', 'Aviso lido', 'Aviso persistido']);
+    assert.equal(notificacoes.naoLidas(c.cliente.id) >= 1, true);
+    assert.equal(notificacoes.listar(c.cliente.id).find((n) => n.titulo === 'Aviso nao lido').lida_em, null);
+  } finally {
+    fechar();
+    rmSync(pasta, { recursive: true, force: true });
+  }
+});
+
+test('T-NOTIF-10 | RF-082: aviso e transicao estao na mesma transacao', () => {
+  // Descreve o comportamento atual para a questao de atomicidade da SPEC-004 §13.
+  const c = cenarioBasico({ horasAteHorario: 4 });
+  const ag = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  executar(
+    `CREATE TRIGGER falha_aviso BEFORE INSERT ON notificacao
+      WHEN NEW.tipo = 'AGENDAMENTO_RECUSADO'
+      BEGIN SELECT RAISE(FAIL, 'aviso indisponivel'); END`,
+  );
+
+  assert.throws(
+    () => agendamentos.recusar({ prestadorId: c.prestador.id, agendamentoId: ag.id, motivo: 'Agenda indisponivel' }),
+    /aviso indisponivel/,
+  );
+  assert.equal(um('SELECT estado FROM agendamento WHERE id = ?', ag.id).estado, 'PENDENTE_CONFIRMACAO');
+  assert.equal(um('SELECT estado FROM horario_vago WHERE id = ?', c.horario.id).estado, 'BLOQUEADO');
 });
 
 // ---------------------------------------------------------------- central (RF-083)

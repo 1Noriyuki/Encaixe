@@ -781,3 +781,9 @@
 - **Resultado:** o código atende CA-01 a CA-07 e INV-001 a INV-006 sem alteração. Os oito testes da §12 foram escritos em `tests/integracao/spec-003-autorizacao.test.js`; o `T-AUTORIZ-02` percorre todas as rotas com os três perfis, o que liga cada linha da matriz §4.5 a uma rota (DoD 2). Spec sobe para v1.1.0 com a tabela de evidência na §12.
 - **Divergências registradas na §13, sem correção:** a matriz admite o admin cancelar qualquer agendamento com justificativa, e não há esse caminho no código (decisão de regra da SPEC-017); e admite o admin ver o extrato de comissão, que hoje é só do prestador (SPEC-024).
 - **Por que a issue #82 não fecha:** a DoD 1 exige resolver as questões da §13 que alteram comportamento. A auditoria das tentativas sobre recurso alheio e as duas linhas da matriz são decisão da equipe.
+
+### Etapa 44 — Conferência do código contra a SPEC-004 · 2026-10-30
+
+- **Resultado:** com os testes da etapa 41 (T-66) e três novos, todos os CA, INV e RNFs da SPEC-004 têm evidência; a Spec sobe para v1.1.0 com a tabela na §12. Novos: `T-NOTIF-01` (nada de aviso órfão; chave estrangeira recusa usuário inexistente), `T-NOTIF-09` (RNF-01, reabertura do banco em arquivo) e `T-NOTIF-10` (o aviso está na mesma transação da mudança de estado).
+- **Sem alteração de código** além do desempate já registrado na etapa 41.
+- **Por que a issue #83 não fecha:** a DoD 1 pede que a equipe aprove a matriz de eventos e decida atomicidade e paginação. A §13 agora traz a proposta de matriz (etapa 41), o fato sobre atomicidade (`T-NOTIF-10`) e a premissa de desempate, para a decisão ser tomada sobre o que o código já faz.
