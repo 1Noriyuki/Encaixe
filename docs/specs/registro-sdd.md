@@ -713,3 +713,9 @@
 - **Conferência:** `ordenar_()` em `aplicacao/busca.js` já desempata pelo id em todos os critérios (RF-031). `T-BUSCA-04` só provava o empate por proximidade, onde a ordem do banco e a do id coincidem.
 - **Evidência:** `T-BUSCA-04b` monta dois horários de mesmo preço e mesma reputação em que o de id menor começa depois, e exige a ordem pelo id em preço, desconto e reputação, igual em três leituras seguidas.
 - **Divergência registrada, não corrigida:** `horariosRepo.buscar()` corta em `LIMIT 200` ordenando por início, antes da ordenação por preço ou reputação. Com mais de 200 horários na janela, "Menor preço" pode deixar de fora horários mais baratos. O teto é decisão de desempenho; mudar exige decisão da equipe (paginar, ou ordenar no SQL).
+
+### Etapa 36 — Confirmação e recusa pelo prestador (T-33) · 2026-10-30
+
+- **Conferência:** `confirmar()`, `recusar()` e `liberarHorario()` em `aplicacao/agendamentos.js` atendem RF-042 a RF-044, inclusive as notificações e o desvio para `EXPIRADO`. Faltava evidência de duas partes do critério.
+- **Evidência nova:** `T-AGENDAMENTO-07b` prova que o cliente recebe o aviso da confirmação e o da recusa, este com o motivo; `T-AGENDAMENTO-07c` recusa uma reserva quando faltam 88 min para um P-04 de 90 e exige o horário em `EXPIRADO`, fora da busca.
+- **Sem alteração de código nem de spec.**

@@ -19,6 +19,7 @@ import * as catalogoRepo from '../../src/infra/repositorios/catalogo.js';
 import * as horariosRepo from '../../src/infra/repositorios/horarios.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
 import * as parametrosRepo from '../../src/infra/repositorios/parametros.js';
+import * as notificacoes from '../../src/infra/notificacoes.js';
 import { adicionarHoras, partesLocais } from '../../src/dominio/tempo.js';
 
 test.beforeEach(prepararBanco);
@@ -248,6 +249,42 @@ test('T-AGENDAMENTO-07 | RF-043/RF-044: recusa exige motivo e libera o horario',
   assert.equal(recusada.estado, 'RECUSADO');
   assert.equal(recusada.motivo_encerramento, 'Agenda indisponivel');
   assert.equal(horariosRepo.porId(c.horario.id).estado, 'PUBLICADO');
+});
+
+test('T-AGENDAMENTO-07b | RF-042/RF-043: confirmacao e recusa notificam o cliente, a recusa com o motivo', () => {
+  const c = cenarioBasico();
+  const outroHorario = publicarDaquiA(c.prestador.id, c.servico.id, c.regua.id, 8);
+
+  const confirmada = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: confirmada.id });
+  const recusada = agendamentos.reservar({ clienteId: c.cliente2.id, horarioId: outroHorario.id });
+  agendamentos.recusar({
+    prestadorId: c.prestador.id, agendamentoId: recusada.id, motivo: 'Cadeira em manutencao',
+  });
+
+  const avisoConfirmacao = notificacoes.listar(c.cliente.id)
+    .find((n) => n.tipo === 'AGENDAMENTO_CONFIRMADO');
+  assert.equal(avisoConfirmacao.agendamento_id, confirmada.id);
+
+  const avisoRecusa = notificacoes.listar(c.cliente2.id)
+    .find((n) => n.tipo === 'AGENDAMENTO_RECUSADO');
+  assert.equal(avisoRecusa.agendamento_id, recusada.id);
+  assert.match(avisoRecusa.mensagem, /Cadeira em manutencao/);
+});
+
+test('T-AGENDAMENTO-07c | RF-044: recusa sem antecedencia P-04 restante expira o horario', () => {
+  const c = cenarioBasico({ horasAteHorario: 100 / 60 });
+  parametrosRepo.salvarGlobal('antecedencia_min_reserva_min', 90, c.adminId);
+  const reserva = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+
+  // Faltam 88 min: dentro da janela de confirmacao, mas abaixo de P-04.
+  viajarPara(adicionarHoras(agoraDoTeste(), 12 / 60));
+  agendamentos.recusar({
+    prestadorId: c.prestador.id, agendamentoId: reserva.id, motivo: 'Agenda indisponivel',
+  });
+
+  assert.equal(horariosRepo.porId(c.horario.id).estado, 'EXPIRADO');
+  assert.ok(!busca.buscarPorFiltros().some(({ id }) => id === c.horario.id));
 });
 
 test('T-DISPUTA-07 | RF-074/RF-075: fila prioriza o SLA e destaca disputas vencidas', () => {

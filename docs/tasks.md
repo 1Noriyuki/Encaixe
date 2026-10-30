@@ -89,7 +89,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-30 | Reserva com preço travado e bloqueio do horário | RF-039, RF-040, RN-04 | Valor travado não muda depois | ✅ |
 | T-31 | Exclusividade sob concorrência | RF-041, INV-01 | Segunda reserva simultânea é recusada | ✅ |
 | T-32 | Limite de reservas simultâneas por reputação | RF-047, RN-12 | Cliente restrito é barrado na segunda reserva | ✅ |
-| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Confirmação e recusa validada liberam/ocupam; `T-AGENDAMENTO-06/07` | 🔄 |
+| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Confirmação ocupa, recusa exige motivo, notifica e libera ou expira; `T-AGENDAMENTO-06/07/07b/07c` | ✅ |
 | T-34 | Expiração automática com as duas políticas | RF-045, RF-046, RN-10 | `LIBERAR` devolve à busca; `AUTOCONFIRMAR` confirma | ✅ |
 | T-35 | ADR-004 (autenticação) | QA-04 | Registrado com limites conhecidos | ✅ |
 
