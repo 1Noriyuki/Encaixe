@@ -719,3 +719,9 @@
 - **Conferência:** `confirmar()`, `recusar()` e `liberarHorario()` em `aplicacao/agendamentos.js` atendem RF-042 a RF-044, inclusive as notificações e o desvio para `EXPIRADO`. Faltava evidência de duas partes do critério.
 - **Evidência nova:** `T-AGENDAMENTO-07b` prova que o cliente recebe o aviso da confirmação e o da recusa, este com o motivo; `T-AGENDAMENTO-07c` recusa uma reserva quando faltam 88 min para um P-04 de 90 e exige o horário em `EXPIRADO`, fora da busca.
 - **Sem alteração de código nem de spec.**
+
+### Etapa 37 — Fila de disputas ordenada por SLA (T-53) · 2026-10-30
+
+- **Conferência:** `moderacaoRepo.filaDeDisputas()` ordena por `prazo_sla_em` e, no empate, por `valor_travado` decrescente (RF-074); `disputas.fila()` calcula `foraDoSla` e a tela `/admin/disputas` usa o selo de perigo (RF-075).
+- **Evidência nova:** `T-DISPUTA-07b` abre duas disputas no mesmo instante, com a de maior valor e id maior, e exige que ela venha primeiro. `T-DISPUTA-07c`, no novo `tests/integracao/telas-admin.test.js`, sobe o servidor e prova que a fila só mostra o selo "vencido" depois do prazo e que o painel conta a disputa fora do SLA.
+- **Sem alteração de código nem de spec.**

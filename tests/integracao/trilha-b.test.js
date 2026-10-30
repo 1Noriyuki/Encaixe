@@ -329,3 +329,31 @@ test('T-DISPUTA-07 | RF-074/RF-075: fila prioriza o SLA e destaca disputas venci
   const atualizada = disputas.fila();
   assert.deepEqual(atualizada.map(({ foraDoSla }) => foraDoSla), [true, false]);
 });
+
+test('T-DISPUTA-07b | RF-074: no empate de SLA, a disputa de maior valor vem antes', () => {
+  const c = cenarioBasico({ horasAteHorario: 2 });
+  // O de maior valor tem id maior: a ordem so sai certa se o valor desempatar.
+  const caro = criarPrestadorComHorario(c, {
+    sufixo: 'disputa-cara', instante: c.horario.inicio, precoBase: '200,00',
+  });
+
+  const barato = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: barato.id });
+  const valioso = agendamentos.reservar({ clienteId: c.cliente2.id, horarioId: caro.horario.id });
+  agendamentos.confirmar({ prestadorId: caro.prestador.id, agendamentoId: valioso.id });
+
+  viajarPara(adicionarHoras(c.horario.inicio, 1.5));
+  agendamentos.concluir({ prestadorId: c.prestador.id, agendamentoId: barato.id });
+  agendamentos.concluir({ prestadorId: caro.prestador.id, agendamentoId: valioso.id });
+  for (const [usuarioId, agendamentoId] of [[c.cliente.id, barato.id], [c.cliente2.id, valioso.id]]) {
+    disputas.abrir({
+      usuarioId, agendamentoId, motivo: 'OUTRO',
+      evidencia: 'Evidencia suficiente para abrir a disputa no mesmo instante.',
+    });
+  }
+
+  const fila = disputas.fila();
+  assert.equal(fila[0].prazo_sla_em, fila[1].prazo_sla_em);
+  assert.ok(fila[0].valor_travado > fila[1].valor_travado);
+  assert.deepEqual(fila.map(({ agendamento_id: id }) => id), [valioso.id, barato.id]);
+});

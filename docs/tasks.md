@@ -119,7 +119,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 |---|---|---|---|:--:|
 | T-51 | Abertura de disputa com evidência obrigatória | RF-071 a RF-073, RN-26 | Sem evidência ou fora do prazo é recusada | ✅ |
 | T-52 | Retenção de comissão e suspensão de penalidades | RN-17, INV-12 | Lançamento vira `RETIDO` ao abrir disputa | ✅ |
-| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação e destaque fora do SLA; `T-DISPUTA-07` | 🔄 |
+| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação por SLA e valor, destaque fora do SLA na tela; `T-DISPUTA-07/07b/07c` | ✅ |
 | T-54 | Resolução com os quatro desfechos | RF-076, RF-077, RN-27 | `MANTIDO`/`REVERTIDO`/`PARCIAL`/`ARQUIVADO` com efeitos distintos | ✅ |
 | T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Decisão exige justificativa e notifica o titular | 🔄 |
 | T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |
