@@ -518,12 +518,16 @@ async function buscar(ctx) {
   // RN-30: com confianca baixa ou categoria fora do catalogo, a busca so roda
   // depois que o cliente confere os filtros.
   let aguardaConfirmacao = null;
+  // SPEC-028 §13: a interpretacao em uso viaja no formulario para ser reaproveitada.
+  let interpretacaoEmUso = null;
   const descricao = (ctx.query.descricao ?? '').trim();
 
   // UC-04 - o texto livre vira filtros; a busca em si continua deterministica.
   if (descricao) {
     try {
-      const leitura = await busca.interpretar({ clienteId: ctx.usuario?.id ?? null, texto: descricao });
+      const leitura = await busca.interpretar({
+        clienteId: ctx.usuario?.id ?? null, texto: descricao, reaproveitarId: ctx.query.interpretacao || null,
+      });
 
       if (leitura.precisaFormulario) {
         ctx.avisar({
@@ -533,7 +537,13 @@ async function buscar(ctx) {
           regra: 'RN-31',
         });
       } else {
-        filtros = { ...filtros, ...leitura.filtros };
+        // Na primeira leitura, a IA propoe os filtros. Ao refinar a mesma busca, vale
+        // o que o cliente escolheu no formulario: a escolha dele e a mais recente.
+        const escolhidos = Object.fromEntries(Object.entries(filtros).filter(([, v]) => v != null && v !== ''));
+        filtros = leitura.reaproveitada
+          ? { ...filtros, ...leitura.filtros, ...escolhidos }
+          : { ...filtros, ...leitura.filtros };
+        interpretacaoEmUso = leitura;
         painelIa = painelDeInterpretacao(descricao, leitura, categorias, regioes, filtros);
         if (leitura.precisaConfirmar) {
           aguardaConfirmacao = leitura;
@@ -637,8 +647,8 @@ async function buscar(ctx) {
       </div>
       <input type="hidden" name="de" value="${filtros.de ?? ''}">
       <input type="hidden" name="ate" value="${filtros.ate ?? ''}">
-      ${aguardaConfirmacao
-    ? html`<input type="hidden" name="interpretacao" value="${aguardaConfirmacao.id}">` : cru('')}
+      ${interpretacaoEmUso
+    ? html`<input type="hidden" name="interpretacao" value="${interpretacaoEmUso.id}">` : cru('')}
     </form>
 
     ${temFiltro ? html`

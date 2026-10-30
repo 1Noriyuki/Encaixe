@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 29 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-003 |
 
@@ -105,10 +105,12 @@ incluía o lançamento de comissão, que o RF-084 lista; incluída, sem falha (a
 `aplicacao/comissao.js`). (2) A tabela de interpretações não mostrava região nem janela, sem as quais não se refaz a busca
 que o cliente viu; as duas colunas entraram. As correções de tela da etapa 42 (correlação) também valem para esta Spec.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Período e paginação da trilha:** a tela mostra os 120 registros mais recentes e as 30 interpretações mais recentes; a baseline não define período, busca ou paginação.
-- **Retenção:** não há política de retenção da trilha nem das interpretações (texto livre do cliente).
+1. **Período e paginação:** Decidida em 2026-10-30 (etapa 63): a tela mostra os 120 registros mais recentes, com o filtro por correlação, sem paginação no MVP.
+2. **Retenção:** Decidida em 2026-10-30 (etapa 63): fica fora do MVP e está registrada como risco aceito em `docs/seguranca.md`, porque a trilha guarda texto livre do cliente.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

@@ -7,8 +7,8 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.10 |
-| Data | 2026-10-29 |
+| Versão da spec | 0.1.11 |
+| Data | 2026-10-30 |
 | Status | Em validação com o grupo e com o professor |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
@@ -16,6 +16,7 @@
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.11 | 2026-10-30 | Equipe | Decisões da §13 das Specs das Trilhas B e C (etapa 63). **§4.5:** o admin não cancela agendamento no MVP (OPEN-09) e não tem extrato próprio. **RN-18:** converter cancelamento em no-show fica fora do MVP (OPEN-18). **RN-19 e RN-21:** só as faixas parcial e total são ocorrência; a contagem é acumulada na janela e recomeça na reativação pelo admin. **§6.1:** P-11 vira P-11a/P-11b e P-12a passa a dizer "acumuladas". **RN-28:** a suspensão expira na hora as reservas pendentes, sem penalizar o cliente, e o admin não suspende a própria conta. **RF-006:** a negação por titularidade também é auditada. **RF-060:** a conclusão automática espera o maior entre P-17 e P-16b. **RN-32:** a interpretação que exige confirmação nasce descartada. **RNF-13:** refinar a mesma busca não gasta interpretação. **RF-086:** edição de parâmetros pelo admin (OPEN-09). **QA-09** resolvida: evidência em texto ou link |
 | 0.1.10 | 2026-10-29 | Equipe | Decisões da aprovação das Specs da Trilha A (etapa 32). **§9.2 e QA-07:** a régua é do prestador e cada horário escolhe uma ao ser publicado (OPEN-10). **RF-010 e RF-011:** as categorias atendidas derivam dos serviços ativos e "perfil completo" é a lista da RN-08 (OPEN-16). **§9.2 `Regiao` e `CategoriaServico`:** no MVP são listas carregadas pela implantação (OPEN-11). **RN-03:** o teto P-05 vale no cálculo de horário ainda não reservado; a reserva trava o preço (RN-04). **RN-00 e §9.2 `Agendamento`:** a conclusão trava o prazo de avaliação (P-14), em `avaliacao_prazo_em`; `autoconclusao_prazo_em` (P-17) passa a constar da tabela |
 | 0.1.9 | 2026-10-20 | Equipe | Canal de contato da conta suspensa (SPEC-002, layout). **RF-004:** a recusa da conta `SUSPENSO` informa o canal de contato com a administração, um e-mail definido na configuração de implantação; não é parâmetro de regra, porque não é número de regra nem é editado pelo admin |
 | 0.1.8 | 2026-10-20 | Equipe | Decisões da SPEC-002. **RF-001:** política de senha (OPEN-201), campos obrigatórios e opcionais (OPEN-205) e conta de admin só por implantação (OPEN-206). **RF-002:** e-mail comparado sem espaços nas pontas e sem diferenciar maiúsculas (OPEN-208); revelar que o e-mail está em uso é risco residual aceito (OPEN-209). **RF-005a:** logout (OPEN-204). **RN-23, INV-08 e §9.2:** a reputação parte da P-08 vigente na criação da conta, gravada nela (OPEN-207) |
@@ -178,7 +179,7 @@ e **cobra comissão percentual sobre cada agendamento efetivamente concluído**.
 | Definir régua de desconto | Não | Sim (própria) | Não |
 | Reservar horário | Sim | Não | Não |
 | Confirmar / recusar reserva | Não | Sim (próprio) | Não |
-| Cancelar agendamento | Sim (próprio) | Sim (próprio) | Sim (qualquer, com justificativa) |
+| Cancelar agendamento | Sim (próprio) | Sim (próprio) | Não no MVP: intervém por disputa ou suspensão (OPEN-09) |
 | Reportar no-show | Sim (próprio) | Sim (próprio) | Não |
 | Avaliar contraparte | Sim (próprio) | Sim (próprio) | Não |
 | Abrir disputa | Sim (próprio) | Sim (próprio) | Não |
@@ -186,7 +187,7 @@ e **cobra comissão percentual sobre cada agendamento efetivamente concluído**.
 | Aprovar / suspender conta | Não | Não | Sim |
 | Configurar percentual de comissão | Não | Não | Sim |
 | Ver métricas consolidadas da plataforma | Não | Não | Sim |
-| Ver extrato próprio de comissão | Não | Sim (próprio) | Sim |
+| Ver extrato próprio de comissão | Não | Sim (próprio) | Não se aplica: vê as métricas consolidadas e o dossiê da conta |
 ---
 
 ## 5. Backlog inicial priorizado
@@ -340,8 +341,9 @@ faixa global (o valor padrão vale para perfis novos); `C` = por categoria de se
 | P-08 | Reputação inicial de uma conta nova | G | 70 | 50 a 80 |
 | P-09 | Limiar de revisão administrativa | G | 40 | 20 a 60 |
 | P-10 | Limiar de restrição do cliente | G | 50 | 30 a 70 |
-| P-11 | Limite de reservas simultâneas (normal / restrito) | G | 3 / 1 | 1 a 5 / 1 a 2 |
-| P-12a | Ocorrências negativas consecutivas do prestador | G | 3 | 2 a 5 |
+| P-11a | Limite de reservas simultâneas do cliente normal | G | 3 | 1 a 5 |
+| P-11b | Limite de reservas simultâneas do cliente restrito | G | 1 | 1 a 2 |
+| P-12a | Ocorrências negativas acumuladas do prestador na janela P-12b | G | 3 | 2 a 5 |
 | P-12b | Janela de apuração das ocorrências do prestador | G | 30 dias | 7 a 90 dias |
 | P-13 | Percentual de comissão | G / C | 12% | 8% a 15% |
 | P-14 | Janela de avaliação após a conclusão | G | 7 dias | 3 a 15 dias |
@@ -430,7 +432,7 @@ conta como cancelamento para efeito de RN-19, mas é contabilizada na taxa de re
 *Rastreio:* RF-043, RF-044.
 
 **RN-12 — Limite de reservas simultâneas.** Um cliente com reputação abaixo de P-10 pode manter no máximo
-1 agendamento em aberto (`PENDENTE_CONFIRMACAO` ou `CONFIRMADO`); acima do limiar, no máximo 3 (P-11).
+1 agendamento em aberto (`PENDENTE_CONFIRMACAO` ou `CONFIRMADO`, P-11b); acima do limiar, no máximo 3 (P-11a).
 *Justificativa:* contém o comportamento de "reservar tudo e escolher depois" (persona 4.3).
 *Rastreio:* RF-047, UC-05.
 
@@ -467,14 +469,17 @@ a agendamentos já concluídos.
 |---|---|---|
 | Livre | antecedência ≥ P-06 (6 h) | Sem penalidade; agendamento `CANCELADO_CLIENTE` |
 | Parcial | P-07 ≤ antecedência < P-06 (2 h a 6 h) | −3 de reputação; conta como ocorrência negativa |
-| Total | antecedência < P-07 (menos de 2 h) | −6 de reputação; conta como ocorrência negativa; prestador pode converter em no-show se já estava a caminho |
+| Total | antecedência < P-07 (menos de 2 h) | −6 de reputação; conta como ocorrência negativa |
 
-Cancelar depois do início do horário não é cancelamento: é no-show (`RN-20`).
+Cancelar depois do início do horário não é cancelamento: é no-show (`RN-20`). Converter em no-show um
+cancelamento da faixa total, quando o prestador já estava a caminho, fica fora do MVP (OPEN-18): a
+penalidade da faixa já responde pelo caso.
 *Rastreio:* RF-048, RF-049, UC-08.
 
 **RN-19 — Política de cancelamento pelo prestador.** O prestador pode cancelar até o início do horário; a
 penalidade é sempre pelo menos igual à do cliente na mesma faixa, porque quem publicou assumiu compromisso:
-faixa livre −1, faixa parcial −5, faixa total −10 de reputação, e a ocorrência entra na contagem de P-12a.
+faixa livre −1, faixa parcial −5, faixa total −10 de reputação. Nas faixas parcial e total a ocorrência
+entra na contagem de P-12a (RN-21); a faixa livre não é ocorrência.
 *Justificativa:* assimetria proposital — cancelamento do prestador destrói mais valor para a plataforma.
 *Rastreio:* RF-050, RF-051.
 
@@ -487,10 +492,11 @@ qualquer das partes pode reportar a ausência da outra em um agendamento `CONFIR
 Se **ambas** as partes se acusam, o agendamento vai direto para `EM_DISPUTA` sem penalidade automática.
 *Rastreio:* RF-052, RF-053, RF-054, UC-11.
 
-**RN-21 — Ocorrências consecutivas do prestador.** Prestador que acumular P-12a ocorrências negativas
+**RN-21 — Ocorrências acumuladas do prestador.** Prestador que acumular P-12a ocorrências negativas
 (cancelamento em faixa parcial ou total, ou no-show confirmado) dentro de P-12b dias tem a conta movida para
 `EM_REVISAO` e **perde o direito de publicar novos horários** até decisão do admin. Horários já confirmados
-seguem válidos.
+seguem válidos. A contagem é acumulada, não consecutiva, e recomeça quando o admin reativa a conta (RF-079):
+as ocorrências anteriores já foram julgadas.
 *Rastreio:* RF-055, RF-056, UC-13.
 
 **RN-22 — Revisão por reputação.** Conta de qualquer perfil com reputação abaixo de P-09 entra em `EM_REVISAO`
@@ -553,7 +559,9 @@ conforme RN-17 e RN-23, e é definitiva no MVP (sem instância de recurso).
 **RN-28 — Aprovação e suspensão de contas.** Prestador novo nasce `PENDENTE_APROVACAO` e não aparece na busca
 nem publica horários até ser aprovado. O admin pode suspender qualquer conta com justificativa; conta
 `SUSPENSO` não autentica (as sessões abertas são encerradas na suspensão) e tem seus horários `PUBLICADO` retirados da busca,
-preservando os agendamentos já `CONFIRMADO`.
+preservando os agendamentos já `CONFIRMADO`. As reservas ainda `PENDENTE_CONFIRMACAO` do prestador suspenso
+expiram na hora, sem penalidade para o cliente, e conta que não está `ATIVO` não autoconfirma. O admin não
+suspende a própria conta.
 *Rastreio:* RF-008, RF-009, RF-078, RF-079.
 
 ### 6.9 Uso do LLM na busca
@@ -577,7 +585,8 @@ a busca: o sistema cai para o formulário de filtros e registra a falha para aco
 
 **RN-32 — Rastreabilidade da interpretação.** Toda interpretação é persistida com texto original, saída
 estruturada, confiança, modelo utilizado e desfecho (aceita, corrigida pelo cliente, descartada), permitindo
-medir a qualidade da extração ao longo do semestre.
+medir a qualidade da extração ao longo do semestre. A interpretação que exige confirmação (RN-30) nasce
+descartada e passa a aceita ou corrigida quando o cliente busca com ela.
 *Rastreio:* RF-034, RF-085.
 
 ### 6.10 Pagamento (escopo reduzido do MVP)
@@ -611,7 +620,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-004** *(Evento)* — **QUANDO** um usuário submeter credenciais válidas de uma conta não suspensa, o sistema DEVE iniciar uma sessão autenticada vinculada ao perfil da conta. Contas em `PENDENTE_APROVACAO`, `REPROVADO`, `EM_REVISAO` e `RESTRITO` autenticam; o que cada estado pode fazer depois é decidido pela autorização e pelas regras de negócio. **SE** a conta estiver `SUSPENSO` e a senha conferir, **ENTÃO** o sistema DEVE recusar a autenticação informando que a conta está suspensa e o canal de contato com a administração (um e-mail definido na configuração de implantação, já que a conta suspensa não tem acesso a nenhum canal interno). ↳ *US-02, RN-28*
 - **RF-005** *(Indesejado)* — **SE** as credenciais forem inválidas, **ENTÃO** o sistema DEVE recusar a autenticação com mensagem genérica, sem indicar se o erro foi no e-mail ou na senha. ↳ *US-02, RNF-03*
 - **RF-005a** *(Evento)* — **QUANDO** o usuário autenticado pedir para sair, o sistema DEVE encerrar a sessão no servidor, de modo que o identificador antigo deixe de autenticar. ↳ *RNF-02, ADR-004*
-- **RF-006** *(Ubíquo)* — O sistema DEVE autorizar cada operação com base no perfil da sessão e na titularidade do recurso, negando toda operação fora da matriz de permissões da seção 4.5. ↳ *US-03*
+- **RF-006** *(Ubíquo)* — O sistema DEVE autorizar cada operação com base no perfil da sessão e na titularidade do recurso, negando toda operação fora da matriz de permissões da seção 4.5; a tentativa negada por titularidade entra na trilha de auditoria como a do RF-007. ↳ *US-03*
 - **RF-007** *(Indesejado)* — **SE** uma sessão tentar executar operação não permitida ao seu perfil, **ENTÃO** o sistema DEVE negar a operação, retornar erro de autorização e registrar a tentativa na trilha de auditoria. ↳ *US-03, RF-084*
 - **RF-008** *(Evento)* — **QUANDO** o admin aprovar um prestador `PENDENTE_APROVACAO`, o sistema DEVE mover a conta para `ATIVO` e notificar o prestador. ↳ *RN-28, US-04, UC-01*
 - **RF-009** *(Evento)* — **QUANDO** o admin reprovar um cadastro, o sistema DEVE exigir justificativa textual, mover a conta para `REPROVADO` e notificar o prestador com o motivo. ↳ *RN-28, US-04*
@@ -664,7 +673,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-044** *(Complexo)* — **QUANDO** um agendamento for `RECUSADO` ou `EXPIRADO`, o sistema DEVE devolver o horário para `PUBLICADO` caso ainda reste a antecedência mínima P-04; caso contrário, DEVE mover o horário para `EXPIRADO`. ↳ *RN-10, RN-11, UC-07*
 - **RF-045** *(Complexo)* — **ENQUANTO** um agendamento estiver `PENDENTE_CONFIRMACAO`, **QUANDO** decorrer a janela P-01 do prestador sem resposta e a política P-02 for `LIBERAR`, o sistema DEVE mover o agendamento para `EXPIRADO`, liberar o horário conforme RF-044 e notificar ambas as partes, sem penalizar o cliente. ↳ *RN-10, US-24, UC-07*
 - **RF-046** *(Complexo)* — **ENQUANTO** um agendamento estiver `PENDENTE_CONFIRMACAO`, **QUANDO** decorrer a janela P-01 do prestador sem resposta e a política P-02 for `AUTOCONFIRMAR`, o sistema DEVE mover o agendamento para `CONFIRMADO`, o horário para `OCUPADO` e notificar ambas as partes. ↳ *RN-10, US-24, UC-07*
-- **RF-047** *(Estado)* — **ENQUANTO** um cliente tiver reputação abaixo de P-10, o sistema DEVE limitar seus agendamentos em aberto ao limite restrito de P-11 e informar o limite vigente ao recusar uma nova reserva. ↳ *RN-12, US-25*
+- **RF-047** *(Estado)* — **ENQUANTO** um cliente tiver reputação abaixo de P-10, o sistema DEVE limitar seus agendamentos em aberto ao limite restrito P-11b e informar o limite vigente ao recusar uma nova reserva. ↳ *RN-12, US-25*
 
 ### 7.6 Cancelamento, no-show e penalidades
 
@@ -683,7 +692,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 
 - **RF-058** *(Complexo)* — **QUANDO** o prestador registrar a conclusão de um agendamento `CONFIRMADO` após o fim do horário, o sistema DEVE mover o agendamento para `CONCLUIDO` e registrar o estado de cobrança informado; **SE** o registro ocorrer antes do fim do horário, **ENTÃO** o sistema DEVE recusar a operação. ↳ *RN-16, RN-33, US-31, UC-09*
 - **RF-059** *(Evento)* — **QUANDO** um agendamento for movido para `CONCLUIDO`, o sistema DEVE criar um lançamento de comissão calculado sobre o valor travado, aplicando o percentual vigente da categoria, e registrar valor bruto, comissão e valor líquido do prestador. ↳ *RN-14, RN-15, US-31, UC-09*
-- **RF-060** *(Complexo)* — **ENQUANTO** um agendamento permanecer `CONFIRMADO`, **QUANDO** decorrer o prazo P-17 após o fim do horário sem conclusão, sem reporte de no-show e sem disputa, o sistema DEVE concluí-lo automaticamente e apurar a comissão. ↳ *RN-16, US-32, UC-09*
+- **RF-060** *(Complexo)* — **ENQUANTO** um agendamento permanecer `CONFIRMADO`, **QUANDO** decorrer o maior entre P-17 e P-16b após o fim do horário sem conclusão, sem reporte de no-show e sem disputa, o sistema DEVE concluí-lo automaticamente e apurar a comissão. ↳ *RN-16, US-32, UC-09*
 - **RF-061** *(Evento)* — **QUANDO** um prestador solicitar seu extrato para um período, o sistema DEVE apresentar os agendamentos concluídos com valor bruto, comissão retida e valor líquido, além dos totais do período. ↳ *US-33*
 - **RF-062** *(Ubíquo)* — O sistema DEVE excluir do extrato os lançamentos em estado `RETIDO` por disputa em aberto, sinalizando-os separadamente. ↳ *RN-17, US-33*
 - **RF-063** *(Evento)* — **QUANDO** o admin acessar o painel de métricas, o sistema DEVE apresentar comissão acumulada, número de agendamentos concluídos, taxa de cancelamento e taxa de no-show no período selecionado. ↳ *US-34*
@@ -715,6 +724,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-083** *(Evento)* — **QUANDO** um usuário acessar sua central de notificações, o sistema DEVE listar suas notificações em ordem cronológica decrescente e permitir marcá-las como lidas. ↳ *US-44*
 - **RF-084** *(Ubíquo)* — O sistema DEVE registrar em trilha de auditoria toda transição de estado de agendamento, horário, conta, disputa e lançamento de comissão, com autor, instante, estado anterior e estado novo. ↳ *US-45, RNF-07*
 - **RF-085** *(Ubíquo)* — O sistema DEVE registrar em trilha de auditoria toda ação administrativa e toda interpretação de busca por LLM, permitindo reconstruir por que um resultado foi apresentado ou uma decisão foi tomada. ↳ *RN-32, US-45, RNF-07*
+- **RF-086** *(Evento)* — **QUANDO** o admin alterar um parâmetro global dentro da faixa da seção 6.1, o sistema DEVE aplicá-lo aos fatos ocorridos a partir dali, recusar valor fora da faixa citando o parâmetro e registrar valor anterior, valor novo e autor na trilha de auditoria, na mesma transação da alteração. ↳ *RN-00, RNF-10*
 
 ---
 
@@ -732,7 +742,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RNF-10 — Configurabilidade.** Os parâmetros da seção 6.1 DEVEM ser alteráveis sem alteração de código e sem novo deploy.
 - **RNF-11 — Usabilidade.** Os fluxos de busca, reserva e publicação DEVEM funcionar em tela de celular; toda ação com penalidade DEVE apresentar a consequência antes da confirmação.
 - **RNF-12 — Portabilidade do provedor de LLM.** A integração com LLM DEVE ficar atrás de uma interface própria, permitindo trocar de provedor ou usar implementação simulada nos testes.
-- **RNF-13 — Custo de IA.** O sistema DEVE limitar o número de interpretações por usuário por período (P-21), evitando custo descontrolado.
+- **RNF-13 — Custo de IA.** O sistema DEVE limitar o número de interpretações por usuário por período (P-21), evitando custo descontrolado. Refinar os filtros de uma busca já interpretada, com o mesmo texto, reaproveita a interpretação e não conta no limite.
 - **RNF-14 — Documentação viva.** Toda alteração de regra ou requisito DEVE atualizar esta spec no mesmo pull request da alteração de código.
 ---
 
@@ -1415,7 +1425,7 @@ fechadas até o marco indicado — e as marcadas com **ADR** viram registro form
 | QA-06 | Penalidade financeira em cancelamento (multa) além da reputação | Fora do MVP; sem gateway, não há como cobrar. Reavaliar se QA-05 mudar | M2 | Aberta (fora do MVP) |
 | QA-07 | Régua de desconto por serviço ou por prestador | MVP: régua por prestador, selecionável por horário. Revisar se aparecer necessidade real | M1 | **Resolvida na v0.1.10:** régua por prestador (`OPEN-10`) |
 | QA-08 | Execução das rotinas temporais (expiração, conclusão automática) | Definir no `plan.md`: agendador interno x verificação sob demanda na leitura | M1 | Resolvida: `plan.md` §5.2, estratégia dupla |
-| QA-09 | Anexos de evidência em disputa: arquivo real ou apenas texto e URL | Iniciar com texto + URL; arquivo se houver tempo | M3 | Aberta |
+| QA-09 | Anexos de evidência em disputa: arquivo real ou apenas texto e URL | Iniciar com texto + URL; arquivo se houver tempo | M3 | **Resolvida na v0.1.11:** texto ou link no MVP, sem upload (SPEC-022, ADR-001) |
 | QA-10 | Limite de interpretações por usuário (RNF-13) | Definir número junto com o provedor escolhido em ADR-003 | M3 | **Resolvida na v0.1.7:** P-21 |
 
 > A partir da v0.1.4, questões novas encontradas na decomposição em Specs são registradas como `OPEN-XX`

@@ -121,7 +121,12 @@ export function assegurarAtendimentoTerminou(inicioIso, duracaoMin, agoraIso) {
   }
 }
 
-/** RF-060 - instante em que a conclusao automatica passa a valer (P-17). */
+/**
+ * RF-060 - instante em que a conclusao automatica passa a valer. Espera o maior
+ * entre P-17 e P-16b (SPEC-019 §13): concluir antes do fim da janela de no-show
+ * tiraria de quem ficou esperando o direito de reportar a ausencia.
+ */
 export function prazoAutoConclusao(inicioIso, duracaoMin, params) {
-  return adicionarHoras(fimDoHorario(inicioIso, duracaoMin), params.autoconclusao_h);
+  const horas = Math.max(params.autoconclusao_h, params.noshow_prazo_pos_fim_h);
+  return adicionarHoras(fimDoHorario(inicioIso, duracaoMin), horas);
 }

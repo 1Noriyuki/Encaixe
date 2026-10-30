@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 13 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 |
 
@@ -124,11 +124,13 @@ provedor fora do ar. **Divergências corrigidas:** (1) **UC-03 1a:** sem janela,
 baseline; a home dizia "próximas 72 h" pelo mesmo motivo. (2) **RF-028:** o formulário não tinha campo de janela, que só
 chegava pela descrição em texto livre; agora há "Quando" (6, 12, 24, 48 ou 72 h).
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Corte de 200 (registro etapa 35):** o repositório limita a 200 horários ordenados por início **antes** da ordenação por preço ou reputação. Com mais de 200 na janela, "Menor preço" pode omitir horários mais baratos. Paginar ou ordenar no SQL é decisão da equipe.
-- **Janelas oferecidas:** 6, 12, 24, 48 e 72 h são escolha de interface, sem RF; a baseline só fixa o padrão de 24 h.
-- **Mudança visível:** a home e a busca sem filtro passam a mostrar menos horários (24 h em vez de 72 h). Se a equipe preferir 72 h, o caminho é mudar UC-03 1a na spec, não o código.
+1. **Corte de 200:** Decidida em 2026-10-30 (etapa 63): a busca ordena a janela inteira e só então corta os 200 exibidos. O repositório deixou de limitar antes da ordenação, e o corte virou `LIMITE_EXIBIDOS` na aplicação. Teste: `T-SPEC013-Q1`.
+2. **Janelas oferecidas:** Decidida em 2026-10-30 (etapa 63): 6, 12, 24, 48 e 72 h ficam como escolha de interface, sem RF.
+3. **Padrão de 24 h:** Decidida em 2026-10-30 (etapa 63): fica em 24 h, como manda o UC-03 1a.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

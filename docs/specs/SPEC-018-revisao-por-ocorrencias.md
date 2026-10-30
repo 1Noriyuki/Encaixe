@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 18 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 |
 
@@ -106,10 +106,12 @@ Depois de gravar a ocorrência (fora da transação que a gerou), o sistema cont
 passam. **Divergência corrigida:** `verificarOcorrenciasDoPrestador()` não conferia o perfil; os chamadores atuais só a
 usam para prestador, mas a função moveria um cliente para revisão "sem poder publicar" se chamada para ele.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **"Consecutivas":** o nome da P-12a diz ocorrências consecutivas, mas a RN-21 e o RF-056 falam em acumular na janela. O código acumula; uma conduta boa entre ocorrências não zera a contagem.
-- **Depois da reativação:** as ocorrências antigas seguem na janela; a próxima ocorrência devolve a conta à revisão. Confirmar se a decisão do admin deveria zerar a contagem.
+1. **"Consecutivas":** Decidida em 2026-10-30 (etapa 63): a contagem é acumulada na janela P-12b, como fazem a RN-21 e o código. O rótulo da P-12a e o título da RN-21 foram corrigidos na spec v0.1.11; a chave `ocorrencias_consecutivas_max` fica, porque é a gravada na tabela `parametro`.
+2. **Depois da reativação:** Decidida em 2026-10-30 (etapa 63): a reativação pelo admin (RF-079) recomeça a contagem: só contam as ocorrências posteriores a ela, porque as anteriores já foram julgadas. Teste: `T-SPEC018-Q2`.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

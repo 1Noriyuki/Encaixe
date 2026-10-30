@@ -15,6 +15,7 @@ import {
 import { assegurarTransicao } from '../dominio/estados.js';
 import { agoraIso } from '../dominio/tempo.js';
 import { params } from './parametros.js';
+import { expirarPendentesDoPrestador } from './agendamentos.js';
 
 const PERFIS_PUBLICOS = ['CLIENTE', 'PRESTADOR'];
 
@@ -213,6 +214,11 @@ export function decidirSobreConta({ adminId, usuarioId, decisao, justificativa }
   if (!['ATIVO', 'SUSPENSO'].includes(decisao)) {
     throw new ErroDeValidacao('Decisão inválida.', 'decisao');
   }
+  // SPEC-025 §13: admin so nasce pela implantacao (OPEN-206); o que se suspende
+  // sozinho pode deixar o sistema sem ninguem para reativa-lo.
+  if (decisao === 'SUSPENSO' && usuarioId === adminId) {
+    throw new ErroDeRegra('RN-28', 'Você não pode suspender a própria conta. Peça a outro administrador.');
+  }
 
   return transacao(() => {
     const usuario = usuarios.porId(usuarioId);
@@ -222,6 +228,10 @@ export function decidirSobreConta({ adminId, usuarioId, decisao, justificativa }
     usuarios.atualizarEstadoConta(usuarioId, decisao);
     // RN-28 - a suspensao derruba as sessoes abertas na hora, sem esperar expirar.
     if (decisao === 'SUSPENSO') usuarios.encerrarSessoes(usuarioId);
+    // RN-28 / SPEC-025 §13 - os confirmados seguem; as reservas pendentes expiram ja.
+    if (decisao === 'SUSPENSO' && usuario.perfil === 'PRESTADOR') {
+      expirarPendentesDoPrestador({ prestadorId: usuarioId, atorId: adminId });
+    }
 
     auditoria.registrar({
       atorId: adminId,

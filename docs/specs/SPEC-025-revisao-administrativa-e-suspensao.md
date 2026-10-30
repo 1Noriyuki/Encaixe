@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 25 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-004 |
 
@@ -107,11 +107,13 @@ UC-13: (1) a conta entra na fila com o motivo; (2) o admin abre o dossiê; (3) d
 as disputas da conta sem exibi-las e não tinha taxa de expiração; agora mostra a seção "Disputas" e a métrica "Sem
 resposta" do prestador. A taxa é informação, sem limiar: o sinal de baixa responsividade continua na OPEN-19.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **OPEN-19:** limiar de expirações para sinalizar baixa responsividade.
-- **Suspensão de admin:** a RN-28 diz "qualquer conta"; o código permite suspender outra conta de admin, e nada impede o admin de suspender a si mesmo.
-- **Pendentes de prestador suspenso:** a RN-28 preserva os confirmados e não diz o que acontece com reservas ainda pendentes; hoje elas expiram pela política P-02.
+1. **OPEN-19:** Decidida em 2026-10-30 (etapa 63): sem limiar automático no MVP. O dossiê mostra a taxa de expiração e a de recusa, e o admin julga.
+2. **Suspensão de admin:** Decidida em 2026-10-30 (etapa 63): o admin não suspende a própria conta, porque isso pode deixar o sistema sem ninguém para reativá-la (admin só nasce pela implantação). Suspender outro admin continua permitido, como diz a RN-28. Teste: `T-SPEC025-Q2`.
+3. **Pendentes de prestador suspenso:** Decidida em 2026-10-30 (etapa 63): expiram na hora da suspensão, sem penalidade para o cliente; e conta que não está `ATIVO` não autoconfirma. Antes, um prestador suspenso com AUTOCONFIRMAR tinha a reserva pendente confirmada pela rotina quando a janela vencia (spec v0.1.11, RN-28). Testes: `T-SPEC025-Q3` e `T-SPEC025-Q3b`.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

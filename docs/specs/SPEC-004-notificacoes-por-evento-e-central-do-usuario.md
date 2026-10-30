@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
+| Versão | 1.3.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 4 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · plan §2 e §5 |
 
@@ -216,12 +216,14 @@ categorias do RF-082 de uma vez; nenhum ID foi reaproveitado com outro sentido.
 | RNF-08 | `T-NOTIF-MATRIZ-*` (formato UTC de `criada_em` em todo aviso) e `T-NOTIF-04` (`lida_em` em UTC) |
 | §13 atomicidade (fato, não decisão) | `T-NOTIF-10`: hoje o aviso é gravado na mesma transação da mudança de estado; falhar o aviso desfaz a recusa |
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Matriz de eventos e destinatários:** RF-082 enumera categorias de transição, mas não define exaustivamente cada tipo, texto e destinatário; validar a matriz com as Specs produtoras de eventos. *Proposta (etapa 41):* a matriz que o código pratica, transcrita no registro, em que quem age recebe a resposta na tela e a outra parte recebe o aviso.
-- **Atomicidade:** confirmar se a gravação de cada notificação deve compartilhar a mesma transação da mudança de estado; a baseline não enuncia a exigência explicitamente. *Fato (etapa 44):* hoje compartilha (`T-NOTIF-10`); um aviso que falha desfaz a transição.
-- **Paginação e empate:** RF-083 não define limite de itens nem desempate quando `criada_em` é idêntico. *Premissa do agente (etapa 41), a confirmar:* desempate por `id` decrescente. O limite praticado é de 50 avisos na central, sem paginação.
-- **OPEN-03:** drivers arquiteturais continuam derivados de spec §1.5 e da constituição, sem catálogo formal aprovado.
+1. **Matriz de eventos e destinatários:** Decidida em 2026-10-30 (etapa 63): vale a proposta da etapa 41: quem age vê o resultado na tela, e a outra parte recebe o aviso.
+2. **Atomicidade:** Decidida em 2026-10-30 (etapa 63): o aviso continua na mesma transação da mudança de estado; se ele falha, a transição é desfeita (`T-NOTIF-10`).
+3. **Paginação e empate:** Decidida em 2026-10-30 (etapa 63): desempate por `id` decrescente e limite de 50 avisos na central, sem paginação no MVP.
+4. **OPEN-03:** já resolvida em 2026-10-29 (etapa 32): vale a leitura do mapa (spec §1.5 e constituição).
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

@@ -83,6 +83,8 @@ export function ativosDoPrestador(prestadorId) {
  * O corte por antecedencia minima (P-04) e feito no servico de aplicacao,
  * junto com o calculo de preco.
  */
+// SPEC-013 §13: sem LIMIT aqui. Cortar antes de ordenar por preco ou reputacao
+// escondia os melhores resultados; o corte de exibicao fica na aplicacao.
 export function buscar({ categoriaId = null, regiaoId = null, de = null, ate = null } = {}) {
   const filtros = ["h.estado = 'PUBLICADO'", "u.estado_conta = 'ATIVO'"];
   const params = [];
@@ -93,7 +95,7 @@ export function buscar({ categoriaId = null, regiaoId = null, de = null, ate = n
   if (ate) { filtros.push('h.inicio <= ?'); params.push(ate); }
 
   return varios(
-    `SELECT ${CAMPOS_JOIN} ${JOINS} WHERE ${filtros.join(' AND ')} ORDER BY h.inicio LIMIT 200`,
+    `SELECT ${CAMPOS_JOIN} ${JOINS} WHERE ${filtros.join(' AND ')} ORDER BY h.inicio`,
     ...params,
   );
 }

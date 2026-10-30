@@ -128,7 +128,13 @@ function reclassificarConta(usuario, p) {
  */
 export function verificarOcorrenciasDoPrestador(prestadorId) {
   const p = params();
-  const desde = adicionarDias(agoraIso(), -p.janela_ocorrencias_dias);
+  const inicioDaJanela = adicionarDias(agoraIso(), -p.janela_ocorrencias_dias);
+  // SPEC-018 §13: a reativacao pelo admin (RF-079) ja julgou as ocorrencias
+  // anteriores; conta-las de novo devolveria a conta a revisao na primeira falta.
+  const reativadaEm = auditoria.historicoDe('conta', prestadorId)
+    .filter((linha) => linha.acao === 'CONTA_REATIVADA')
+    .reduce((ultima, linha) => (linha.criado_em > ultima ? linha.criado_em : ultima), '');
+  const desde = reativadaEm > inicioDaJanela ? reativadaEm : inicioDaJanela;
   const total = agendamentosRepo.contarOcorrenciasNegativas(
     prestadorId, desde, TIPOS_OCORRENCIA_NEGATIVA,
   );

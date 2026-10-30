@@ -12,6 +12,7 @@ const CAMPOS = `
   c.nome AS categoria_nome, c.percentual_comissao,
   cli.nome AS cliente_nome, cli.reputacao AS cliente_reputacao, cli.email AS cliente_email,
   pre.nome AS prestador_nome, pre.reputacao AS prestador_reputacao, pre.email AS prestador_email,
+  pre.estado_conta AS prestador_estado_conta,
   pp.nome_exibicao, pp.politica_expiracao, pp.janela_confirmacao_min,
   r.cidade, r.bairro,
   pc.telefone AS cliente_telefone

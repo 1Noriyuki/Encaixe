@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 22 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-005 |
 
@@ -112,11 +112,13 @@ UC-12 passos 1–4: (1) a parte escolhe motivo e descreve a evidência; (2) o si
 gatilhos `comissao_sem_efetivar_em_disputa_insert/update` recusam efetivar comissão de agendamento em disputa;
 (2) sem motivo e sem evidência, a recusa citava só o motivo; o RF-072 pede "o que falta".
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **OPEN-07:** quem abre a disputa da acusação mútua, com qual motivo e evidência. O código pratica: quem acusa por último, motivo `AUSENCIA_CONTESTADA`, relato dele como evidência. Proposta: ratificar isso.
-- **OPEN-17:** quais efeitos de reputação são "reversíveis". O código reverte todos os eventos com origem no agendamento.
-- **Evidência em arquivo:** a RN-26 admite arquivo; o MVP aceita texto ou link (não há upload, ADR-001).
+1. **OPEN-07:** Decidida em 2026-10-30 (etapa 63): vale o que o código pratica: quem acusa por último abre a disputa, com o motivo `AUSENCIA_CONTESTADA` e o próprio relato como evidência.
+2. **OPEN-17:** Decidida em 2026-10-30 (etapa 63): são "reversíveis" todos os eventos de reputação com origem no agendamento em disputa; eventos de outros agendamentos não são tocados.
+3. **Evidência em arquivo:** Decidida em 2026-10-30 (etapa 63): o MVP aceita texto ou link, sem upload (ADR-001).
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

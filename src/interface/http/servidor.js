@@ -258,6 +258,18 @@ function tratarErroDeAcao(ctx, erro) {
     aviso.texto = 'Erro interno ao processar a operação. Nada foi alterado.';
   }
 
+  // SPEC-003 §13: mexer em recurso alheio e a tentativa mais suspeita, e entra
+  // na trilha como a negacao por perfil (RF-007). A transacao da acao ja foi
+  // desfeita; este registro fica de fora dela de proposito.
+  if (erro?.name === 'ErroDeAutorizacao') {
+    auditoria.registrar({
+      atorId: ctx.usuario?.id ?? null,
+      acao: 'ACESSO_NEGADO',
+      entidade: 'rota',
+      detalhe: { caminho: ctx.url?.pathname ?? null, motivo: 'titularidade', regra: 'RF-006' },
+    });
+  }
+
   // O aviso pos-redirect e guardado por sessao. Sem sessao (login e cadastro
   // com erro), redirecionar engoliria a mensagem e o usuario ficaria sem saber
   // o que aconteceu - entao a resposta e renderizada na hora.

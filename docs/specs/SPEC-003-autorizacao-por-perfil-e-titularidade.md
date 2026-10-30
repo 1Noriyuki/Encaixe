@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
+| Versão | 1.3.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 3 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · ADR-004 · constituição |
 
@@ -212,12 +212,14 @@ o perfil pela sessão e recusa antes do CSRF e do handler (`servidor.js`); a tit
 | CA-06 | `T-TITULAR-03` |
 | RNF-08 | `T-AUTORIZ-03` (instante UTC do registro) |
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **OPEN-03:** a interpretação de drivers arquiteturais do mapa usa spec §1.5 e a constituição; a equipe ainda não formalizou uma lista separada.
-- **Cobertura de auditoria da titularidade:** RF-007 explicita auditoria para operação não permitida ao perfil; confirmar se toda tentativa sobre recurso alheio deve receber o mesmo registro, além da resposta de negação.
-- A matriz da spec §4.5 é transcrita como fonte, sem alterar permissões nesta proposta. Qualquer ampliação ou exceção precisa de decisão da equipe.
-- **Divergências da matriz encontradas na conferência (etapa 43), não corrigidas:** (1) "Cancelar agendamento — Admin: Sim (qualquer, com justificativa)" não tem caminho no código: `cancelar()` só aceita as partes. A linha não diz que penalidade ou estado o cancelamento pelo admin produz, então implementá-lo é decisão da SPEC-017. (2) "Ver extrato próprio de comissão — Admin: Sim": `/prestador/extrato` é só do prestador; o admin vê métricas consolidadas, não o extrato de um prestador (SPEC-024).
+1. **OPEN-03:** já resolvida em 2026-10-29 (etapa 32): vale a leitura do mapa (spec §1.5 e constituição).
+2. **Auditoria da negação por titularidade:** Decidida em 2026-10-30 (etapa 63): sim. A tentativa sobre recurso alheio entra na trilha como `ACESSO_NEGADO`, com `motivo: 'titularidade'`, como a negação por perfil do RF-007 (spec v0.1.11, RF-006). Teste: `T-SPEC003-Q2`.
+3. **Matriz transcrita:** Decidida em 2026-10-30 (etapa 63): a matriz da §4.5 continua sendo a fonte, sem ampliações, com as duas correções do item seguinte.
+4. **Divergências da matriz:** Decidida em 2026-10-30 (etapa 63): (1) o admin **não** cancela agendamento no MVP: intervém por disputa ou suspensão, e cancelar exigiria uma regra de penalidade que não existe (OPEN-09). (2) "Extrato próprio" não se aplica ao admin, que não tem comissão: ele vê as métricas consolidadas e o dossiê da conta. As duas linhas da §4.5 foram corrigidas na spec v0.1.11.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 
