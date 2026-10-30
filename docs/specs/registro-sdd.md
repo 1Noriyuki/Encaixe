@@ -881,3 +881,10 @@
 - **SPEC-027:** [`SPEC-027-administracao-dos-parametros.md`](SPEC-027-administracao-dos-parametros.md), RN-00 e RNF-10 (sem RF próprio, OPEN-09).
 - **Divergência corrigida:** o limite de interpretações por dia aparecia como `RNF-13` no catálogo, na tela e na mensagem de faixa; desde a spec v0.1.7 ele é o parâmetro P-21. A recusa por excesso continua citando o RNF-13, que é o requisito.
 - **Evidência:** `T-PARAM-10` lê a tabela da §6.1 do `docs/spec.md` e exige formulário para cada parâmetro global; `T-PARAM-11` confere o P-21. Questões: OPEN-09 e o desdobramento de P-11 em P-11a/P-11b na spec.
+
+### Etapa 59 — Rascunho e conferência da SPEC-028 · 2026-10-30
+
+- **SPEC-028:** [`SPEC-028-busca-por-linguagem-natural.md`](SPEC-028-busca-por-linguagem-natural.md), RF-032 a RF-038.
+- **Divergência corrigida (RN-30, RF-035, RF-036):** com confiança baixa ou categoria fora do catálogo, `/buscar` avisava "confira os filtros", mas executava a busca e listava os horários; com a categoria desconhecida, listava todas as categorias. Os testes de aplicação (`T-LLM-02/03`) só conferiam a flag. Agora a tela mostra o entendido e não lista nada até o cliente buscar com os filtros ("Buscar com estes filtros") ou escolher a categoria no formulário, que sai sem o texto para não reinterpretar.
+- **Divergência corrigida (RN-32):** `registrarConfirmacao()` existia sem nenhum chamador; o desfecho ficava o palpite da criação. A busca seguinte à confirmação compara os filtros usados com os propostos e grava `ACEITA` ou `CORRIGIDA`, e só para o dono da interpretação.
+- **Evidência:** `T-LLM-07` a `10` pela tela, conferido no navegador a 375 px. Questões: desfecho de quem abandona a confirmação, e a reinterpretação a cada filtro.

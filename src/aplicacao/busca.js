@@ -204,10 +204,22 @@ export async function interpretar({ clienteId = null, texto }) {
   };
 }
 
-/** RF-035/RF-036 - o cliente confirmou ou corrigiu os filtros interpretados. */
-export function registrarConfirmacao(interpretacaoId, corrigida) {
-  if (!interpretacaoId) return;
-  interpretacoesRepo.atualizarDesfecho(interpretacaoId, corrigida ? 'CORRIGIDA' : 'ACEITA');
+/**
+ * RF-035/RF-036, RN-32 - o cliente buscou depois de conferir a interpretacao.
+ * O desfecho sai da comparacao entre o que o modelo propos e o que o cliente
+ * de fato usou, nao de um botao: mudou categoria ou regiao, corrigiu.
+ * So o dono da interpretacao registra o desfecho dela.
+ */
+export function registrarConfirmacao({ interpretacaoId, clienteId = null, filtros }) {
+  const leitura = interpretacoesRepo.porId(Number(interpretacaoId));
+  if (!leitura || leitura.status === 'FALHA' || leitura.cliente_id !== clienteId) return null;
+
+  const igualAoProposto = (proposto, usado) => (proposto ?? null) === (usado ? Number(usado) : null);
+  const corrigida = !igualAoProposto(leitura.categoria_id, filtros.categoriaId)
+    || !igualAoProposto(leitura.regiao_id, filtros.regiaoId);
+  const desfecho = corrigida ? 'CORRIGIDA' : 'ACEITA';
+  interpretacoesRepo.atualizarDesfecho(leitura.id, desfecho);
+  return desfecho;
 }
 
 function igual(a, b) {

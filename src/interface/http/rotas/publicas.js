@@ -515,6 +515,9 @@ async function buscar(ctx) {
   };
 
   let painelIa = cru('');
+  // RN-30: com confianca baixa ou categoria fora do catalogo, a busca so roda
+  // depois que o cliente confere os filtros.
+  let aguardaConfirmacao = null;
   const descricao = (ctx.query.descricao ?? '').trim();
 
   // UC-04 - o texto livre vira filtros; a busca em si continua deterministica.
@@ -533,6 +536,7 @@ async function buscar(ctx) {
         filtros = { ...filtros, ...leitura.filtros };
         painelIa = painelDeInterpretacao(descricao, leitura, categorias, regioes, filtros);
         if (leitura.precisaConfirmar) {
+          aguardaConfirmacao = leitura;
           ctx.avisar({
             tipo: 'atencao',
             titulo: 'Confira os filtros antes de buscar',
@@ -550,7 +554,16 @@ async function buscar(ctx) {
   // e a escolha mais recente e explicita do cliente.
   if (filtros.janela) filtros = { ...filtros, de: null, ate: null };
 
-  const resultados = busca.buscarPorFiltros({ ...filtros, janelaHoras: filtros.janela });
+  // RN-32: buscar depois de conferir registra se o cliente aceitou ou corrigiu.
+  if (!descricao && ctx.query.interpretacao) {
+    busca.registrarConfirmacao({
+      interpretacaoId: ctx.query.interpretacao, clienteId: ctx.usuario?.id ?? null, filtros,
+    });
+  }
+
+  const resultados = aguardaConfirmacao
+    ? []
+    : busca.buscarPorFiltros({ ...filtros, janelaHoras: filtros.janela });
   const p = params();
 
   const categoriaAtiva = categorias.find((c) => String(c.id) === String(filtros.categoriaId));
@@ -574,7 +587,7 @@ async function buscar(ctx) {
       <div class="campo">
         <label for="descricao">Descreva o que você precisa</label>
         <div class="busca-principal">
-          <input id="descricao" name="descricao" value="${descricao}" class="crescer"
+          <input id="descricao" name="descricao" value="${aguardaConfirmacao ? '' : descricao}" class="crescer"
                  placeholder="Ex.: preciso cortar o cabelo hoje à tarde, corte masculino simples">
           <button class="botao" type="submit">Buscar</button>
         </div>
@@ -624,6 +637,8 @@ async function buscar(ctx) {
       </div>
       <input type="hidden" name="de" value="${filtros.de ?? ''}">
       <input type="hidden" name="ate" value="${filtros.ate ?? ''}">
+      ${aguardaConfirmacao
+    ? html`<input type="hidden" name="interpretacao" value="${aguardaConfirmacao.id}">` : cru('')}
     </form>
 
     ${temFiltro ? html`
@@ -645,6 +660,19 @@ async function buscar(ctx) {
 
     ${painelIa}
 
+    ${aguardaConfirmacao ? vazio(
+    aguardaConfirmacao.filtros.categoriaId
+      ? 'A busca ainda não rodou. Confira os filtros acima: se estiverem certos, busque com eles; '
+        + 'se não, corrija no formulário e aplique.'
+      : 'A categoria pedida não existe no catálogo, então a busca ainda não rodou. '
+        + 'Escolha uma categoria no formulário e aplique os filtros.',
+    {
+      titulo: 'Confira os filtros antes de buscar',
+      acoes: aguardaConfirmacao.filtros.categoriaId
+        ? [[urlDaBusca(filtros, '', { descricao: '', interpretacao: aguardaConfirmacao.id }), 'Buscar com estes filtros']]
+        : [['#categoriaId', 'Escolher a categoria']],
+    },
+  ) : html`
     <div class="secao-titulo">
       <h2>${plural(resultados.length, 'horário encontrado', 'horários encontrados')}</h2>
       ${resultados.length ? html`<span class="pequeno fraco">${busca.ORDENACOES[filtros.ordenar]}</span>` : cru('')}
@@ -671,7 +699,7 @@ async function buscar(ctx) {
     href: `/horarios/${vaga.id}`,
     acao: acaoDeReserva(ctx, vaga),
   })))}
-      </div>`}
+      </div>`}`}
   `, {
     titulo: 'Buscar horários',
     descricao: 'Busque horários vagos por categoria, região e janela de horário, '
