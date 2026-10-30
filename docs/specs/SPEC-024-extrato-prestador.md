@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-020, SPEC-023 |
 | Responsável | gostislavs |
@@ -94,25 +94,32 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 - **Dado** o cenário pertinente de extrato do prestador, **quando** a operação de domínio acima ocorrer, **então** o sistema satisfaz acesso a extrato de outro prestador é recusado. sem modificar registros fora do escopo.
 
 ## 12. Casos de teste derivados
-| Teste proposto | Critério |
+
+Testes em `tests/integracao/spec-024-evidencia.test.js`, com os IDs propostos.
+
+| Teste | Cobre |
 |---|---|
-| `T-SPEC024-01 \| RN-17: o extrato lista apenas lançamentos do prestador autenticado` | CA-01 |
-| `T-SPEC024-02 \| RN-17: valores em centavos preservam identidade bruto = comissão + líquido` | CA-02 |
-| `T-SPEC024-03 \| RN-17: comissão retida aparece como categoria separada` | CA-03 |
-| `T-SPEC024-04 \| RN-17: lançamento estornado permanece histórico sem somar disponível` | CA-04 |
-| `T-SPEC024-05 \| RN-17: filtro de período exclui lançamentos fora da janela` | CA-05 |
-| `T-SPEC024-06 \| RN-17: total zero usa estrutura válida sem nan ou divisão inválida` | CA-06 |
-| `T-SPEC024-07 \| RN-17: estados de cobrança e comissão são apresentados separadamente` | CA-07 |
-| `T-SPEC024-08 \| RN-17: acesso a extrato de outro prestador é recusado` | CA-08 |
+| `T-SPEC024-01 \| RF-061: o extrato lista apenas lançamentos do prestador autenticado` | CA-01, INV-002 |
+| `T-SPEC024-02 \| RF-061: valores em centavos preservam identidade bruto = comissão + líquido` | CA-02, INV-004 |
+| `T-SPEC024-03 \| RF-062: comissão retida aparece como categoria separada` | CA-03 |
+| `T-SPEC024-04 \| RF-062: lançamento estornado permanece histórico sem somar disponível` | CA-04 |
+| `T-SPEC024-05 \| RF-061: filtro de período exclui lançamentos fora da janela` | CA-05, INV-006 |
+| `T-SPEC024-06 \| RF-061: total zero usa estrutura válida sem nan ou divisão inválida` | CA-06 |
+| `T-SPEC024-07 \| RN-33: estados de cobrança e comissão são apresentados separadamente` | CA-07 |
+| `T-SPEC024-08 \| RNF-03: acesso a extrato de outro prestador é recusado` | CA-08, INV-002 |
+| `T-SPEC026-CA09 \| RF-081: lançamentos antigos mantêm percentual e valores originais` | INV-001 (lançamento antigo não muda com a comissão nova) |
 
-A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
 
-## 13. Questões e lacunas documentadas
-1. As consultas por período devem usar criado_em do lançamento ou competência financeira? Implementação atual utiliza criado_em; explicitar decisão.
-2. Totais de retenções respeitam o mesmo filtro temporal dos itens efetivados? O código atual precisa ser conferido quanto a isso.
-3. Pagamentos e repasses efetivos estão fora do MVP e não devem ser anunciados.
+**INV-003 e INV-005** não se aplicam: o extrato é só leitura. **INV-007** é conferência de dependências.
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+## 13. Questões decididas
+
+1. **Base do período:** Decidida em 2026-10-29 (etapa 32): `criado_em` do lançamento; o MVP não tem competência financeira.
+2. **Filtro das retenções:** Decidida em 2026-10-29 (etapa 32): usam o mesmo intervalo dos efetivados, como o código já faz (`totaisPrestador`, RF-062).
+3. **Pagamentos e repasses:** restrição confirmada, sem decisão nova: fora do MVP e não anunciados.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

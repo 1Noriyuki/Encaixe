@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 
 import {
   janelaNoShow, dentroDaJanelaNoShow, assegurarJanelaNoShow,
-  prazoAvaliacao, dentroDaJanelaAvaliacao, assegurarJanelaAvaliacao,
+  prazoAvaliacao, prazoAvaliacaoDo, dentroDaJanelaAvaliacao, assegurarJanelaAvaliacao,
   prazoDisputa, assegurarPrazoDisputa, assegurarAtendimentoTerminou,
   prazoAutoConclusao, fimDoHorario,
 } from '../../src/dominio/prazos.js';
@@ -50,13 +50,20 @@ test('T-NOSHOW-01b | RN-20: reporte cedo demais e reporte tarde demais explicam 
 
 test('T-AVAL-02 | RN-24: a avaliacao fica aberta por 7 dias apos a conclusao', () => {
   const concluido = '2026-08-21T18:05:00.000Z';
+  const ag = { encerrado_em: concluido, avaliacao_prazo_em: null };
   assert.equal(prazoAvaliacao(concluido, P), '2026-08-28T18:05:00.000Z');
-  assert.equal(dentroDaJanelaAvaliacao(concluido, '2026-08-27T00:00:00.000Z', P), true);
-  assert.equal(dentroDaJanelaAvaliacao(concluido, '2026-08-29T00:00:00.000Z', P), false);
+  assert.equal(dentroDaJanelaAvaliacao(ag, '2026-08-27T00:00:00.000Z', P), true);
+  assert.equal(dentroDaJanelaAvaliacao(ag, '2026-08-29T00:00:00.000Z', P), false);
   assert.throws(
-    () => assegurarJanelaAvaliacao(concluido, '2026-08-29T00:00:00.000Z', P),
+    () => assegurarJanelaAvaliacao(ag, '2026-08-29T00:00:00.000Z', P),
     (e) => e.regra === 'RN-24',
   );
+});
+
+test('T-AVAL-02b | RN-00: o prazo gravado na conclusão vence a P-14 vigente', () => {
+  const ag = { encerrado_em: '2026-08-21T18:05:00.000Z', avaliacao_prazo_em: '2026-08-24T18:05:00.000Z' };
+  assert.equal(prazoAvaliacaoDo(ag, P), '2026-08-24T18:05:00.000Z');
+  assert.equal(dentroDaJanelaAvaliacao(ag, '2026-08-25T00:00:00.000Z', P), false);
 });
 
 test('T-DISPUTA-02 | RN-26: disputa pode ser aberta ate 48h apos o fim do atendimento', () => {

@@ -51,3 +51,14 @@ test('T-P17-03 | RNF-01: migração idempotente preserva prazo travado', () => {
   const campos = bd().prepare('PRAGMA table_info(agendamento)').all().map(c => c.name);
   assert.equal(campos.filter(c => c === 'autoconclusao_prazo_em').length, 1);
 });
+
+test('T-P17-04 | RN-00/SPEC-020: migração trava a P-17 vigente nos confirmados legados', () => {
+  const { c, agId } = confirmarComPrazo(24);
+  bd().prepare('UPDATE agendamento SET autoconclusao_prazo_em = NULL WHERE id = ?').run(agId);
+  salvarGlobal('autoconclusao_h', 48, null);
+  migrar();
+  assert.equal(agRepo.porId(agId).autoconclusao_prazo_em, adicionarHoras(c.horario.inicio, 49));
+  salvarGlobal('autoconclusao_h', 12, null);
+  migrar();
+  assert.equal(agRepo.porId(agId).autoconclusao_prazo_em, adicionarHoras(c.horario.inicio, 49));
+});

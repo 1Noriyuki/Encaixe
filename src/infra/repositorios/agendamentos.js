@@ -59,7 +59,8 @@ export function porHorario(horarioId) {
 /** Atualizacao parcial: so mexe nos campos informados. */
 export function atualizar(id, campos) {
   const permitidos = [
-    'estado', 'confirmado_em', 'autoconclusao_prazo_em', 'encerrado_em', 'estado_cobranca',
+    'estado', 'confirmado_em', 'autoconclusao_prazo_em', 'encerrado_em', 'avaliacao_prazo_em',
+    'estado_cobranca',
     'motivo_encerramento', 'observacao', 'prazo_confirmacao_em', 'estado_antes_disputa',
   ];
   const entradas = Object.entries(campos).filter(([k]) => permitidos.includes(k));
@@ -131,7 +132,7 @@ export function confirmadosComAtendimentoEncerrado(agoraIso) {
 /** RN-25 - agendamentos cuja janela de avaliacao encerrou e ainda tem nota oculta. */
 export function comAvaliacaoOculta() {
   return varios(
-    `SELECT a.id, a.encerrado_em, h.inicio, h.duracao_min
+    `SELECT a.id, a.encerrado_em, a.avaliacao_prazo_em, h.inicio, h.duracao_min
        FROM agendamento a
        JOIN horario_vago h ON h.id = a.horario_id
       WHERE a.estado = 'CONCLUIDO'

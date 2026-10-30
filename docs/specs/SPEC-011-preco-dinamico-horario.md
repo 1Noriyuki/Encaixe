@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-008, SPEC-010 |
 | Responsável | gostislavs |
@@ -92,25 +92,31 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 - **Dado** o cenário pertinente de preço dinâmico do horário, **quando** a operação de domínio acima ocorrer, **então** o sistema satisfaz preço travado de reserva anterior não muda quando o relógio avança. sem modificar registros fora do escopo.
 
 ## 12. Casos de teste derivados
-| Teste proposto | Critério |
+
+Os IDs `T-SPEC011-01` a `03` já identificam testes de precisão do degrau (`spec-011-precisao-degrau.test.js`), que seguem como cobertura complementar. Os critérios usam `T-SPEC011-CAnn`, em `tests/integracao/spec-011-evidencia.test.js`.
+
+| Teste | Cobre |
 |---|---|
-| `T-SPEC011-01 \| RN-01: a oferta sem faixa aplicável apresenta preço-base íntegro` | CA-01 |
-| `T-SPEC011-02 \| RN-01: ao cruzar antecedência de uma faixa, preço muda no instante esperado` | CA-02 |
-| `T-SPEC011-03 \| RN-01: preço não fica abaixo do piso mínimo do prestador` | CA-03 |
-| `T-SPEC011-04 \| RN-01: teto p-05 limita o desconto efetivo` | CA-04 |
-| `T-SPEC011-05 \| RN-01: economia e percentual efetivo correspondem ao preço em centavos` | CA-05 |
-| `T-SPEC011-06 \| RN-01: próximo degrau informa antecedência e instante corretamente` | CA-06 |
-| `T-SPEC011-07 \| RN-01: busca, detalhe e reserva usam a mesma regra de cálculo` | CA-07 |
-| `T-SPEC011-08 \| RN-01: preço travado de reserva anterior não muda quando o relógio avança` | CA-08 |
+| `T-SPEC011-CA01 \| RN-01: a oferta sem faixa aplicável apresenta preço-base íntegro` | CA-01 |
+| `T-SPEC011-CA02 \| RN-01: ao cruzar antecedência de uma faixa, preço muda no instante esperado`<br>`T-SPEC011-01 \| RN-01: desconto de 4h nao antecipa mesmo por um segundo` | CA-02, INV-006 |
+| `T-SPEC011-CA03 \| RN-01: preço não fica abaixo do piso mínimo do prestador` | CA-03 |
+| `T-SPEC011-CA04 \| RN-01: teto p-05 limita o desconto efetivo` | CA-04 |
+| `T-SPEC011-CA05 \| RN-01: economia e percentual efetivo correspondem ao preço em centavos` | CA-05, INV-004 |
+| `T-SPEC011-CA06 \| RN-01: próximo degrau informa antecedência e instante corretamente`<br>`T-SPEC011-02 \| RF-026: proximo degrau tem instante exato e preço correto` | CA-06 |
+| `T-SPEC011-CA07 \| RN-01: busca, detalhe e reserva usam a mesma regra de cálculo` | CA-07 |
+| `T-SPEC011-CA08 \| RN-01: preço travado de reserva anterior não muda quando o relógio avança` | CA-08, INV-001 |
 
-A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
 
-## 13. Questões e lacunas documentadas
-1. Confirmar precisão e regra de arredondamento monetário da baseline sem introduzir flutuante no dinheiro.
-2. Regra quando o teto global P-05 diminui para ofertas já publicadas: preservar reservas travadas e definir reflexo em ofertas ainda não reservadas.
-3. Limites comerciais por segmento não constam da baseline; não adicionar sem decisão.
+**INV-002, INV-003 e INV-005** não se aplicam ao cálculo, que é só leitura; a reserva que trava o preço é da SPEC-014. **INV-007** é conferência de dependências.
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+## 13. Questões decididas
+
+1. **Precisão monetária:** Decidida em 2026-10-29 (etapa 32): dinheiro é inteiro de centavos com arredondamento meio para cima (ADR-002, RN-14), como o código já faz.
+2. **P-05 reduzido com ofertas publicadas:** Decidida em 2026-10-29 (etapa 32): ver SPEC-008 §13, item 2.
+3. **Limites por segmento:** Decidida em 2026-10-29 (etapa 32): fora do MVP.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

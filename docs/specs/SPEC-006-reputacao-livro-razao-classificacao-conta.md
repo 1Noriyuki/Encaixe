@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.1 (rascunho atualizado com a implementação de 22/10) |
-| Data | 2026-10-22 |
-| Status | **Rascunho — aguardando aprovação explícita da equipe**; não autoriza alterações de regra de negócio |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 6 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.9, RN-00, RN-22, RN-23, RF-057, RF-069; ADR-002 |
 | Responsável pela preparação | gostislavs — Trilha A |
@@ -163,29 +163,33 @@ A reversão definida pelo produtor de uma disputa deve marcar `revertido_em` e r
 
 ## 12. Casos de teste derivados
 
-| Teste | Critério |
+Os IDs `T-REPUT-01` a `10` que a versão anterior desta seção propunha já identificavam outros testes de reputação, com outro conteúdo. A evidência real é a matriz de `evidencias-SPEC-006-trilha-a-20261022.md`, conferida e reproduzida abaixo.
+
+| Teste | Cobre |
 |---|---|
-| `T-REPUT-01 \| RN-23: evento conserva delta, origem e UTC` | CA-01 |
-| `T-REPUT-02 \| INV-07: reputacao satura em 0 e 100` | CA-02 |
-| `T-REPUT-03 \| INV-08: janela e reversao nao contam eventos excluidos` | CA-03 |
-| `T-REPUT-04 \| RN-00: P-08 inicial da conta nao retroage` | CA-04 |
-| `T-REPUT-05 \| RN-00: P-22 alterada nao reescreve eventos anteriores` | CA-05 |
-| `T-REPUT-06 \| RN-22: somente cliente entra em RESTRITO` | CA-06 |
-| `T-REPUT-07 \| RF-057: revisao notifica usuario e admin com auditoria` | CA-07 |
-| `T-REPUT-08 \| RN-22: conta em revisao ou suspensa nao reativa sozinha` | CA-08 |
-| `T-REPUT-09 \| RNF-01: falha transacional nao separa evento de efeitos` | CA-09 |
-| `T-REPUT-10 \| RN-00: P-20 altera projecao, nao o livro-razao` | CA-10 |
+| `T-SPEC006-CA01 \| RF-069: grava tipo, delta, origem, titular e UTC` | CA-01 |
+| `T-REPUT-06 \| INV-07: a reputacao fica presa no intervalo [0, 100]` | CA-02, INV-001 |
+| `T-REPUT-04 \| RN-23: eventos fora da janela movel deixam de contar`<br>`T-REPUT-05 \| RN-27: evento revertido por disputa deixa de contar`<br>`T-REPUT-11 \| INV-08: evento com data futura não participa da janela`<br>`T-SPEC006-CA03 \| INV-08: limite P-20 inclui instante exato, exclui 1 segundo anterior e futuro` | CA-03, INV-002 |
+| `T-CONTA-01l \| RN-00: mudar P-08 nao altera a reputacao de conta existente` | CA-04 |
+| `T-P22-01 \| RN-00: tabela P-22 configurável e faixas com mesmo sinal`<br>`T-P22-02 \| RN-19: prestador mantém penalidade igual ou maior que cliente`<br>`T-P22-04 \| INV-08/RN-00: penalidade persistida não muda após reconfiguração` | CA-05, INV-003 |
+| `T-REVISAO-03 \| RN-22: RESTRITO e estado de cliente, nao de prestador`<br>`T-SPEC006-CA06 \| RN-22: cliente restrito e prestador ativo na mesma reputacao` | CA-06, INV-005 |
+| `T-REPUT-07 \| RF-057: conta em revisão notifica titular e admin`<br>`T-SPEC006-CA07 \| RF-057: reclassificacao audita estados e notifica titular/admin` | CA-07, INV-007 |
+| `T-SPEC006-CA08 \| RN-22: melhoria da pontuacao nao reativa conta em revisao`<br>`T-SPEC006-CA08b \| RN-22: conta suspensa nao volta automaticamente mesmo com reputacao alta` | CA-08, INV-006 |
+| `T-REPUT-09 \| INV-08: falha ao recalcular reverte evento recém-criado`<br>`T-SPEC006-CA09a \| RNF-01: falha da classificacao reverte cache e auditoria em recalculo direto`<br>`T-SPEC006-CA09b \| RNF-01: reversao falha nao marca evento nem deixa cache inconsistente` | CA-09 |
+| `T-SPEC006-CA10 \| RN-00: mudar P-20 recalcula projeção, preservando eventos` | CA-10, INV-004 |
 
-## 13. Questões em aberto para decisão humana
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
 
-1. **P-22 — representação configurável:** o código já usa 14 chaves configuráveis com o identificador P-22 (PR #125); confirmar se esta é a representação definitiva ou se a equipe quer outra estrutura. A SPEC-001 aprovou a política e a faixa, **não** o esquema físico. Preservar todos os deltas históricos.
-2. **Notificação ao admin (RF-057):** o código já cria notificações na central do titular e dos administradores (PR #129); confirmar se basta a central, se também deve haver fila dedicada ou ambos, em alinhamento com SPEC-004/SPEC-025.
-3. **Atomicidade (RF-069/INV-08):** `aplicarEvento`, `recalcular` e reversão usam transações aninháveis (PRs #129/#136), com testes de rollback. Formalizar na aprovação se esta responsabilidade fica na aplicação ou é exigida do chamador.
-4. **P-20 — inclusão de limites e eventos futuros:** a implementação exclui eventos futuros e inclui o instante exato da fronteira P-20, medido em milissegundos (PR #136); confirmar se esta convenção deve entrar no contrato aprovado.
-5. **Classificação após alteração administrativa:** o estado `ATIVO` restaurado pelo admin continua sujeito à avaliação automática no evento seguinte; confirmar se é necessário tratamento de reincidência ou trava adicional.
-6. **OPEN-03:** drivers arquiteturais seguem derivados das restrições e da constituição, sem catálogo formal aprovado.
+## 13. Questões decididas
 
-Nenhuma das questões acima foi decidida neste rascunho. Alterações de regras de reputação dependem de aprovação explícita da equipe, com registro no SDD.
+1. **P-22:** Decidida em 2026-10-29 (etapa 32): as 14 chaves configuráveis do PR #125 são a representação definitiva. Os deltas históricos ficam preservados.
+2. **Aviso ao admin (RF-057):** Decidida em 2026-10-29 (etapa 32): basta a central de notificações. Uma fila dedicada, se vier, pertence à SPEC-025.
+3. **Atomicidade (RF-069/INV-08):** Decidida em 2026-10-29 (etapa 32): a transação é responsabilidade da aplicação (`aplicarEvento`, `recalcular` e reversão), não do chamador.
+4. **Fronteira da P-20:** Decidida em 2026-10-29 (etapa 32): eventos futuros não contam, o instante exato da fronteira conta e a comparação é em milissegundos.
+5. **Conta reativada pelo admin:** Decidida em 2026-10-29 (etapa 32): volta à avaliação automática no evento seguinte, sem trava de reincidência.
+6. **OPEN-03:** Decidida em 2026-10-29 (etapa 32): aceita a leitura do mapa (restrições da spec §1.5 e princípios da constituição), sem artefato próprio de drivers.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 

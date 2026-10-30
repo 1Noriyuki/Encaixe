@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Situação | Especificação técnica da Trilha A produzida a partir da baseline; lacunas documentadas, sem decisão nova |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Baseline | `docs/spec.md` v0.1.8 e `docs/specs/mapa-de-specs.md` |
 | Dependências | SPEC-016, SPEC-020 |
 | Responsável | gostislavs |
@@ -97,26 +97,33 @@ Garantir atomicidade, filtros por titularidade, instantes ISO-8601 em UTC, uso d
 - **Dado** o cenário pertinente de avaliação bilateral, revelação cega e perfil público, **quando** a operação de domínio acima ocorrer, **então** o sistema satisfaz histórico agregado de reputação e no-show é consistente com dados registrados. sem modificar registros fora do escopo.
 
 ## 12. Casos de teste derivados
-| Teste proposto | Critério |
+
+Os IDs `T-SPEC021-01` e `02` já identificam testes de atomicidade da revelação (`spec-021-revelacao-atomica.test.js`), que seguem como cobertura complementar. Os critérios usam `T-SPEC021-CAnn`, em `tests/integracao/spec-021-evidencia.test.js`.
+
+| Teste | Cobre |
 |---|---|
-| `T-SPEC021-01 \| RN-23: apenas partes de atendimento concluido podem avaliar` | CA-01 |
-| `T-SPEC021-02 \| RN-23: nota deve ser inteira entre 1 e 5; recusas não criam avaliação` | CA-02 |
-| `T-SPEC021-03 \| RN-23: cada participante avalia uma única vez` | CA-03 |
-| `T-SPEC021-04 \| RN-23: primeira nota não é exposta à contraparte antes da revelação` | CA-04 |
-| `T-SPEC021-05 \| RN-23: duas notas provocam revelação para ambas as partes` | CA-05 |
-| `T-SPEC021-06 \| RN-23: fim da janela p-14 revela avaliações sem segunda nota` | CA-06 |
-| `T-SPEC021-07 \| RN-23: avaliação gera evento p-22 para o alvo, preservando delta aplicado` | CA-07 |
-| `T-SPEC021-08 \| RN-23: perfil público não retorna telefone nem email` | CA-08 |
-| `T-SPEC021-09 \| RN-23: histórico agregado de reputação e no-show é consistente com dados registrados` | CA-09 |
+| `T-SPEC021-CA01 \| RN-24: apenas partes de atendimento concluido podem avaliar` | CA-01, INV-002 |
+| `T-SPEC021-CA02 \| RN-24: nota deve ser inteira entre 1 e 5; recusas não criam avaliação` | CA-02 |
+| `T-SPEC021-CA03 \| RN-24: cada participante avalia uma única vez` | CA-03, INV-003 |
+| `T-SPEC021-CA04 \| RN-25: primeira nota não é exposta à contraparte antes da revelação` | CA-04 |
+| `T-SPEC021-CA05 \| RN-25: duas notas provocam revelação para ambas as partes`<br>`T-SPEC021-01 \| RN-25: revelar duas vezes não duplica avisos ou auditoria` | CA-05 |
+| `T-SPEC021-CA06 \| RN-25: fim da janela p-14 revela avaliações sem segunda nota`<br>`T-P14-03 \| RN-00/RN-25: reduzir a P-14 depois não antecipa a revelação` | CA-06, INV-006 |
+| `T-SPEC021-CA07 \| RN-23: avaliação gera evento p-22 para o alvo, preservando delta aplicado`<br>`T-P14-02 \| RN-00: aumentar a P-14 depois não reabre a avaliação` | CA-07, INV-001 |
+| `T-SPEC021-CA08 \| RNF-04: perfil público não retorna telefone nem email` | CA-08 |
+| `T-SPEC021-CA09 \| RF-070: histórico agregado de reputação e no-show é consistente com dados registrados` | CA-09 |
+| `T-SPEC021-02 \| RNF-01/RN-25: erro de auditoria mantém avaliação oculta` | INV-005 |
 
-A implementação candidata já existe no repositório. A equipe deve relacionar os IDs aqui propostos com os testes existentes antes de declarar cobertura integral; teste listado não equivale a teste executado.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
 
-## 13. Questões e lacunas documentadas
-1. Definir se os comentários também permanecem ocultos até a revelação, considerando o comportamento atual do repositório.
-2. Regra de visualização de avaliações para usuários não autenticados deve seguir RNF-04.
-3. Alterar P-14 depois da conclusão pode afetar avaliações existentes; a precedência temporal requer alinhamento com RN-00.
+**INV-004** não se aplica: a avaliação não tem valor monetário. **INV-007** é conferência de dependências.
 
-Estas pendências não são decisões implícitas e não alteram a baseline.
+## 13. Questões decididas
+
+1. **Comentários antes da revelação:** Decidida em 2026-10-29 (etapa 32): ficam ocultos junto com a nota; a coluna `visivel` vale para a avaliação inteira.
+2. **Visitante sem login:** Decidida em 2026-10-29 (etapa 32): vê só avaliações reveladas, conforme RNF-04.
+3. **P-14 alterada depois da conclusão:** Decidida em 2026-10-29 (etapa 32): a conclusão trava o prazo de avaliação em `agendamento.avaliacao_prazo_em` (RN-00, spec v0.1.10). O código calculava o prazo com a P-14 do momento da leitura e foi corrigido, com os testes T-P14-01 a 04.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 - CA e invariantes confrontados individualmente com o código.

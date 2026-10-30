@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-21 |
-| Status | **Especificação derivada da baseline para conferência do código — decisões em aberto preservadas** |
+| Versão | 0.2.0 |
+| Data | 2026-10-29 |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-009; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005, SPEC-007 e SPEC-008 |
@@ -80,26 +80,36 @@ Persistência (RNF-01), autorização/titularidade (RNF-03), testes automatizado
 **CA-09** — Dado o cenário de perfil do prestador e elegibilidade para publicar, quando suspenso/reprovado não publica, independentemente da completude., então o resultado deve satisfazer os invariantes de domínio, ser verificável em banco e não causar efeitos colaterais não previstos.
 
 ## 12. Casos de teste derivados
-| Teste | Critério |
+
+Testes em `tests/integracao/spec-009-evidencia.test.js`, com os IDs propostos.
+
+| Teste | Cobre |
 |---|---|
 | `T-SPEC009-01 \| RF-010: novo perfil herda p-01/p-02 globais do momento do cadastro` | CA-01 |
-| `T-SPEC009-02 \| RF-010: mudanças posteriores nos padrões globais não alteram o perfil já criado` | CA-02 |
-| `T-SPEC009-03 \| RF-010: perfil aceita valores p-01 5 e 60 e apenas políticas permitidas` | CA-03 |
-| `T-SPEC009-04 \| RF-010: perfil rejeita nome vazio, valor de janela fora da faixa e política inválida` | CA-04 |
+| `T-SPEC009-02 \| RF-010: mudanças posteriores nos padrões globais não alteram o perfil já criado` | CA-02, INV-004 |
+| `T-SPEC009-03 \| RF-010: perfil aceita valores p-01 5 e 60 e apenas políticas permitidas` | CA-03, INV-005 |
+| `T-SPEC009-04 \| RF-010: perfil rejeita nome vazio, valor de janela fora da faixa e política inválida`<br>`T-SPEC009-ATOMIC01 \| RF-010: auditoria falha reverte atualizacao do perfil`<br>`T-SPEC009-ATOMIC02 \| RF-010: nao registra sucesso para perfil inexistente` | CA-04, INV-001 |
 | `T-SPEC009-05 \| RF-010: sem região/serviço/régua retorna lista completa de pendências` | CA-05 |
 | `T-SPEC009-06 \| RF-010: prestador completo e ativo pode publicar` | CA-06 |
 | `T-SPEC009-07 \| RF-010: prestador pendente não publica, embora possa configurar catálogo` | CA-07 |
 | `T-SPEC009-08 \| RF-010: conta em revisão não publica e informa o motivo` | CA-08 |
 | `T-SPEC009-09 \| RF-010: suspenso/reprovado não publica, independentemente da completude` | CA-09 |
 
-A suíte existente de `tests/integracao/trilha-a-perfil-catalogo.test.js` e/ou as suítes de preço e regras de negócio devem ser mapeadas individualmente antes de encerrar a issue. IDs acima são identificadores **propostos** para lacunas, não prova de que testes novos tenham sido executados.
+**Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.
 
-## 13. Questões em aberto
-1. OPEN-16: a baseline pede categorias atendidas no perfil, mas PerfilPrestador não possui atributo separado; esclarecer se categorias derivam de serviços ativos.
-2. OPEN-11: origem e governança da lista controlada de regiões.
-3. Definir o comportamento de nome de exibição e região inválidos em alterações que já possuam horários publicados; não reescrever horários existentes.
+**Cobertura complementar:** `T-PERFIL-01` a `03` e `T-PUBLICAR-01` a `03`.
 
-As questões acima não foram decididas neste arquivo e não autorizam alteração silenciosa da baseline.
+**INV-002** é garantida por construção: `salvarPerfilPrestador` só recebe o `prestadorId` da sessão, sem identificador de outro perfil. **INV-003 e INV-006** são conferência de código.
+
+**Divergência corrigida nesta etapa:** uma região inexistente estourava `FOREIGN KEY constraint failed` em vez de erro de campo, contra a decisão da §13, item 3. `salvarPerfilPrestador` agora recusa com `regiaoId`.
+
+## 13. Questões decididas
+
+1. **OPEN-16:** Decidida em 2026-10-29 (etapa 32): as categorias atendidas derivam dos serviços ativos, sem atributo no perfil; RF-011 passa a citar a lista da RN-08. Spec v0.1.10.
+2. **OPEN-11:** Decidida em 2026-10-29 (etapa 32): ver SPEC-007 §13, item 1.
+3. **Nome ou região inválidos com horários publicados:** Decidida em 2026-10-29 (etapa 32): a validação vale sempre e recusa o dado inválido. Alteração válida aparece nos horários, que leem esses dados do perfil; nenhum horário é reescrito.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 32.
 
 ## 14. Definition of Done
 1. Cada CA tem evidência identificada e resultado automatizado quando aplicável.

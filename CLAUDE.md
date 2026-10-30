@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 235 testes, ~7 s
+npm test             # suíte completa (node --test), 336 testes, ~7 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -94,10 +94,14 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 - **Fechar issue:** o GitHub só fecha no merge se o PR disser `Closes #N`, e o critério é a Definition of
   Done inteira da Spec, não a aprovação do texto. Modelo: a seção 12 da SPEC-001, com tabela de evidência
   dizendo qual teste cobre cada CA, INV e RNF. **Rascunho mergeado não é Spec aprovada.**
-- **Estado em 2026-10-22 (etapa 28):** spec v0.1.9. SPEC-001 e 002 concluídas; 003 a 005 aprovadas, com
+- **Estado em 2026-10-29 (etapa 33):** spec v0.1.10. SPEC-001 e 002 concluídas; 003 a 005 aprovadas, com
   a conferência do código pendente (2dart5, que o Enzo decidiu não assumir). SPEC-006 a 009, 011, 020,
-  021, 024 e 026 estão na `main` como **rascunhos não aprovados**; a próxima a aprovar é a SPEC-006.
-  Issues: 61 fechadas, 46 abertas.
+  021, 024 e 026 estão aprovadas e com a evidência completa na §12; as issues delas fecham no merge do PR
+  da etapa 33, que espera revisão de outro integrante. A próxima a gerar é a SPEC-010.
+- **Aprovada não é concluída.** "Aprovada" diz que o texto da Spec foi aceito; "concluída" exige a tabela
+  de evidência da §12, ligando cada CA e INV a um teste que existe e passa. Confira o **título** do teste,
+  não só o ID: vários IDs propostos já nomeavam testes de outro assunto. Por isso um ID nunca nomeia dois
+  testes; havendo colisão, use `T-SPECnnn-CAnn`.
 
 ## Arquitetura
 
@@ -217,7 +221,7 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.9): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.10): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
