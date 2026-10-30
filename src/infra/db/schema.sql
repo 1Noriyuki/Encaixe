@@ -240,6 +240,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_agendamento_ativo
   ON agendamento (horario_id)
   WHERE estado IN ('PENDENTE_CONFIRMACAO','CONFIRMADO','EM_DISPUTA');
 
+-- INV-03 / RN-04: o valor travado na reserva nunca muda depois.
+CREATE TRIGGER IF NOT EXISTS agendamento_valor_travado_imutavel
+BEFORE UPDATE OF valor_travado ON agendamento
+WHEN NEW.valor_travado IS NOT OLD.valor_travado
+BEGIN
+  SELECT RAISE(ABORT, 'INV-03: valor travado nao muda depois da reserva');
+END;
+
+-- INV-04 / RN-03: o valor travado respeita o piso gravado no horario.
+CREATE TRIGGER IF NOT EXISTS agendamento_respeita_piso
+BEFORE INSERT ON agendamento
+WHEN NEW.valor_travado < (SELECT preco_minimo_snapshot FROM horario_vago WHERE id = NEW.horario_id)
+BEGIN
+  SELECT RAISE(ABORT, 'INV-04: valor travado abaixo do preco minimo do horario');
+END;
+
 CREATE INDEX IF NOT EXISTS ix_agendamento_cliente   ON agendamento (cliente_id, estado);
 CREATE INDEX IF NOT EXISTS ix_agendamento_prestador ON agendamento (prestador_id, estado);
 

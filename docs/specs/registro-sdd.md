@@ -816,3 +816,11 @@
 - **Divergência corrigida (UC-03 1a):** sem janela informada, a busca olhava as próximas **72 h**; a baseline diz **24 h**. Não há decisão registrada para as 72 h, que vinham do código anterior às Specs (`a653fa7`). O padrão vira `JANELA_PADRAO_H = 24` em `aplicacao/busca.js`, e a home e o estado vazio leem a constante em vez de repetir "72". **Mudança visível:** a home e a busca sem filtro passam a mostrar menos horários; se a equipe preferir 72 h, muda-se a spec.
 - **Divergência corrigida (RF-028):** o formulário não tinha campo de janela; ela só chegava pela descrição ao LLM, o que deixava a busca por filtros sem um dos três filtros do RF. Campo "Quando" (6 a 72 h) adicionado; a escolha no formulário vale mais que a janela extraída da descrição. Conferido no navegador a 800 e a 375 px, sem rolagem lateral.
 - **Evidência:** `T-BUSCA-02` a `08`; `T-BUSCA-08` mede RNF-05 com 131 horários nos quatro critérios. Questão mantida: o corte de 200 (etapa 35).
+
+### Etapa 49 — Rascunho e conferência da SPEC-014 · 2026-10-30
+
+- **SPEC-014:** [`SPEC-014-reserva-preco-travado-exclusividade.md`](SPEC-014-reserva-preco-travado-exclusividade.md), RF-017, RF-039 a RF-041 e RF-047.
+- **Conferência:** `reservar()` atende todos os RF, com recusa por regra e a reserva inteira numa transação. INV-01 já tinha o índice único parcial.
+- **Divergência corrigida:** INV-03 (valor travado imutável) e INV-04 (valor travado ≥ piso) só eram garantidas no domínio. Gatilhos `agendamento_valor_travado_imutavel` e `agendamento_respeita_piso` em `schema.sql`. Seed refeito do zero.
+- **Evidência:** `T-RESERVA-07` a `12`, mais os testes de reserva anteriores. Questão: RF-017 é atendido porque não existe edição de horário (OPEN-09).
+- **Verificação:** `npm test`, 403/403.
