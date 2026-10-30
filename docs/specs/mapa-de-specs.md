@@ -579,4 +579,7 @@ e ratificadas pela Trilha C em 2026-10-18; a OPEN-210 também foi decidida em 20
 seguem uma por vez, na ordem aprovada: SPEC-001 a SPEC-005 estão aprovadas (as três últimas
 em 2026-10-20). Em 2026-10-29 (etapa 32) foram aprovadas, fora da ordem porque o código já estava
 integrado, as SPEC-006 a 009, 011, 020, 021, 024 e 026, com a evidência completada na etapa 33; o merge
-aguarda a revisão de outro integrante. A próxima a gerar é a SPEC-010. A implementação de uma Spec depende de aprovação explícita.
+aguarda a revisão de outro integrante. Em 2026-10-30 (etapas 46 a 60) o 2dart5 escreveu como **rascunho** as 15 Specs
+restantes das Trilhas B e C (SPEC-010, 012 a 019, 022, 023, 025, 027 a 029), já conferidas contra o código e com a
+evidência da §12; nenhuma está aprovada, e a próxima a aprovar é a SPEC-010. As SPEC-003 a 005 foram conferidas
+(etapas 43 a 45) e esperam decisões das respectivas §13. A implementação de uma Spec depende de aprovação explícita.
