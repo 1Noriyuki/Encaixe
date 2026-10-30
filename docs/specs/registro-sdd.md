@@ -831,3 +831,9 @@
 - **Divergências corrigidas:** (1) **RN-11:** a recusa deveria contar na "taxa de recusa exibida ao admin", que não existia. `admin.dossieDaConta()` compõe recusas e taxa sobre as reservas recebidas (`respostasDoPrestador()`), e o dossiê do prestador mostra a métrica; o perfil público não. (2) **UC-06 1a:** `recusar()` não conferia o prazo de confirmação; chamada fora da rota aceitava recusa depois do prazo, cujo desfecho é da política P-02.
 - **Evidência:** `T-CONFIRMA-01` a `04`, além de `T-AGENDAMENTO-06` a `07c` (T-33). Questões: janela da taxa de recusa e o mínimo de 5 caracteres do motivo.
 - **Verificação:** `npm test`, 407/407.
+
+### Etapa 51 — Rascunho e conferência da SPEC-016 · 2026-10-30
+
+- **SPEC-016:** [`SPEC-016-expiracao-automatica-da-reserva.md`](SPEC-016-expiracao-automatica-da-reserva.md), RF-044 a RF-046.
+- **Divergência corrigida:** o aviso de expiração ao cliente dizia sempre que o horário voltou para a busca, inclusive quando ele expirava por falta da antecedência P-04 (RF-044). O texto agora segue o destino real do horário.
+- **Evidência:** `T-EXPIRA-05` a `08` (leitura pela rota, avisos, autoconfirmação com ator sistema, idempotência), além de `T-EXPIRA-01` a `04`. Questões: OPEN-19 e o intervalo de 15 s da rota.

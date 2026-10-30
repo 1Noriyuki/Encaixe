@@ -315,8 +315,11 @@ export function resolverExpiracao(ag) {
       tipo: 'RESERVA_EXPIRADA',
       titulo: 'Sua reserva expirou',
       agendamentoId: atual.id,
+      // RF-044: o horario so volta para a busca se ainda resta P-04.
       mensagem: `${atual.nome_exibicao ?? atual.prestador_nome} não respondeu no prazo. `
-        + 'O horário voltou para a busca e você não foi penalizado.',
+        + (destinoHorario === 'PUBLICADO'
+          ? 'O horário voltou para a busca e você não foi penalizado.'
+          : 'Já não há antecedência para reservar este horário de novo. Você não foi penalizado.'),
     });
     notificar(atual.prestador_id, {
       tipo: 'RESERVA_EXPIRADA',
