@@ -442,9 +442,11 @@ function telaContas(ctx) {
     ${revisao.length
     ? html`<h2 class="sem-topo">Em revisão ou suspensas (${revisao.length})</h2>${tabelaDeRevisao(revisao)}`
     : cru('')}
+    <h2>Aguardando aprovação (${pendentes.length})</h2>
     ${pendentes.length
-    ? html`<h2>Aguardando aprovação (${pendentes.length})</h2>${tabelaDeContas(pendentes)}`
-    : cru('')}
+    ? tabelaDeContas(pendentes)
+    : vazio('Nenhum cadastro de prestador aguardando decisão. Quando alguém se cadastrar como '
+      + 'prestador, a conta aparece aqui até você aprovar ou reprovar.', { titulo: 'Fila de aprovação vazia' })}
     <h2>Prestadores (${prestadores.length})</h2>${tabelaDeContas(prestadores)}
     <h2>Clientes (${clientes.length})</h2>${tabelaDeContas(clientes)}
   `, { titulo: 'Contas' });

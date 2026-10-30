@@ -787,3 +787,11 @@
 - **Resultado:** com os testes da etapa 41 (T-66) e três novos, todos os CA, INV e RNFs da SPEC-004 têm evidência; a Spec sobe para v1.1.0 com a tabela na §12. Novos: `T-NOTIF-01` (nada de aviso órfão; chave estrangeira recusa usuário inexistente), `T-NOTIF-09` (RNF-01, reabertura do banco em arquivo) e `T-NOTIF-10` (o aviso está na mesma transação da mudança de estado).
 - **Sem alteração de código** além do desempate já registrado na etapa 41.
 - **Por que a issue #83 não fecha:** a DoD 1 pede que a equipe aprove a matriz de eventos e decida atomicidade e paginação. A §13 agora traz a proposta de matriz (etapa 41), o fato sobre atomicidade (`T-NOTIF-10`) e a premissa de desempate, para a decisão ser tomada sobre o que o código já faz.
+
+### Etapa 45 — Conferência do código contra a SPEC-005 · 2026-10-30
+
+- **Divergência grave corrigida (CA-07, INV-002):** `aprovarPrestador()` aceitava qualquer conta cuja máquina de estados permitisse ir para `ATIVO`. Como `SUSPENSO`, `EM_REVISAO` e `RESTRITO` vão para `ATIVO` pelo RF-079, um POST em `/admin/contas/:id/aprovar` reativava conta suspensa, até de cliente, **sem justificativa**, e a auditoria registrava `PRESTADOR_APROVADO`. O formulário só aparecia para pendentes, mas a rota aceitava qualquer id. Aprovar e reprovar agora passam por `carregarCadastroPendente()`, que exige prestador em `PENDENTE_APROVACAO` e recusa com RF-008 / RF-009 apontando o caminho certo.
+- **Divergência corrigida (CA-02):** sem pendências, a seção da fila desaparecia; agora mostra estado vazio.
+- **Evidência:** os oito testes da §12 em `tests/integracao/spec-005-moderacao.test.js`; Spec em v1.1.0 com a tabela. Observação sem correção: o pendente que tenta publicar é barrado com RN-28 (regra específica do cadastro pendente), não com a RN-08 citada no CA-08; as duas regras vedam a publicação.
+- **Por que a issue #84 não fecha:** a DoD 1 depende das questões da §13 que mudam o critério de decisão — se 10 caracteres de justificativa é regra de produto, e se o RF-003 ("notificar a fila de moderação") exige aviso ao admin além da fila consultável.
+- **Verificação:** `npm test`, 381/381.

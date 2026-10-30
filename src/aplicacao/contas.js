@@ -123,11 +123,29 @@ export function autenticar({ email, senha }) {
 
 // --------------------------------------------------------------- moderacao
 
+/**
+ * RF-003 / SPEC-005 CA-07 - aprovar e reprovar sao a decisao sobre o CADASTRO
+ * inicial. A maquina de contas aceita SUSPENSO -> ATIVO e EM_REVISAO -> ATIVO,
+ * mas esse caminho e o do RF-079, com justificativa: por aqui so passa
+ * prestador pendente.
+ */
+function carregarCadastroPendente(prestadorId, regra) {
+  const prestador = usuarios.porId(prestadorId);
+  if (!prestador) throw new NaoEncontrado('Prestador não encontrado.');
+  if (prestador.perfil !== 'PRESTADOR' || prestador.estado_conta !== 'PENDENTE_APROVACAO') {
+    throw new ErroDeRegra(
+      regra,
+      `Só um cadastro de prestador aguardando aprovação recebe esta decisão (a conta está ${prestador.estado_conta}). `
+      + 'Para reativar ou suspender uma conta, use a decisão sobre a conta, com justificativa.',
+    );
+  }
+  return prestador;
+}
+
 /** RF-008 - aprovacao do prestador pelo admin. */
 export function aprovarPrestador({ adminId, prestadorId }) {
   return transacao(() => {
-    const prestador = usuarios.porId(prestadorId);
-    if (!prestador) throw new NaoEncontrado('Prestador não encontrado.');
+    const prestador = carregarCadastroPendente(prestadorId, 'RF-008');
 
     assegurarTransicao('conta', prestador.estado_conta, 'ATIVO');
     usuarios.atualizarEstadoConta(prestadorId, 'ATIVO');
@@ -161,8 +179,7 @@ export function reprovarPrestador({ adminId, prestadorId, justificativa }) {
   }
 
   return transacao(() => {
-    const prestador = usuarios.porId(prestadorId);
-    if (!prestador) throw new NaoEncontrado('Prestador não encontrado.');
+    const prestador = carregarCadastroPendente(prestadorId, 'RF-009');
 
     assegurarTransicao('conta', prestador.estado_conta, 'REPROVADO');
     usuarios.atualizarEstadoConta(prestadorId, 'REPROVADO');
