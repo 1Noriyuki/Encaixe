@@ -843,3 +843,9 @@
 - **SPEC-017:** [`SPEC-017-cancelamento-com-penalidade.md`](SPEC-017-cancelamento-com-penalidade.md), RF-048 a RF-051.
 - **Divergência corrigida (RF-051):** o aviso à outra parte trazia faixa e motivo, mas não o efeito na reputação de quem cancelou. O horário cancelado pelo prestador passa por `moverHorario()` (etapa 42) em vez de repetir a auditoria.
 - **Evidência:** `T-CANCEL-08` a `11`, além dos `T-CANCEL-01` a `07` e `01i` a `05i`. Questões: cancelamento pelo admin (OPEN-09), OPEN-18 e a tensão RN-19 × RN-21 sobre a faixa livre.
+
+### Etapa 53 — Rascunho e conferência da SPEC-018 · 2026-10-30
+
+- **SPEC-018:** [`SPEC-018-revisao-por-ocorrencias.md`](SPEC-018-revisao-por-ocorrencias.md), RF-056.
+- **Divergência corrigida:** `verificarOcorrenciasDoPrestador()` não conferia o perfil. Os três chamadores atuais só a usam para prestador, mas, chamada para um cliente com três ausências, ela o moveria para `EM_REVISAO` com o aviso "publicação de horários suspensa". A RN-21 é regra do prestador; a função agora ignora outros perfis.
+- **Evidência:** `T-REVISAO-03` a `05`, além de `T-REVISAO-01`. Questões: "consecutivas" × acumuladas, e se a reativação pelo admin zera a contagem.
