@@ -273,6 +273,24 @@ CREATE TABLE IF NOT EXISTS lancamento_comissao (
   CHECK (valor_comissao + valor_liquido = valor_bruto)
 );
 
+-- INV-12 / RN-17: comissao de agendamento em disputa nunca fica EFETIVADO. A abertura
+-- move o agendamento e retem a comissao na mesma transacao (aplicacao/disputas.js);
+-- aqui o banco recusa efetivar enquanto a disputa nao for resolvida.
+CREATE TRIGGER IF NOT EXISTS comissao_sem_efetivar_em_disputa_insert
+BEFORE INSERT ON lancamento_comissao
+WHEN NEW.estado = 'EFETIVADO'
+ AND (SELECT estado FROM agendamento WHERE id = NEW.agendamento_id) = 'EM_DISPUTA'
+BEGIN
+  SELECT RAISE(ABORT, 'INV-12: comissao de agendamento em disputa nao fica EFETIVADO');
+END;
+CREATE TRIGGER IF NOT EXISTS comissao_sem_efetivar_em_disputa_update
+BEFORE UPDATE OF estado ON lancamento_comissao
+WHEN NEW.estado = 'EFETIVADO'
+ AND (SELECT estado FROM agendamento WHERE id = NEW.agendamento_id) = 'EM_DISPUTA'
+BEGIN
+  SELECT RAISE(ABORT, 'INV-12: comissao de agendamento em disputa nao fica EFETIVADO');
+END;
+
 -- INV-09: no maximo uma avaliacao por (agendamento, autor).
 CREATE TABLE IF NOT EXISTS avaliacao (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -58,10 +58,17 @@ export function abrir({ usuarioId, agendamentoId, motivo, relato, evidencia }) {
   const p = params();
   const agora = agoraIso();
 
+  const textoEvidencia = String(evidencia ?? '').trim();
+  // RF-072: a recusa diz tudo o que falta, nao so o primeiro item.
+  if (!(motivo in MOTIVOS) && textoEvidencia.length < 10) {
+    throw new ErroDeRegra(
+      'RN-26',
+      'Faltam o motivo, escolhido da lista, e ao menos uma evidência (mínimo 10 caracteres).',
+    );
+  }
   if (!(motivo in MOTIVOS)) {
     throw new ErroDeValidacao('Escolha um motivo da lista.', 'motivo');
   }
-  const textoEvidencia = String(evidencia ?? '').trim();
   if (textoEvidencia.length < 10) {
     // RF-072 - abertura sem evidencia e recusada.
     throw new ErroDeRegra(

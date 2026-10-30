@@ -856,3 +856,10 @@
 - **Divergência corrigida (RF-052):** o reporte sobre agendamento fora de `CONFIRMADO` era recusado sem informar a janela válida; agora a recusa traz a janela, como nos outros dois casos.
 - **Questão nova, para a Trilha A:** as faixas permitem P-17 (conclusão automática) menor que P-16b (prazo de no-show); a rotina então conclui o agendamento com a janela de no-show ainda aberta. Proposta registrada na §13 da SPEC-019, sem alteração de código, porque a regra é da SPEC-020, aprovada.
 - **Evidência:** `T-NOSHOW-05` a `07`, além de `T-NOSHOW-01i` a `03`.
+
+### Etapa 55 — Rascunho e conferência da SPEC-022 · 2026-10-30
+
+- **SPEC-022:** [`SPEC-022-abertura-de-disputa.md`](SPEC-022-abertura-de-disputa.md), RF-055 e RF-071 a RF-073.
+- **Divergências corrigidas:** (1) INV-12 (comissão de agendamento em disputa nunca `EFETIVADO`) só existia no domínio; gatilhos `comissao_sem_efetivar_em_disputa_insert/update` em `schema.sql`, com seed refeito do zero. (2) RF-072: sem motivo e sem evidência, a recusa citava só o motivo; agora cita os dois.
+- **Evidência:** `T-DISPUTA-08` a `11`. Questões: OPEN-07 (o código pratica "abre quem acusa por último"), OPEN-17 e evidência em arquivo.
+- **Verificação:** `npm test`, 425/425.
