@@ -19,7 +19,7 @@ npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho
 npm run dev          # node --watch — use este durante desenvolvimento
 npm test             # suíte completa (node --test), 450 testes, ~10 s
 npm run db:seed      # cria o banco e popula demonstração
-npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
+npm run db:migrar    # cria as 22 tabelas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
 ```
 
@@ -62,47 +62,39 @@ Consequências práticas disso no dia a dia:
   ordenação, preço e transição de estado são sempre código determinístico. O sistema inteiro precisa
   funcionar com o provedor fora do ar.
 
-## Processo SDD (em andamento)
+## Processo SDD
 
-O projeto segue o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
+O projeto seguiu o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
 Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
-- **O código veio antes das Specs.** O trabalho agora é, Spec por Spec, conferir o código existente
-  contra os critérios de aceitação, registrar divergências e corrigir (OPEN-01, decidida em
-  2026-10-08).
-- **Regra fundamental do roteiro:** conflito entre código, Spec e modelagem nunca é resolvido em
-  silêncio. Registra-se e escolhe-se: corrigir o código ou propor mudança na spec.
-- **Toda etapa é registrada em `docs/specs/registro-sdd.md`**, inclusive premissas do agente. A
-  equipe autorizou atualizar a baseline (spec com versão e histórico, ADRs, plan, README, este
-  arquivo) a cada ação; **decisões de mérito** (`OPEN-XX`, recomendações) exigem aprovação explícita.
-- **Nomes:** o roteiro chama regra de "RB"; aqui continua `RN-xx`. Invariantes de uma Spec são
-  `INV-001` locais; fora dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14`.
-- **Issues:** `T-nn` é a issue `#nn+2`; #79 foram as decisões OPEN-01/02/210; #80–#108 são as SPEC-001..029.
-  Divididas por trilha do `tasks.md` (`niltonmack` é o professor). Em 2026-10-18 o 2dart5 assumiu
-  também a Trilha C (etapa 18 do registro):
-
-  | Trilha | Responsável | Specs |
-  |---|---|---|
-  | A: domínio e financeiro | gostislavs | SPEC-006–009, 011, 020, 021, 024, 026 |
-  | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
-  | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
-
-  Desde a etapa 61 todas as issues estão fechadas.
-
-  `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões. É gerado
-  com a lib `docx` instalada numa pasta temporária, nunca no projeto (ADR-001). Esta máquina não tem
-  pandoc, LibreOffice nem pdftoppm: para conferir o resultado, exporte para PDF pelo Word via COM
-  (PowerShell) e renderize as páginas com a API `Windows.Data.Pdf`.
-- **Fechar issue:** o GitHub só fecha no merge se o PR disser `Closes #N`, e o critério é a Definition of
-  Done inteira da Spec, não a aprovação do texto. Modelo: a seção 12 da SPEC-001, com tabela de evidência
-  dizendo qual teste cobre cada CA, INV e RNF. **Rascunho mergeado não é Spec aprovada.**
-- **Estado em 2026-10-30 (etapa 63):** spec v0.1.11. As 29 Specs estão aprovadas e concluídas, com a
-  evidência na §12 e as questões da §13 decididas; todas as issues estão fechadas. O que sobra está nos
-  próximos passos do registro: validação com o professor (QA-01) e as pendências de `seguranca.md`.
-- **Aprovada não é concluída.** "Aprovada" diz que o texto da Spec foi aceito; "concluída" exige a tabela
-  de evidência da §12, ligando cada CA e INV a um teste que existe e passa. Confira o **título** do teste,
-  não só o ID: vários IDs propostos já nomeavam testes de outro assunto. Por isso um ID nunca nomeia dois
-  testes; havendo colisão, use `T-SPECnnn-CAnn`. O `T-CONVENCAO-01` falha se dois testes dividirem um ID.
+- **Estado em 2026-10-30 (etapa 64):** spec v0.1.11. As 29 Specs estão aprovadas e **concluídas**
+  (evidência na §12, questões da §13 decididas); as 107 issues estão fechadas. O que falta está na
+  seção 4 de `docs/proximos-passos.docx`: validar a QA-01 com o professor, a lacuna da RN-05, a RN-17
+  sem teste nomeado e as pendências P1 a P9 de `docs/seguranca.md`.
+- **Mudança nova segue o mesmo rito:** regra que muda altera a `spec.md` primeiro, com linha no
+  histórico de versões; bug corrigido vira teste de regressão; a etapa vai para
+  `docs/specs/registro-sdd.md` (a próxima é a 65), inclusive as premissas do agente.
+- **Regra fundamental:** conflito entre código, Spec e modelagem nunca é resolvido em silêncio.
+  Registra-se e escolhe-se: corrigir o código ou propor mudança na spec. A equipe autorizou atualizar
+  a baseline (spec, ADRs, README, este arquivo) a cada ação; **decisões de mérito** exigem aprovação
+  explícita. O padrão que funcionou: levantar as questões, recomendar uma decisão para cada uma e
+  aplicar só depois do "aprovo".
+- **Nomes:** regra é `RN-xx` (o roteiro diz "RB"). Invariantes de uma Spec são `INV-001` locais; fora
+  dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14` da spec.
+- **Issues:** `T-nn` é a issue `#nn+2`; #80–#108 são as SPEC-001..029. Trilhas: A (domínio e
+  financeiro) com o gostislavs; B (transação) e C (acesso, admin e IA) com o 2dart5, o Duarte; o
+  1Noriyuki (Enzo) revisa, mergeia e decide. `niltonmack` é o professor.
+- **Fechar issue:** o PR precisa dizer `Closes #N`, e o critério é a Definition of Done inteira, não a
+  aprovação do texto. Issue já foi fechada sem DoD duas vezes (etapas 32 e 62).
+- **Aprovada não é concluída.** "Concluída" exige a tabela da §12 ligando cada CA e INV a um teste que
+  existe e passa. Confira o **título** do teste, não só o ID: vários IDs propostos já nomeavam testes de
+  outro assunto. Havendo colisão, use `T-SPECnnn-CAnn`; o `T-CONVENCAO-01` falha se dois testes
+  dividirem um ID.
+- **`docs/proximos-passos.docx`** é o documento de passagem para a equipe. É gerado com a lib `docx`
+  instalada numa pasta temporária, nunca no projeto (ADR-001). Esta máquina não tem pandoc,
+  LibreOffice nem pdftoppm: para conferir, exporte para PDF pelo Word via COM (PowerShell) e renderize
+  as páginas com a API `Windows.Data.Pdf`. Títulos precisam de `keepNext`, senão ficam sozinhos no pé
+  da página.
 
 ## Arquitetura
 
@@ -185,7 +177,15 @@ o intervalo falhar.
   `C:/Program Files/Git/buscar`). Use `MSYS_NO_PATHCONV=1` ao passar rotas para scripts.
 - **Os arquivos são CRLF.** Buscar um trecho com `\n` no meio falha em silêncio, e `sed` quebra em
   linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`.
-- **A RN-05 ainda tem teste só parcial** (issue T-68): "tudo verde" não significa "toda regra coberta".
+- **"Tudo verde" não é "toda regra coberta".** A RN-05 tem um teste só e não barra a edição da régua de
+  um horário já reservado (o preço segue travado pela RN-04, mas a projeção muda); a RN-17 não aparece
+  no nome de nenhum teste. A issue T-68 foi fechada com essas lacunas abertas.
+- **Prazo é gravado quando o fato acontece.** P-01 na reserva; na confirmação, o prazo de conclusão
+  automática (o maior entre P-17 e P-16b); P-14 e P-13 na conclusão. Prazo calculado na leitura com o
+  parâmetro atual retroage em silêncio: foi o defeito da P-14 (etapa 32).
+- **Mudança de estado de conta mexe em agendamentos.** Suspender um prestador expira as reservas
+  pendentes dele, e conta que não está `ATIVO` não autoconfirma: sem isso, a rotina confirmava a reserva
+  de um prestador suspenso (etapa 63).
 - **PR empilhado não chega à `main`.** Se o PR B aponta para a branch do PR A e A é mergeado antes,
   B entra só na branch de A. Aconteceu com os #111–#113 (recuperados no #114). Abra todo PR contra a
   `main`, mesmo partindo da branch de outro.
