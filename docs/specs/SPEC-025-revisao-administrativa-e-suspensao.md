@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
+| Versão | 1.0.0 |
 | Data | 2026-10-30 |
-| Status | **Rascunho, não aprovado.** Escrito pelo 2dart5 depois do código (OPEN-01), já com a conferência e a evidência da §12. Aguarda revisão e aprovação da equipe |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 25 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-004 |
 

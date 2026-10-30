@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.1.0 |
+| Versão | 1.2.0 |
 | Data | 2026-10-30 |
-| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. **Código conferido** em 2026-10-30 (v1.1.0, etapas 41 e 44): CA-01 a CA-07, INV-001 a INV-006 e RNFs com teste, evidência na §12. **Não concluída:** a DoD 1 exige a equipe aprovar a matriz de eventos e decidir atomicidade e paginação (§13, com proposta e fatos anotados) |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 4 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · plan §2 e §5 |
 
