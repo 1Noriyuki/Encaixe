@@ -340,14 +340,16 @@ function publicarHorario(ctx) {
 
   const ok = resultados.filter((r) => r.ok);
   const falhas = resultados.filter((r) => !r.ok);
+  // RF-023: cada recusa vem com a regra que a barrou, nao so a primeira.
+  const relato = (f) => `${f.hora} (${f.regra ? `${f.regra}: ` : ''}${f.erro})`;
 
   if (ok.length === 0) {
     const primeira = falhas[0];
     return ctx.voltar({
       tipo: 'erro',
       titulo: 'Nenhum horário publicado',
-      texto: falhas.map((f) => `${f.hora}: ${f.erro}`).join(' | '),
-      regra: primeira?.regra ?? null,
+      texto: falhas.length === 1 ? primeira.erro : `Não publicados: ${falhas.map(relato).join('; ')}`,
+      regra: falhas.length === 1 ? primeira.regra : null,
     });
   }
 
@@ -355,7 +357,7 @@ function publicarHorario(ctx) {
     tipo: falhas.length ? 'atencao' : 'sucesso',
     titulo: `${plural(ok.length, 'horário publicado', 'horários publicados')}`,
     texto: falhas.length
-      ? `Não publicados: ${falhas.map((f) => `${f.hora} (${f.erro})`).join('; ')}`
+      ? `Não publicados: ${falhas.map(relato).join('; ')}`
       : 'Já estão visíveis na busca, com o preço vigente calculado pela sua régua.',
   });
 }

@@ -39,7 +39,14 @@ export function publicar({ prestadorId, servicoId, reguaId, data, hora }) {
     throw new ErroDeRegra('RN-02', 'Esta régua não tem faixas de desconto cadastradas.');
   }
 
-  const inicio = deLocalParaUtc(data, hora);
+  let inicio;
+  try {
+    inicio = deLocalParaUtc(data, hora);
+  } catch (erro) {
+    // Entrada do usuario, nao falha interna: vira 422 com o campo, nao 500.
+    if (erro instanceof TypeError) throw new ErroDeValidacao(erro.message, 'hora');
+    throw erro;
+  }
   const agora = agoraIso();
 
   // RN-07

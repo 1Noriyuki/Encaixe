@@ -802,3 +802,10 @@
 - **SPEC-010:** [`SPEC-010-publicacao-de-horario-vago.md`](SPEC-010-publicacao-de-horario-vago.md), RF-014 a RF-016.
 - **Divergência corrigida:** INV-02 (sem sobreposição) só era barrado no domínio. O gatilho `horario_sem_sobreposicao` em `schema.sql` recusa no banco a gravação sobreposta; só no `INSERT`, porque nenhuma transição leva horário inativo de volta a ativo. Seed refeito do zero num banco temporário para provar.
 - **Evidência:** `T-PUBLICACAO-01` a `07`. Questões: OPEN-09 (editar horário vago) e passo de minutos da hora de início.
+
+### Etapa 47 — Rascunho e conferência da SPEC-012 · 2026-10-30
+
+- **SPEC-012:** [`SPEC-012-manutencao-da-agenda.md`](SPEC-012-manutencao-da-agenda.md), RF-022 e RF-023.
+- **Divergências corrigidas:** (1) `deLocalParaUtc()` aceitava `25:00`, `10:75` e `31/02`; o `Date.UTC` transbordava e o horário era publicado **em outro dia**, sem aviso. A conversão agora recusa o que não existe no calendário. (2) A entrada inválida subia como `TypeError` e virava erro 500 sem regra; `publicar()` a devolve como `ErroDeValidacao` no campo `hora`. (3) O relato do lote na tela trazia a regra só da primeira recusa; agora cada item mostra `hora (REGRA: motivo)`.
+- **Evidência:** `T-AGENDA-01` a `05`. Questão: formato e limite do lote.
+- **Verificação:** `npm test`, 393/393.
