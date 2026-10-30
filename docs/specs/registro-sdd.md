@@ -863,3 +863,9 @@
 - **Divergências corrigidas:** (1) INV-12 (comissão de agendamento em disputa nunca `EFETIVADO`) só existia no domínio; gatilhos `comissao_sem_efetivar_em_disputa_insert/update` em `schema.sql`, com seed refeito do zero. (2) RF-072: sem motivo e sem evidência, a recusa citava só o motivo; agora cita os dois.
 - **Evidência:** `T-DISPUTA-08` a `11`. Questões: OPEN-07 (o código pratica "abre quem acusa por último"), OPEN-17 e evidência em arquivo.
 - **Verificação:** `npm test`, 425/425.
+
+### Etapa 56 — Rascunho e conferência da SPEC-023 · 2026-10-30
+
+- **SPEC-023:** [`SPEC-023-fila-e-resolucao-de-disputas.md`](SPEC-023-fila-e-resolucao-de-disputas.md), RF-074 a RF-077.
+- **Conferência:** o código atende a RN-27 em todos os desfechos, inclusive na acusação mútua. Sem divergência nesta Spec; a auditoria do agendamento na resolução já fora corrigida na etapa 42.
+- **Evidência:** `T-DISPUTA-12` a `15`, além de `03` a `07c`. Questões: assumir (`EM_ANALISE`) é opcional no código; mínimo de 15 caracteres da justificativa.
