@@ -875,3 +875,9 @@
 - **SPEC-025:** [`SPEC-025-revisao-administrativa-e-suspensao.md`](SPEC-025-revisao-administrativa-e-suspensao.md), RF-078, RF-079 e RN-28.
 - **Divergência corrigida (UC-13 passo 2):** o dossiê carregava as disputas da conta sem exibi-las e não tinha a taxa de expiração que o passo lista. Agora há a seção "Disputas" e a métrica "Sem resposta" (`respostasDoPrestador()` conta as expiradas). A taxa não tem limiar: o sinal de baixa responsividade segue na OPEN-19.
 - **Evidência:** `T-SUSPENSAO-01` a `03`, além dos testes de T-55 e da SPEC-002. Questões: OPEN-19, suspensão de conta de admin e reservas pendentes de prestador suspenso.
+
+### Etapa 58 — Rascunho e conferência da SPEC-027 · 2026-10-30
+
+- **SPEC-027:** [`SPEC-027-administracao-dos-parametros.md`](SPEC-027-administracao-dos-parametros.md), RN-00 e RNF-10 (sem RF próprio, OPEN-09).
+- **Divergência corrigida:** o limite de interpretações por dia aparecia como `RNF-13` no catálogo, na tela e na mensagem de faixa; desde a spec v0.1.7 ele é o parâmetro P-21. A recusa por excesso continua citando o RNF-13, que é o requisito.
+- **Evidência:** `T-PARAM-10` lê a tabela da §6.1 do `docs/spec.md` e exige formulário para cada parâmetro global; `T-PARAM-11` confere o P-21. Questões: OPEN-09 e o desdobramento de P-11 em P-11a/P-11b na spec.

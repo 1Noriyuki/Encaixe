@@ -138,9 +138,10 @@ export const PARAMETROS = {
     padrao: 90, min: 30, max: 180, unidade: 'dias',
   },
   limite_interpretacoes_dia: {
-    id: 'RNF-13', rotulo: 'Interpretações por usuário por dia',
+    // spec v0.1.7: o limite do RNF-13 virou o parametro P-21.
+    id: 'P-21', rotulo: 'Interpretações por usuário por dia',
     padrao: 20, min: 1, max: 200, unidade: 'buscas',
-    ajuda: 'Trava de custo do provedor de LLM.',
+    ajuda: 'Trava de custo do provedor de LLM (RNF-13).',
   },
   ...Object.fromEntries(Object.entries(DELTAS_REPUTACAO).map(([chave, [padrao, evento]]) => {
     const min = padrao < 0 ? 2 * padrao : (padrao > 0 ? Math.ceil(padrao / 2) : 0);
