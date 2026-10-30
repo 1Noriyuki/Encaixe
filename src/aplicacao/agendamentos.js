@@ -382,13 +382,7 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
     if (papel === 'CLIENTE') {
       liberarHorario(ag, agora, p, usuarioId);
     } else {
-      const horario = horariosRepo.porId(ag.horario_id);
-      assegurarTransicao('horario', horario.estado, 'CANCELADO');
-      horariosRepo.atualizarEstado(horario.id, 'CANCELADO');
-      auditoria.registrar({
-        atorId: usuarioId, acao: 'HORARIO_CANCELADO', entidade: 'horario',
-        entidadeId: horario.id, de: horario.estado, para: 'CANCELADO',
-      });
+      moverHorario(horariosRepo.porId(ag.horario_id), 'CANCELADO', usuarioId, 'HORARIO_CANCELADO');
     }
 
     reputacao.aplicarEvento({
@@ -405,14 +399,17 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
       detalhe: { papel, faixa, delta: penalidade.delta, antecedenciaMin: antecedencia },
     });
 
+    // RF-051: a outra parte sabe o motivo, a faixa e o efeito na reputacao de quem cancelou.
+    const quem = papel === 'CLIENTE' ? 'do cliente' : 'do prestador';
+    const efeito = penalidade.delta === 0 ? 'nenhum' : `${penalidade.delta} pontos`;
     const outraParte = papel === 'CLIENTE' ? ag.prestador_id : ag.cliente_id;
     notificar(outraParte, {
       tipo: 'AGENDAMENTO_CANCELADO',
       titulo: `Agendamento cancelado pelo ${papel === 'CLIENTE' ? 'cliente' : 'prestador'}`,
       agendamentoId: ag.id,
       mensagem: `${ag.servico_nome} de ${formatarDataHora(ag.inicio)} foi cancelado. `
-        + `Faixa aplicada: ${penalidade.rotulo}.`
-        + (String(motivo ?? '').trim() ? ` Motivo: ${motivo}.` : ''),
+        + `Faixa aplicada: ${penalidade.rotulo}. Efeito na reputação ${quem}: ${efeito}.`
+        + (String(motivo ?? '').trim() ? ` Motivo: ${String(motivo).trim()}` : ''),
     });
 
     return { agendamento: agendamentosRepo.porId(ag.id), penalidade, papel };

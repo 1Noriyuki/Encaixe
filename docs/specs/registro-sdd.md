@@ -837,3 +837,9 @@
 - **SPEC-016:** [`SPEC-016-expiracao-automatica-da-reserva.md`](SPEC-016-expiracao-automatica-da-reserva.md), RF-044 a RF-046.
 - **Divergência corrigida:** o aviso de expiração ao cliente dizia sempre que o horário voltou para a busca, inclusive quando ele expirava por falta da antecedência P-04 (RF-044). O texto agora segue o destino real do horário.
 - **Evidência:** `T-EXPIRA-05` a `08` (leitura pela rota, avisos, autoconfirmação com ator sistema, idempotência), além de `T-EXPIRA-01` a `04`. Questões: OPEN-19 e o intervalo de 15 s da rota.
+
+### Etapa 52 — Rascunho e conferência da SPEC-017 · 2026-10-30
+
+- **SPEC-017:** [`SPEC-017-cancelamento-com-penalidade.md`](SPEC-017-cancelamento-com-penalidade.md), RF-048 a RF-051.
+- **Divergência corrigida (RF-051):** o aviso à outra parte trazia faixa e motivo, mas não o efeito na reputação de quem cancelou. O horário cancelado pelo prestador passa por `moverHorario()` (etapa 42) em vez de repetir a auditoria.
+- **Evidência:** `T-CANCEL-08` a `11`, além dos `T-CANCEL-01` a `07` e `01i` a `05i`. Questões: cancelamento pelo admin (OPEN-09), OPEN-18 e a tensão RN-19 × RN-21 sobre a faixa livre.
