@@ -20,6 +20,15 @@ import {
 import { params } from './parametros.js';
 import { precificarLista } from './precos.js';
 
+/**
+ * UC-03 1a - sem janela informada, a busca olha as proximas 24 h. Nao e
+ * parametro da §6.1: e o recorte padrao do caso de uso.
+ */
+export const JANELA_PADRAO_H = 24;
+
+/** RF-028 / UC-03 passo 1 - janelas que o formulario oferece, em horas a partir de agora. */
+export const JANELAS_H = [6, 12, 24, 48, 72];
+
 export const ORDENACOES = {
   proximidade: 'Mais próximos do horário',
   preco: 'Menor preço',
@@ -31,7 +40,9 @@ export const ORDENACOES = {
  * RF-028 a RF-031 - busca deterministica.
  * Nenhuma linha aqui depende de IA.
  */
-export function buscarPorFiltros({ categoriaId = null, regiaoId = null, de = null, ate = null, ordenar = 'proximidade' } = {}) {
+export function buscarPorFiltros({
+  categoriaId = null, regiaoId = null, de = null, ate = null, janelaHoras = null, ordenar = 'proximidade',
+} = {}) {
   const p = params();
   const agora = agoraIso();
 
@@ -40,7 +51,8 @@ export function buscarPorFiltros({ categoriaId = null, regiaoId = null, de = nul
   const inicioJanela = de && antesDe(de, inicioReservavel)
     ? inicioReservavel
     : (de ?? inicioReservavel);
-  const fimJanela = ate ?? adicionarHoras(agora, 72);
+  const horas = JANELAS_H.includes(Number(janelaHoras)) ? Number(janelaHoras) : JANELA_PADRAO_H;
+  const fimJanela = ate ?? adicionarHoras(agora, horas);
 
   const brutos = horariosRepo.buscar({
     categoriaId: categoriaId ? Number(categoriaId) : null,

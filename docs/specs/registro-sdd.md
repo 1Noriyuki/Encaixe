@@ -809,3 +809,10 @@
 - **Divergências corrigidas:** (1) `deLocalParaUtc()` aceitava `25:00`, `10:75` e `31/02`; o `Date.UTC` transbordava e o horário era publicado **em outro dia**, sem aviso. A conversão agora recusa o que não existe no calendário. (2) A entrada inválida subia como `TypeError` e virava erro 500 sem regra; `publicar()` a devolve como `ErroDeValidacao` no campo `hora`. (3) O relato do lote na tela trazia a regra só da primeira recusa; agora cada item mostra `hora (REGRA: motivo)`.
 - **Evidência:** `T-AGENDA-01` a `05`. Questão: formato e limite do lote.
 - **Verificação:** `npm test`, 393/393.
+
+### Etapa 48 — Rascunho e conferência da SPEC-013 · 2026-10-30
+
+- **SPEC-013:** [`SPEC-013-busca-por-filtros.md`](SPEC-013-busca-por-filtros.md), RF-028 a RF-031.
+- **Divergência corrigida (UC-03 1a):** sem janela informada, a busca olhava as próximas **72 h**; a baseline diz **24 h**. Não há decisão registrada para as 72 h, que vinham do código anterior às Specs (`a653fa7`). O padrão vira `JANELA_PADRAO_H = 24` em `aplicacao/busca.js`, e a home e o estado vazio leem a constante em vez de repetir "72". **Mudança visível:** a home e a busca sem filtro passam a mostrar menos horários; se a equipe preferir 72 h, muda-se a spec.
+- **Divergência corrigida (RF-028):** o formulário não tinha campo de janela; ela só chegava pela descrição ao LLM, o que deixava a busca por filtros sem um dos três filtros do RF. Campo "Quando" (6 a 72 h) adicionado; a escolha no formulário vale mais que a janela extraída da descrição. Conferido no navegador a 800 e a 375 px, sem rolagem lateral.
+- **Evidência:** `T-BUSCA-02` a `08`; `T-BUSCA-08` mede RNF-05 com 131 horários nos quatro critérios. Questão mantida: o corte de 200 (etapa 35).

@@ -270,7 +270,7 @@ function heroDaHome({ abertos, maiorDesconto, economiaTotal, vitrine, p, categor
       <div class="heroi-texto" data-revelar>
         <a class="etiqueta" href="/buscar">
           <span class="ponto-vivo" aria-hidden="true"></span>
-          <span><b>${abertos}</b> ${abertos === 1 ? 'horário aberto' : 'horários abertos'} nas próximas 72&nbsp;h</span>
+          <span><b>${abertos}</b> ${abertos === 1 ? 'horário aberto' : 'horários abertos'} nas próximas ${busca.JANELA_PADRAO_H}&nbsp;h</span>
         </a>
 
         <h1>Um horário vago perto de você <em>custa menos</em>.</h1>
@@ -510,6 +510,7 @@ async function buscar(ctx) {
     regiaoId: ctx.query.regiaoId || null,
     de: ctx.query.de || null,
     ate: ctx.query.ate || null,
+    janela: busca.JANELAS_H.includes(Number(ctx.query.janela)) ? Number(ctx.query.janela) : null,
     ordenar: ctx.query.ordenar || 'proximidade',
   };
 
@@ -545,7 +546,11 @@ async function buscar(ctx) {
     }
   }
 
-  const resultados = busca.buscarPorFiltros(filtros);
+  // A janela escolhida no formulario vale mais que a extraida da descricao:
+  // e a escolha mais recente e explicita do cliente.
+  if (filtros.janela) filtros = { ...filtros, de: null, ate: null };
+
+  const resultados = busca.buscarPorFiltros({ ...filtros, janelaHoras: filtros.janela });
   const p = params();
 
   const categoriaAtiva = categorias.find((c) => String(c.id) === String(filtros.categoriaId));
@@ -555,7 +560,7 @@ async function buscar(ctx) {
   // invalido zera os resultados e o usuario precisa ver que ele existe, senao
   // fica olhando uma lista vazia sem explicacao.
   const temFiltro = Boolean(
-    filtros.categoriaId || filtros.regiaoId || descricao || filtros.de,
+    filtros.categoriaId || filtros.regiaoId || descricao || filtros.de || filtros.janela,
   );
 
   return ctx.render(html`
@@ -597,6 +602,16 @@ async function buscar(ctx) {
           </select>
         </div>
         <div class="campo">
+          <label for="janela">Quando</label>
+          <select id="janela" name="janela">
+            <option value="">${filtros.de || filtros.ate ? 'Janela da descrição' : `Próximas ${busca.JANELA_PADRAO_H} h`}</option>
+            ${juntar(busca.JANELAS_H
+    .filter((h) => filtros.de || filtros.ate || h !== busca.JANELA_PADRAO_H)
+    .map((h) => html`
+              <option value="${h}" ${filtros.janela === h ? 'selected' : ''}>Próximas ${h} h</option>`))}
+          </select>
+        </div>
+        <div class="campo">
           <label for="ordenar">Ordenar por</label>
           <select id="ordenar" name="ordenar">
             ${juntar(Object.entries(busca.ORDENACOES).map(([valor, texto]) => html`
@@ -624,6 +639,7 @@ async function buscar(ctx) {
       { href: urlDaBusca(filtros, descricao, { regiaoId: '' }) })
     : cru('')}
         ${filtros.de ? chip(`a partir de ${formatarDataHora(filtros.de)}`, { href: urlDaBusca(filtros, descricao, { de: '', ate: '' }) }) : cru('')}
+        ${filtros.janela ? chip(`próximas ${filtros.janela} h`, { href: urlDaBusca(filtros, descricao, { janela: '' }) }) : cru('')}
         <a class="botao botao-fantasma botao-pequeno" href="/buscar">Limpar tudo</a>
       </div>` : cru('')}
 
@@ -636,7 +652,8 @@ async function buscar(ctx) {
 
     ${resultados.length === 0
     ? vazio(
-      html`Nenhum horário compatível com esses filtros nas próximas 72 horas.
+      html`Nenhum horário compatível com esses filtros ${filtros.de || filtros.ate
+    ? 'na janela escolhida' : `nas próximas ${filtros.janela ?? busca.JANELA_PADRAO_H} horas`}.
       Ampliar a janela ou trocar de categoria costuma resolver — a oferta muda o dia todo,
       porque cada desistência de última hora vira um horário aqui.`,
       {
