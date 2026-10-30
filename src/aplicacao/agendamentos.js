@@ -291,35 +291,17 @@ export function resolverExpiracao(ag) {
     if (!atual || atual.estado !== 'PENDENTE_CONFIRMACAO') return null;
     if (antesDe(agora, atual.prazo_confirmacao_em)) return null;
 
-    if (atual.politica_expiracao === 'AUTOCONFIRMAR') {
+    // SPEC-025 §13: autoconfirmar firma um compromisso novo, e conta que não está
+    // ATIVO não firma compromisso; a reserva expira como na politica LIBERAR.
+    if (atual.politica_expiracao === 'AUTOCONFIRMAR' && atual.prestador_estado_conta === 'ATIVO') {
       aplicarConfirmacao(atual, agora, null, 'AGENDAMENTO_AUTOCONFIRMADO');
       return { agendamentoId: atual.id, desfecho: 'CONFIRMADO' };
     }
 
-    assegurarTransicao('agendamento', atual.estado, 'EXPIRADO');
-    agendamentosRepo.atualizar(atual.id, {
-      estado: 'EXPIRADO',
-      encerrado_em: agora,
-      motivo_encerramento: 'Prestador não respondeu dentro da janela de confirmação.',
-    });
-
-    const destinoHorario = liberarHorario(atual, agora, p, null);
-
-    auditoria.registrar({
-      atorId: null, acao: 'RESERVA_EXPIRADA', entidade: 'agendamento', entidadeId: atual.id,
-      de: 'PENDENTE_CONFIRMACAO', para: 'EXPIRADO',
-      detalhe: { politica: 'LIBERAR', destinoHorario, regra: 'RN-10' },
-    });
-
-    notificar(atual.cliente_id, {
-      tipo: 'RESERVA_EXPIRADA',
-      titulo: 'Sua reserva expirou',
-      agendamentoId: atual.id,
-      // RF-044: o horario so volta para a busca se ainda resta P-04.
-      mensagem: `${atual.nome_exibicao ?? atual.prestador_nome} não respondeu no prazo. `
-        + (destinoHorario === 'PUBLICADO'
-          ? 'O horário voltou para a busca e você não foi penalizado.'
-          : 'Já não há antecedência para reservar este horário de novo. Você não foi penalizado.'),
+    expirar(atual, agora, p, null, {
+      regra: 'RN-10',
+      motivo: 'Prestador não respondeu dentro da janela de confirmação.',
+      aoCliente: `${atual.nome_exibicao ?? atual.prestador_nome} não respondeu no prazo.`,
     });
     notificar(atual.prestador_id, {
       tipo: 'RESERVA_EXPIRADA',
@@ -329,6 +311,57 @@ export function resolverExpiracao(ag) {
     });
 
     return { agendamentoId: atual.id, desfecho: 'EXPIRADO' };
+  });
+}
+
+/**
+ * RN-28 / SPEC-025 §13 - a suspensao preserva os confirmados, mas a reserva
+ * ainda pendente expira na hora: esperar a janela so adiaria a resposta que a
+ * conta suspensa nao pode dar. O cliente nao e penalizado. Chamada dentro da
+ * transacao da suspensao.
+ */
+export function expirarPendentesDoPrestador({ prestadorId, atorId }) {
+  const p = params();
+  const agora = agoraIso();
+  const pendentes = agendamentosRepo.doPrestador(prestadorId, { estados: ['PENDENTE_CONFIRMACAO'] });
+  for (const ag of pendentes) {
+    expirar(ag, agora, p, atorId, {
+      regra: 'RN-28',
+      motivo: 'A conta do prestador foi suspensa antes da confirmação.',
+      aoCliente: `A conta de ${ag.nome_exibicao ?? ag.prestador_nome} foi suspensa e não pode confirmar a reserva.`,
+    });
+  }
+  return pendentes.length;
+}
+
+/** Pendente → EXPIRADO, com o horario liberado e o cliente avisado sem penalidade. */
+function expirar(atual, agora, p, atorId, { regra, motivo, aoCliente }) {
+  assegurarTransicao('agendamento', atual.estado, 'EXPIRADO');
+  agendamentosRepo.atualizar(atual.id, {
+    estado: 'EXPIRADO',
+    encerrado_em: agora,
+    motivo_encerramento: motivo,
+  });
+
+  const destinoHorario = liberarHorario(atual, agora, p, atorId);
+
+  auditoria.registrar({
+    atorId, acao: 'RESERVA_EXPIRADA', entidade: 'agendamento', entidadeId: atual.id,
+    de: 'PENDENTE_CONFIRMACAO', para: 'EXPIRADO',
+    detalhe: { destinoHorario, regra },
+  });
+
+  // RF-044: o horario so volta para a busca se ainda resta P-04 (e se o prestador
+  // estiver ATIVO: a busca esconde horario de conta suspensa).
+  const voltou = destinoHorario === 'PUBLICADO' && atual.prestador_estado_conta === 'ATIVO';
+  notificar(atual.cliente_id, {
+    tipo: 'RESERVA_EXPIRADA',
+    titulo: 'Sua reserva expirou',
+    agendamentoId: atual.id,
+    mensagem: `${aoCliente} `
+      + (voltou
+        ? 'O horário voltou para a busca e você não foi penalizado.'
+        : 'Você não foi penalizado e pode buscar outro horário.'),
   });
 }
 

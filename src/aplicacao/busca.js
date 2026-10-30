@@ -29,6 +29,9 @@ export const JANELA_PADRAO_H = 24;
 /** RF-028 / UC-03 passo 1 - janelas que o formulario oferece, em horas a partir de agora. */
 export const JANELAS_H = [6, 12, 24, 48, 72];
 
+/** Quantos horarios a tela lista de uma vez: recorte de exibicao, nao regra da §6.1. */
+export const LIMITE_EXIBIDOS = 200;
+
 export const ORDENACOES = {
   proximidade: 'Mais próximos do horário',
   preco: 'Menor preço',
@@ -64,7 +67,8 @@ export function buscarPorFiltros({
   const precificados = precificarLista(brutos, p, agora)
     .filter((h) => h.preco.reservavel);
 
-  return ordenar_(precificados, ordenar);
+  // SPEC-013 §13: ordena a janela inteira e so depois corta o que a tela exibe.
+  return ordenar_(precificados, ordenar).slice(0, LIMITE_EXIBIDOS);
 }
 
 function ordenar_(lista, criterio) {
@@ -87,9 +91,17 @@ function ordenar_(lista, criterio) {
  * Nao executa a busca: quem decide se busca direto ou pede confirmacao ao
  * cliente e o chamador, conforme RN-30.
  */
-export async function interpretar({ clienteId = null, texto }) {
+export async function interpretar({ clienteId = null, texto, reaproveitarId = null }) {
   const p = params();
   const agora = agoraIso();
+
+  // SPEC-028 §13: refinar os filtros de uma busca ja interpretada reenviava o
+  // mesmo texto ao provedor e gastava a P-21. Mesmo dono e mesmo texto: reusa.
+  const anterior = reaproveitarId ? interpretacoesRepo.porId(Number(reaproveitarId)) : null;
+  if (anterior && anterior.status !== 'FALHA' && anterior.cliente_id === clienteId
+    && anterior.texto_original === texto) {
+    return { ...respostaDe(anterior, p), reaproveitada: true };
+  }
 
   // RNF-13 - trava de custo por usuario/dia.
   if (clienteId) {
@@ -162,7 +174,9 @@ export async function interpretar({ clienteId = null, texto }) {
     confianca: saida.confianca,
     modelo: saida.modelo,
     status,
-    desfecho: precisaConfirmar ? 'CORRIGIDA' : 'ACEITA',
+    // RN-32 / SPEC-028 §13: quem precisa conferir e nao volta descartou a leitura;
+    // ao buscar, registrarConfirmacao troca para ACEITA ou CORRIGIDA.
+    desfecho: precisaConfirmar ? 'DESCARTADA' : 'ACEITA',
     criada_em: agora,
   });
 
@@ -179,27 +193,34 @@ export async function interpretar({ clienteId = null, texto }) {
     },
   });
 
+  return respostaDe(interpretacoesRepo.porId(id), p);
+}
+
+/** O que a tela recebe de uma interpretacao, a partir do registro gravado (RN-30). */
+function respostaDe(registro, p) {
+  const confiancaBaixa = registro.confianca < p.confianca_minima_llm;
+  const temCategoria = registro.categoria_id != null;
   return {
-    id,
-    status,
-    precisaConfirmar,
+    id: registro.id,
+    status: registro.status,
+    precisaConfirmar: registro.status === 'BAIXA_CONFIANCA',
     precisaFormulario: false,
-    motivo: !categoria
-      ? `Não reconheci "${saida.categoria_sugerida ?? 'o servico'}" no catálogo. Escolha a categoria.`
+    motivo: !temCategoria
+      ? `Não reconheci "${registro.categoria_sugerida ?? 'o servico'}" no catálogo. Escolha a categoria.`
       : (confiancaBaixa ? 'A interpretação ficou pouco confiante. Confira os filtros antes de buscar.' : null),
     interpretacao: {
-      urgencia: saida.urgencia,
-      duracaoEstimadaMin: saida.duracao_estimada_min,
-      confianca: saida.confianca,
-      modelo: saida.modelo,
-      categoriaSugerida: saida.categoria_sugerida,
+      urgencia: registro.urgencia,
+      duracaoEstimadaMin: registro.duracao_estimada_min,
+      confianca: registro.confianca,
+      modelo: registro.modelo,
+      categoriaSugerida: registro.categoria_sugerida,
     },
     filtros: {
-      categoriaId: categoria?.id ?? null,
-      regiaoId: regiao?.id ?? null,
-      de: saida.janela_inicio,
-      ate: saida.janela_fim,
-      ordenar: saida.urgencia === 'ALTA' ? 'proximidade' : 'preco',
+      categoriaId: registro.categoria_id,
+      regiaoId: registro.regiao_id,
+      de: registro.janela_inicio,
+      ate: registro.janela_fim,
+      ordenar: registro.urgencia === 'ALTA' ? 'proximidade' : 'preco',
     },
   };
 }

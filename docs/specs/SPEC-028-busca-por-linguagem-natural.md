@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 28 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-003 |
 
@@ -122,10 +122,12 @@ listado até o cliente buscar com os filtros ou corrigi-los. (2) **RN-32:** `reg
 nenhuma rota; o desfecho ficava o palpite gravado na criação. Agora a busca seguinte decide `ACEITA` ou `CORRIGIDA` pela
 comparação dos filtros, e só para o dono. Conferido no navegador a 375 px.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Desfecho antes da confirmação:** a RN-32 tem aceita, corrigida e descartada; não há "pendente". Hoje a interpretação que pede confirmação nasce `CORRIGIDA` e é ajustada quando o cliente busca; se ele abandona, fica `CORRIGIDA`. Proposta: `DESCARTADA` para quem não confirma.
-- **Reinterpretação a cada filtro:** com descrição no formulário, aplicar outro filtro reenvia o texto ao provedor e gasta uma interpretação do P-21.
+1. **Desfecho antes da confirmação:** Decidida em 2026-10-30 (etapa 63): a interpretação que exige confirmação nasce `DESCARTADA` e passa a `ACEITA` ou `CORRIGIDA` quando o cliente busca com ela (spec v0.1.11, RN-32). Teste: `T-SPEC028-Q1`.
+2. **Reinterpretação a cada filtro:** Decidida em 2026-10-30 (etapa 63): a página de resultados carrega o `id` da interpretação. Refinar com o mesmo texto reaproveita a interpretação, sem chamar o provedor nem gastar a P-21, e os filtros escolhidos no formulário passam a valer sobre os propostos pela IA (spec v0.1.11, RNF-13). Texto diferente ou de outro cliente é interpretado de novo. Teste: `T-SPEC028-Q2`.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

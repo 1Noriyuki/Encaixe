@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 27 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 |
 
@@ -103,10 +103,12 @@ então um parâmetro novo na spec sem formulário quebra a suíte. **Divergênci
 dia era identificado como `RNF-13` no catálogo, na tela e na mensagem de faixa; desde a spec v0.1.7 ele é o parâmetro
 P-21 (a recusa por excesso continua citando o RNF-13, que é o requisito).
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **OPEN-09:** a edição de parâmetros pelo admin não tem RF.
-- **P-11:** a spec tem uma linha com dois valores (normal / restrito); o código os identifica como P-11a e P-11b, como a spec já fez com P-12 e P-16. Propor o desdobramento na §6.1.
+1. **OPEN-09:** Decidida em 2026-10-30 (etapa 63): a edição de parâmetros pelo admin ganhou o RF-086 na spec v0.1.11, descrevendo o que a tela já faz.
+2. **P-11:** Decidida em 2026-10-30 (etapa 63): desdobrada em P-11a (cliente normal) e P-11b (cliente restrito) na §6.1 da spec v0.1.11, como o código já fazia.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

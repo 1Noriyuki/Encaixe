@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 19 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 |
 
@@ -103,10 +103,12 @@ UC-11: (1) reporte; (2) validação de janela e estado; (3) estado de no-show; (
 `spec-019-no-show.test.js`; todos passam. **Divergência corrigida:** a recusa por estado não informava a janela válida,
 como o RF-052 exige nos três casos.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Conclusão automática × janela de no-show:** com os padrões, P-17 e P-16b coincidem (24 h após o fim). Mas as faixas permitem P-17 = 12 h com P-16b = 72 h: a rotina conclui o agendamento com a janela de no-show ainda aberta, e quem faltou deixa de poder ser reportado. É regra da SPEC-020 (Trilha A); proposta: a conclusão automática esperar o maior dos dois prazos.
-- **OPEN-07:** quem abre a disputa da acusação mútua (SPEC-022).
+1. **Conclusão automática × janela de no-show:** Decidida em 2026-10-30 (etapa 63): a conclusão automática espera o maior entre P-17 e P-16b, ambos com o valor vigente na confirmação (spec v0.1.11, RF-060). Com os padrões nada muda, porque os dois valem 24 h. A migração aplica a mesma regra aos confirmados legados. Teste: `T-SPEC019-Q1`.
+2. **OPEN-07:** Decidida em 2026-10-30 (etapa 63): ver SPEC-022 §13, item 1.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

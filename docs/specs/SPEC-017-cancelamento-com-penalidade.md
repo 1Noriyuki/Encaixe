@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
+| Versão | 1.1.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 17 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.10 · ADR-005 |
 
@@ -120,11 +120,13 @@ Segue UC-08: (2) faixa pela antecedência atual; (3) prévia; (4) confirmação;
 `penalidades.test.js`; `08` a `11` em `spec-017-cancelamento.test.js`; todos passam. **Divergência corrigida:** o aviso à
 outra parte trazia faixa e motivo, mas não o efeito na reputação que o RF-051 exige.
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Cancelamento pelo admin:** a matriz §4.5 permite ao admin cancelar qualquer agendamento com justificativa, sem RF, UC nem penalidade definida (OPEN-09; divergência registrada na SPEC-003). Não há esse caminho no código.
-- **OPEN-18:** converter cancelamento em no-show na faixa total.
-- **RN-19 × RN-21:** a RN-19 diz que "a ocorrência entra na contagem de P-12a" sem ressalva de faixa, e a RN-21 lista só as faixas parcial e total. O código segue a RN-21 (cancelamento livre não é ocorrência); confirmar.
+1. **Cancelamento pelo admin:** Decidida em 2026-10-30 (etapa 63): fora do MVP. A linha da §4.5 foi corrigida na spec v0.1.11 (OPEN-09); o admin intervém por disputa ou suspensão.
+2. **OPEN-18:** Decidida em 2026-10-30 (etapa 63): converter cancelamento em no-show na faixa total fica fora do MVP, registrado na RN-18: a penalidade da faixa já responde pelo caso.
+3. **RN-19 × RN-21:** Decidida em 2026-10-30 (etapa 63): vale o código: o cancelamento na faixa livre não é ocorrência. O texto da RN-19 foi alinhado na spec v0.1.11.
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

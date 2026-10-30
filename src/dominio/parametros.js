@@ -91,7 +91,9 @@ export const PARAMETROS = {
   ocorrencias_consecutivas_max: {
     id: 'P-12a', rotulo: 'Ocorrências negativas do prestador',
     padrao: 3, min: 2, max: 5, unidade: 'ocorrencias',
-    ajuda: 'Atingido o limite, o prestador entra em revisão.',
+    // A chave guarda o nome antigo porque e o que esta gravado na tabela parametro;
+    // a regra e de ocorrencias acumuladas na janela (SPEC-018 §13).
+    ajuda: 'Acumuladas na janela P-12b. Atingido o limite, o prestador entra em revisão; a reativação pelo admin recomeça a contagem.',
   },
   janela_ocorrencias_dias: {
     id: 'P-12b', rotulo: 'Janela de apuração das ocorrências',

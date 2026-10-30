@@ -11,7 +11,8 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PADROES } from '../../dominio/parametros.js';
-import { adicionarDias, adicionarHoras, adicionarMinutos } from '../../dominio/tempo.js';
+import { adicionarDias } from '../../dominio/tempo.js';
+import { prazoAutoConclusao } from '../../dominio/prazos.js';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 const RAIZ = resolve(AQUI, '../../..');
@@ -97,13 +98,15 @@ function acrescentarPrazoAutoconclusao() {
       WHERE a.estado = 'CONFIRMADO' AND a.autoconclusao_prazo_em IS NULL`,
   ).all();
   if (legados.length === 0) return;
-  const vigente = banco.prepare(
-    "SELECT CAST(valor AS INTEGER) AS horas FROM parametro WHERE chave = 'autoconclusao_h' AND escopo = 'GLOBAL'",
-  ).get()?.horas ?? PADROES.autoconclusao_h;
+  const vigente = (chave) => banco.prepare(
+    "SELECT CAST(valor AS INTEGER) AS horas FROM parametro WHERE chave = ? AND escopo = 'GLOBAL'",
+  ).get(chave)?.horas ?? PADROES[chave];
+  const prazo = (ag) => prazoAutoConclusao(ag.inicio, ag.duracao_min, {
+    autoconclusao_h: vigente('autoconclusao_h'),
+    noshow_prazo_pos_fim_h: vigente('noshow_prazo_pos_fim_h'),
+  });
   const gravar = banco.prepare('UPDATE agendamento SET autoconclusao_prazo_em = ? WHERE id = ?');
-  for (const ag of legados) {
-    gravar.run(adicionarHoras(adicionarMinutos(ag.inicio, ag.duracao_min), vigente), ag.id);
-  }
+  for (const ag of legados) gravar.run(prazo(ag), ag.id);
 }
 
 /**

@@ -926,3 +926,31 @@
 - **Divergência de processo, registrada e não resolvida:** nas SPEC-003, 004, 005, 013, 017, 018, 019, 022, 025, 027, 028 e 029, o item 1 da Definition of Done exige que a equipe **decida** questões específicas da §13. Exemplos: o corte de 200 na SPEC-013, RN-19 × RN-21 na SPEC-017, OPEN-07 e OPEN-17 na SPEC-022, OPEN-09 na SPEC-027. A etapa 61 marcou essas Specs como concluídas e fechou as issues deixando as questões "para decisão posterior". Pela regra do roteiro, o conflito precisa de escolha explícita: decidir as questões (como na etapa 32, para a Trilha A) ou registrar a exceção e ajustar a DoD. Nenhuma issue foi reaberta nesta etapa; a escolha é da equipe.
 - **Documentos:** o CLAUDE.md e o mapa descreviam o estado da etapa 60, com 15 Specs "em rascunho". Foram atualizados.
 - **Verificação:** `npm test`: 441/441.
+
+### Etapa 63 — Decisões da §13 das Specs das Trilhas B e C · 2026-10-30
+
+- **Pedido (Enzo):** resolver as questões da §13 que a etapa 61 deixou em aberto e que o item 1 da DoD de doze Specs exige (divergência da etapa 62). O agente recomendou uma decisão para cada uma das 31 questões, e o Enzo aprovou todas sem alteração.
+- **Fato encontrado antes da decisão:** um prestador suspenso com AUTOCONFIRMAR tinha a reserva pendente confirmada pela rotina quando a janela vencia, e o cliente ficava agendado com uma conta suspensa. Uma sonda reproduziu o caso.
+- **Decisões que mudaram código, cada uma com teste de regressão** (os nove falham no código anterior e passam no novo):
+
+  | Spec | Decisão | Teste |
+  |---|---|---|
+  | 025 | A suspensão expira na hora as reservas pendentes, sem penalizar o cliente; conta que não está `ATIVO` não autoconfirma | `T-SPEC025-Q3`, `T-SPEC025-Q3b` |
+  | 025 | O admin não suspende a própria conta; suspender outro admin continua permitido | `T-SPEC025-Q2` |
+  | 013 | A busca ordena a janela inteira antes de cortar os 200 exibidos | `T-SPEC013-Q1` |
+  | 019 | A conclusão automática espera o maior entre P-17 e P-16b; a migração aplica o mesmo aos legados | `T-SPEC019-Q1` |
+  | 018 | A reativação pelo admin recomeça a contagem de ocorrências | `T-SPEC018-Q2` |
+  | 003 | A negação por titularidade entra na trilha como `ACESSO_NEGADO` | `T-SPEC003-Q2` |
+  | 028 | A interpretação que exige confirmação nasce `DESCARTADA` | `T-SPEC028-Q1` |
+  | 028 | Refinar a mesma busca reaproveita a interpretação, sem provedor nem P-21, e o formulário vale sobre a IA | `T-SPEC028-Q2` |
+
+- **Spec v0.1.11:**
+  - §4.5: o admin não cancela agendamento no MVP e não tem extrato próprio.
+  - §6.1: P-11a/P-11b e o rótulo da P-12a.
+  - RN-12, RN-18 (OPEN-18 fora do MVP), RN-19, RN-21, RN-28 e RN-32.
+  - RF-006, RF-047, RF-060, RNF-13 e o novo RF-086 (edição de parâmetros, OPEN-09).
+  - O mapa marca as OPEN-07, 09, 17, 18 e 19 como resolvidas.
+- **Demais decisões:** confirmam o comportamento atual e estão escritas na §13 de cada Spec. A retenção da trilha (SPEC-029) virou a pendência P9 em `docs/seguranca.md`.
+- **Premissa do agente:** a chave `ocorrencias_consecutivas_max` não foi renomeada, embora a regra seja de ocorrências acumuladas, porque é a chave gravada na tabela `parametro`. Mudaram o rótulo e a ajuda que o admin lê.
+- **Estado:** as doze Specs têm agora a DoD completa, e as 29 Specs estão concluídas. As issues já estavam fechadas desde a etapa 61.
+- **Verificação:** `npm test`: 450/450.

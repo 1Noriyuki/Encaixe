@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
+| Versão | 1.3.0 |
 | Data | 2026-10-30 |
-| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 seguem registradas para decisão posterior |
+| Status | Aprovada pela equipe em 2026-10-30 (informado por 2dart5, registro etapa 61), com o código conferido e a evidência completa na §12. **Concluída.** As questões da §13 foram decididas na etapa 63, o que completa a Definition of Done |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 5 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · RN-28 · ADR-004 |
 
@@ -230,12 +230,14 @@ Casos propostos para execução após aprovação da Spec.
 | CA-08, INV-006 | `T-CONTA-02d`: pendente recusado pela RN-28 (a regra específica do cadastro pendente) e reprovado pela RN-08; nenhum horário gravado |
 | INV-007, RNF-07, RNF-08 | `T-MODERACAO-04` |
 
-## 13. Questões em aberto
+## 13. Questões decididas
 
-- **Justificativa mínima:** RF-009 exige justificativa textual, mas não fixa tamanho mínimo. O código existente valida 10 caracteres; confirmar se isso é critério de produto ou somente validação atual antes de congelar CA-06.
-- **Aparição na fila:** RF-003 diz “notificar a fila de moderação do admin”; confirmar se uma fila consultável de pendentes satisfaz o requisito ou se é necessário aviso adicional ao admin.
-- **Conta reprovada:** autenticação de `REPROVADO` é permitida (SPEC-002); os limites das operações disponíveis ao reprovado devem continuar definidos por autorização e respectivas Specs, não por esta decisão administrativa.
-- **OPEN-03:** drivers arquiteturais continuam derivados de spec §1.5 e da constituição, sem catálogo formal aprovado.
+1. **Justificativa mínima:** Decidida em 2026-10-30 (etapa 63): 10 caracteres é critério de produto, igual ao da suspensão (RF-079) e ao da evidência de disputa (RN-26).
+2. **Aparição na fila:** Decidida em 2026-10-30 (etapa 63): a fila consultável de pendentes satisfaz o RF-003, sem aviso adicional ao admin.
+3. **Conta reprovada:** Decidida em 2026-10-30 (etapa 63): o que o `REPROVADO` pode fazer continua definido pela autorização (SPEC-003) e pelas Specs de cada operação.
+4. **OPEN-03:** já resolvida em 2026-10-29 (etapa 32): vale a leitura do mapa (spec §1.5 e constituição).
+
+As decisões foram aprovadas pela equipe e registradas em `registro-sdd.md`, etapa 63.
 
 ## 14. Definition of Done
 

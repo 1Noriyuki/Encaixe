@@ -55,7 +55,8 @@
 Duas verificações independentes, propositalmente em camadas diferentes:
 
 1. **Perfil**, declarado na rota (`{ perfil: 'ADMIN' }`), verificado antes do handler.
-2. **Titularidade**, verificada no caso de uso — porque é regra de negócio, não de transporte.
+2. **Titularidade**, verificada no caso de uso — porque é regra de negócio, não de transporte. A negação
+   também entra na trilha de auditoria, como a de perfil (SPEC-003 §13, `T-SPEC003-Q2`).
 
 Nenhum controle depende da interface: esconder um botão não é autorização.
 
@@ -88,6 +89,7 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 | P6 | Sem `Content-Security-Policy` | XSS residual | Não há JavaScript inline nem script de terceiros; o escape é a defesa primária | Adicionar CSP restritiva |
 | P7 | Banco sem criptografia em repouso | Acesso físico ao arquivo | Ambiente local, dados fictícios | Cifrar volume em produção |
 | P8 | `estado_cobranca` é declaratório | Prestador pode marcar "pago" indevidamente | Consequência direta do [ADR-005](adr/ADR-005-escopo-financeiro.md) | Pagamento intermediado |
+| P9 | Sem retenção da trilha de auditoria nem das interpretações | O texto livre que o cliente digitou na busca fica guardado sem prazo | Decisão da SPEC-029 §13 (etapa 63): dados fictícios e ambiente local; a trilha completa é o que permite reconstruir decisões (RF-085) | Prazo de retenção e anonimização do `texto_original` antes de publicar |
 
 ---
 
@@ -126,7 +128,7 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 | Finalidade | Contato só é exposto entre partes de um agendamento confirmado |
 | Transparência | O perfil público mostra exatamente o que é público: reputação e histórico agregado |
 | Segurança | Senha só como hash; nenhum dado pessoal em log de aplicação |
-| Retenção | Janela móvel de reputação (P-20) limita o peso do histórico antigo |
+| Retenção | Janela móvel de reputação (P-20) limita o peso do histórico antigo. A trilha e as interpretações não têm prazo de retenção (pendência P9) |
 
 **Não implementado:** exclusão de conta a pedido do titular e exportação de dados pessoais. Ambos
 seriam obrigatórios em produção.
