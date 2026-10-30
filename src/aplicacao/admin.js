@@ -8,6 +8,7 @@ import * as financeiroRepo from '../infra/repositorios/financeiro.js';
 import * as catalogoRepo from '../infra/repositorios/catalogo.js';
 import * as interpretacoesRepo from '../infra/repositorios/interpretacoes.js';
 import * as social from '../infra/repositorios/social.js';
+import * as agendamentosRepo from '../infra/repositorios/agendamentos.js';
 import * as auditoria from '../infra/auditoria.js';
 import { transacao } from '../infra/db/conexao.js';
 import { assegurarPercentualValido } from '../dominio/comissao.js';
@@ -83,33 +84,79 @@ export function ajustarComissao({ adminId, categoriaId, percentual }) {
 
 /** RN-00 - alteracao de parametro global. */
 export function ajustarParametro({ adminId, chave, valor }) {
-  const anterior = params()[chave];
-  const novo = salvarGlobal(chave, valor, adminId);
+  // Parametro alterado sem rastro e pior que alteracao recusada: a auditoria
+  // falhando desfaz o valor novo.
+  return transacao(() => {
+    const anterior = params()[chave];
+    const novo = salvarGlobal(chave, valor, adminId);
 
-  auditoria.registrar({
-    atorId: adminId,
-    acao: 'PARAMETRO_ALTERADO',
-    entidade: 'parametro',
-    entidadeId: null,
-    de: String(anterior),
-    para: String(novo),
-    detalhe: { chave, regra: 'RN-00' },
+    auditoria.registrar({
+      atorId: adminId,
+      acao: 'PARAMETRO_ALTERADO',
+      entidade: 'parametro',
+      entidadeId: null,
+      de: String(anterior),
+      para: String(novo),
+      detalhe: { chave, regra: 'RN-00' },
+    });
+
+    return novo;
   });
-
-  return novo;
 }
 
 export function parametrosAtuais() {
   return { valores: params(), historico: listarGlobais() };
 }
 
-/** RF-085 - rastreabilidade: auditoria recente e qualidade da extracao por LLM. */
-export function rastreabilidade({ limite = 100 } = {}) {
+/**
+ * RF-085 - rastreabilidade: auditoria recente e qualidade da extracao por LLM.
+ * Com `correlacao`, a trilha se restringe ao que uma mesma requisicao gravou.
+ */
+export function rastreabilidade({ limite = 100, correlacao = null } = {}) {
   return {
-    auditoria: auditoria.recentes(limite),
+    auditoria: correlacao ? auditoria.daCorrelacao(correlacao) : auditoria.recentes(limite),
     interpretacoes: interpretacoesRepo.recentes(30),
     estatisticasLlm: interpretacoesRepo.estatisticas(),
   };
+}
+
+/**
+ * RF-078 - fila de revisao de contas. O motivo do sinalizador nao e guardado
+ * na conta: sai da ultima transicao auditada para o estado atual, que ja traz
+ * a regra que a disparou (RN-21, RN-22) ou a justificativa do admin.
+ */
+export function filaDeRevisao() {
+  return usuariosRepo.contasEmRevisao().map((conta) => {
+    const entrada = auditoria.historicoDe('conta', conta.id)
+      .filter((linha) => linha.estado_novo === conta.estado_conta)
+      .reduce((ultima, linha) => (!ultima || linha.id > ultima.id ? linha : ultima), null);
+    return {
+      ...conta,
+      motivo: motivoDoSinalizador(entrada),
+      ocorrencias: social.eventosDoUsuario(conta.id)
+        .filter((e) => e.delta < 0 && !e.revertido_em).length,
+    };
+  });
+}
+
+function motivoDoSinalizador(entrada) {
+  const d = entrada?.detalhe ?? {};
+  switch (entrada?.acao) {
+    case 'CONTA_RECLASSIFICADA_POR_REPUTACAO':
+      return { regra: 'RN-22', texto: `Reputação caiu para ${d.reputacao} pontos, abaixo do limiar` };
+    case 'PRESTADOR_EM_REVISAO_POR_OCORRENCIAS':
+      return { regra: 'RN-21', texto: `${d.ocorrencias} ocorrências negativas em ${d.janelaDias} dias` };
+    case 'CONTA_SUSPENSA':
+      return { regra: 'RF-079', texto: `Suspensa pelo admin: ${d.justificativa}` };
+    case undefined:
+      return { regra: null, texto: 'Sem transição registrada na auditoria' };
+    default:
+      return { regra: null, texto: entrada.acao };
+  }
+}
+
+function percentual(parte, total) {
+  return total > 0 ? Math.round((parte / total) * 100) : 0;
 }
 
 /** UC-13 - dossie da conta que o admin precisa para decidir. */
@@ -117,8 +164,17 @@ export function dossieDaConta(usuarioId) {
   const resumo = usuariosRepo.resumoPublico(usuarioId);
   if (!resumo) return null;
 
+  // RN-11: a recusa nao e cancelamento, mas o admin ve a taxa de recusa do prestador.
+  const respostas = resumo.perfil === 'PRESTADOR' ? agendamentosRepo.respostasDoPrestador(usuarioId) : null;
+
   return {
     ...resumo,
+    // UC-13 passo 2: o admin ve tambem a taxa de expiracao (sem limiar: OPEN-19).
+    recusas: respostas && {
+      ...respostas,
+      taxa: percentual(respostas.recusadas, respostas.recebidas),
+      taxaExpiracao: percentual(respostas.expiradas, respostas.recebidas),
+    },
     eventos: social.eventosDoUsuario(usuarioId, { limite: 30 }),
     historico: auditoria.historicoDe('conta', usuarioId),
     disputas: disputas.doUsuario(usuarioId),

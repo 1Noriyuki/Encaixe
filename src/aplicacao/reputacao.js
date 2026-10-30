@@ -136,7 +136,9 @@ export function verificarOcorrenciasDoPrestador(prestadorId) {
   if (total < p.ocorrencias_consecutivas_max) return { total, emRevisao: false };
 
   const prestador = usuarios.porId(prestadorId);
-  if (!prestador || !podeTransicionar('conta', prestador.estado_conta, 'EM_REVISAO')) {
+  // RN-21 e regra do prestador: cliente com ausencias responde pela RN-22, nao por aqui.
+  if (prestador?.perfil !== 'PRESTADOR') return { total, emRevisao: false };
+  if (!podeTransicionar('conta', prestador.estado_conta, 'EM_REVISAO')) {
     return { total, emRevisao: prestador?.estado_conta === 'EM_REVISAO' };
   }
 

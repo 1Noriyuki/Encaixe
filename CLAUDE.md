@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 336 testes, ~7 s
+npm test             # suíte completa (node --test), 440 testes, ~10 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -94,10 +94,11 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 - **Fechar issue:** o GitHub só fecha no merge se o PR disser `Closes #N`, e o critério é a Definition of
   Done inteira da Spec, não a aprovação do texto. Modelo: a seção 12 da SPEC-001, com tabela de evidência
   dizendo qual teste cobre cada CA, INV e RNF. **Rascunho mergeado não é Spec aprovada.**
-- **Estado em 2026-10-29 (etapa 33):** spec v0.1.10. SPEC-001 e 002 concluídas; 003 a 005 aprovadas, com
-  a conferência do código pendente (2dart5, que o Enzo decidiu não assumir). SPEC-006 a 009, 011, 020,
-  021, 024 e 026 estão aprovadas e com a evidência completa na §12; as issues delas fecham no merge do PR
-  da etapa 33, que espera revisão de outro integrante. A próxima a gerar é a SPEC-010.
+- **Estado em 2026-10-30 (etapa 60):** spec v0.1.10. SPEC-001 e 002 concluídas; SPEC-006 a 009, 011, 020, 021,
+  024 e 026 aprovadas com evidência (fecham no merge do PR da etapa 33). SPEC-003 a 005 conferidas (etapas 43 a 45),
+  mas a DoD 1 de cada uma depende de decisões da §13. As outras 15 (010, 012 a 019, 022, 023, 025, 027 a 029) existem
+  como **rascunho** conferido, com a evidência na §12, e esperam aprovação; a próxima a aprovar é a SPEC-010. As T-29,
+  33, 53, 55, 58, 61, 66 e 67 foram concluídas (etapas 35 a 42) e fecham no merge do PR `issues-2dart5-lote`.
 - **Aprovada não é concluída.** "Aprovada" diz que o texto da Spec foi aceito; "concluída" exige a tabela
   de evidência da §12, ligando cada CA e INV a um teste que existe e passa. Confira o **título** do teste,
   não só o ID: vários IDs propostos já nomeavam testes de outro assunto. Por isso um ID nunca nomeia dois

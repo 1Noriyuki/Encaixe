@@ -398,9 +398,37 @@ function tabelaDeContas(lista) {
     </div>`;
 }
 
+/** RF-078 - a fila de revisao mostra por que cada conta foi sinalizada. */
+function tabelaDeRevisao(lista) {
+  return html`
+    <div class="cartao tabela-rolagem">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Nome</th><th scope="col">Motivo do sinalizador</th>
+            <th scope="col" class="direita">Reputação</th>
+            <th scope="col" class="direita">Ocorrências</th><th scope="col">Estado</th>
+            <th scope="col"><span class="so-leitor">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${juntar(lista.map((u) => html`
+            <tr>
+              <td>${u.nome_exibicao ?? u.nome}<div class="mini fraco">${u.email}</div></td>
+              <td>${u.motivo.texto} ${seloRegra(u.motivo.regra)}</td>
+              <td class="direita num">${u.reputacao ?? '—'}</td>
+              <td class="direita num">${u.ocorrencias}</td>
+              <td>${selo(u.estado_conta)}</td>
+              <td class="direita"><a class="pequeno" href="/admin/contas/${u.id}">abrir</a></td>
+            </tr>`))}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 function telaContas(ctx) {
   const pendentes = usuariosRepo.prestadoresPendentes();
-  const revisao = usuariosRepo.contasEmRevisao();
+  const revisao = adminApp.filaDeRevisao();
   const prestadores = usuariosRepo.listarPorPerfil('PRESTADOR');
   const clientes = usuariosRepo.listarPorPerfil('CLIENTE');
 
@@ -412,11 +440,13 @@ function telaContas(ctx) {
     </div>
 
     ${revisao.length
-    ? html`<h2 class="sem-topo">Em revisão ou suspensas (${revisao.length})</h2>${tabelaDeContas(revisao)}`
+    ? html`<h2 class="sem-topo">Em revisão ou suspensas (${revisao.length})</h2>${tabelaDeRevisao(revisao)}`
     : cru('')}
+    <h2>Aguardando aprovação (${pendentes.length})</h2>
     ${pendentes.length
-    ? html`<h2>Aguardando aprovação (${pendentes.length})</h2>${tabelaDeContas(pendentes)}`
-    : cru('')}
+    ? tabelaDeContas(pendentes)
+    : vazio('Nenhum cadastro de prestador aguardando decisão. Quando alguém se cadastrar como '
+      + 'prestador, a conta aparece aqui até você aprovar ou reprovar.', { titulo: 'Fila de aprovação vazia' })}
     <h2>Prestadores (${prestadores.length})</h2>${tabelaDeContas(prestadores)}
     <h2>Clientes (${clientes.length})</h2>${tabelaDeContas(clientes)}
   `, { titulo: 'Contas' });
@@ -445,6 +475,10 @@ function dossie(ctx) {
         ${metrica('Concluídos', d.concluidos)}
         ${metrica('Ausências', d.noshows, `${d.taxa_noshow}% dos encerrados`)}
         ${metrica('Cancelamentos', d.cancelamentos)}
+        ${d.recusas
+    ? html`${metrica('Recusas', d.recusas.recusadas, `${d.recusas.taxa}% das ${d.recusas.recebidas} reservas recebidas`)}
+      ${metrica('Sem resposta', d.recusas.expiradas, `${d.recusas.taxaExpiracao}% expiraram sem confirmação`)}`
+    : cru('')}
       </div>
       <hr class="divisor">
       <div class="linha entre">
@@ -488,6 +522,32 @@ function dossie(ctx) {
       ${notaDeRegra('RF-079', 'Sair de EM_REVISAO ou de SUSPENSO exige decisão do admin com justificativa: '
     + 'a reputação sozinha nunca reabilita uma conta bloqueada.')}`}
 
+    <h2>Disputas</h2>
+    ${d.disputas.length === 0
+    ? vazio('Nenhuma disputa envolvendo esta conta.')
+    : html`
+      <div class="cartao tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">#</th><th scope="col">Aberta em</th><th scope="col">Motivo</th>
+              <th scope="col">Estado</th><th scope="col"><span class="so-leitor">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${juntar(d.disputas.map((x) => html`
+              <tr>
+                <td class="num">${x.id}</td>
+                <td class="mini">${formatarDataHora(x.aberta_em)}</td>
+                <td>${disputas.MOTIVOS[x.motivo] ?? x.motivo}</td>
+                <td>${selo(x.estado)}${x.desfecho
+    ? html`<div class="mini fraco">${disputas.DESFECHOS[x.desfecho]}</div>` : cru('')}</td>
+                <td class="direita"><a class="pequeno" href="/admin/disputas/${x.id}">abrir</a></td>
+              </tr>`))}
+          </tbody>
+        </table>
+      </div>`}
+
     <h2>Eventos de reputação</h2>
     ${d.eventos.length === 0
     ? vazio('Nenhum evento de reputação registrado para esta conta.')
@@ -517,6 +577,33 @@ function dossie(ctx) {
       </div>
       ${notaDeRegra('INV-08', 'A reputação é a soma destes eventos dentro da janela móvel, truncada ao '
       + 'intervalo de 0 a 100 — nunca um campo editado à mão.')}`}
+
+    <h2>Histórico da conta</h2>
+    ${d.historico.length === 0
+    ? vazio('Nenhuma transição registrada para esta conta.')
+    : html`
+      <div class="cartao tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Quando</th><th scope="col">Ação</th><th scope="col">Transição</th>
+              <th scope="col">Quem</th><th scope="col">Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${juntar(d.historico.map((l) => html`
+              <tr>
+                <td class="mini">${formatarDataHora(l.criado_em)}</td>
+                <td class="mono">${l.acao}</td>
+                <td class="mini">${l.estado_anterior ?? '—'} → ${l.estado_novo ?? '—'}</td>
+                <td class="mini">${l.ator_nome ?? 'sistema'}</td>
+                <td class="mini">${l.detalhe?.justificativa ?? l.detalhe?.regra ?? '—'}</td>
+              </tr>`))}
+          </tbody>
+        </table>
+      </div>
+      ${notaDeRegra('RF-078', 'O motivo do sinalizador e cada decisão sobre a conta saem da trilha de '
+      + 'auditoria, com quem decidiu e quando.')}`}
   `, { titulo: d.nome_exibicao ?? d.nome });
 }
 
@@ -685,7 +772,8 @@ function salvarComissao(ctx) {
 // ------------------------------------------------------------- auditoria
 
 function telaAuditoria(ctx) {
-  const dados = adminApp.rastreabilidade({ limite: 120 });
+  const correlacao = String(ctx.query.correlacao ?? '').trim() || null;
+  const dados = adminApp.rastreabilidade({ limite: 120, correlacao });
 
   return ctx.render(html`
     <div class="cabecalho-pagina">
@@ -705,7 +793,7 @@ function telaAuditoria(ctx) {
           <thead>
             <tr>
               <th scope="col">Quando</th><th scope="col">Texto original</th>
-              <th scope="col">Categoria</th><th scope="col">Confiança</th>
+              <th scope="col">Categoria</th><th scope="col">Região e janela</th><th scope="col">Confiança</th>
               <th scope="col">Status</th><th scope="col">Desfecho</th><th scope="col">Modelo</th>
             </tr>
           </thead>
@@ -715,6 +803,9 @@ function telaAuditoria(ctx) {
                 <td class="mini">${formatarDataHora(i.criada_em)}</td>
                 <td class="pequeno">${i.texto_original}</td>
                 <td class="mini">${i.categoria_nome ?? i.categoria_sugerida ?? '—'}</td>
+                <td class="mini">${i.regiao_bairro ?? 'qualquer região'}${i.janela_inicio
+    ? html`<div>${formatarDataHora(i.janela_inicio)} a ${i.janela_fim ? formatarDataHora(i.janela_fim) : '—'}</div>`
+    : html`<div class="fraco">janela padrão</div>`}</td>
                 <td class="mini num">${i.confianca != null ? `${Math.round(i.confianca * 100)}%` : '—'}</td>
                 <td><span class="selo selo-${i.status === 'SUCESSO' ? 'ok' : (i.status === 'FALHA' ? 'perigo' : 'aviso')}">
                   ${i.status}</span></td>
@@ -728,12 +819,16 @@ function telaAuditoria(ctx) {
       + 'modelo: o que está registrado aqui são os filtros propostos, não os resultados escolhidos.')}`}
 
     <h2>Trilha de auditoria</h2>
+    ${correlacao ? html`
+      <p>Só os registros da correlação <code>${correlacao}</code>, na ordem em que foram gravados.
+        <a href="/admin/auditoria">Ver a trilha inteira</a></p>` : cru('')}
     <div class="cartao tabela-rolagem">
       <table>
         <thead>
           <tr>
             <th scope="col">Quando</th><th scope="col">Ação</th><th scope="col">Entidade</th>
             <th scope="col">De</th><th scope="col">Para</th><th scope="col">Ator</th>
+            <th scope="col">Correlação</th>
           </tr>
         </thead>
         <tbody>
@@ -745,9 +840,14 @@ function telaAuditoria(ctx) {
               <td class="mini">${l.estado_anterior ?? '—'}</td>
               <td class="mini">${l.estado_novo ?? '—'}</td>
               <td class="mini">${l.ator_nome ?? 'sistema'}</td>
+              <td class="mini mono">${l.correlacao_id
+    ? html`<a href="/admin/auditoria?correlacao=${l.correlacao_id}" title="${l.correlacao_id}">${l.correlacao_id.slice(0, 8)}</a>`
+    : '—'}</td>
             </tr>`))}
         </tbody>
       </table>
     </div>
+    ${notaDeRegra('RNF-07', 'Cada requisição grava uma correlação: abri-la mostra tudo o que aquela '
+    + 'operação mudou, em todas as entidades.')}
   `, { titulo: 'Auditoria' });
 }

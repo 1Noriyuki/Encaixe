@@ -19,6 +19,7 @@ import * as catalogoRepo from '../../src/infra/repositorios/catalogo.js';
 import * as horariosRepo from '../../src/infra/repositorios/horarios.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
 import * as parametrosRepo from '../../src/infra/repositorios/parametros.js';
+import * as notificacoes from '../../src/infra/notificacoes.js';
 import { adicionarHoras, partesLocais } from '../../src/dominio/tempo.js';
 
 test.beforeEach(prepararBanco);
@@ -193,6 +194,31 @@ test('T-BUSCA-04 | RF-031: empate na ordenacao por proximidade usa id estavel', 
   assert.deepEqual(segundaLeitura, primeiraLeitura);
 });
 
+test('T-BUSCA-04b | RF-031: empate em preco, desconto e reputacao cai no id, nao no inicio', () => {
+  // O horario de id menor comeca DEPOIS: se o desempate usasse a ordem do banco
+  // (por inicio), a ordem por preco sairia invertida.
+  const c = cenarioBasico({ horasAteHorario: 7 });
+  const maisCedo = criarPrestadorComHorario(c, {
+    sufixo: 'empate-preco', instante: adicionarHoras(agoraDoTeste(), 6),
+  });
+  const porId = [c.horario.id, maisCedo.horario.id];
+
+  const resultados = busca.buscarPorFiltros({ ordenar: 'preco' });
+  assert.equal(resultados[0].preco.precoVigente, resultados[1].preco.precoVigente);
+  assert.equal(resultados[0].prestador_reputacao, resultados[1].prestador_reputacao);
+
+  assert.deepEqual(
+    busca.buscarPorFiltros({ ordenar: 'proximidade' }).map(({ id }) => id),
+    [maisCedo.horario.id, c.horario.id],
+  );
+  for (const criterio of ['preco', 'desconto', 'reputacao']) {
+    const leituras = [1, 2, 3].map(() => busca.buscarPorFiltros({ ordenar: criterio }).map(({ id }) => id));
+    assert.deepEqual(leituras[0], porId, criterio);
+    assert.deepEqual(leituras[1], leituras[0], criterio);
+    assert.deepEqual(leituras[2], leituras[0], criterio);
+  }
+});
+
 test('T-AGENDAMENTO-06 | RF-042: prestador confirma reserva pendente e ocupa o horario', () => {
   const c = cenarioBasico();
   const reserva = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
@@ -223,6 +249,42 @@ test('T-AGENDAMENTO-07 | RF-043/RF-044: recusa exige motivo e libera o horario',
   assert.equal(recusada.estado, 'RECUSADO');
   assert.equal(recusada.motivo_encerramento, 'Agenda indisponivel');
   assert.equal(horariosRepo.porId(c.horario.id).estado, 'PUBLICADO');
+});
+
+test('T-AGENDAMENTO-07b | RF-042/RF-043: confirmacao e recusa notificam o cliente, a recusa com o motivo', () => {
+  const c = cenarioBasico();
+  const outroHorario = publicarDaquiA(c.prestador.id, c.servico.id, c.regua.id, 8);
+
+  const confirmada = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: confirmada.id });
+  const recusada = agendamentos.reservar({ clienteId: c.cliente2.id, horarioId: outroHorario.id });
+  agendamentos.recusar({
+    prestadorId: c.prestador.id, agendamentoId: recusada.id, motivo: 'Cadeira em manutencao',
+  });
+
+  const avisoConfirmacao = notificacoes.listar(c.cliente.id)
+    .find((n) => n.tipo === 'AGENDAMENTO_CONFIRMADO');
+  assert.equal(avisoConfirmacao.agendamento_id, confirmada.id);
+
+  const avisoRecusa = notificacoes.listar(c.cliente2.id)
+    .find((n) => n.tipo === 'AGENDAMENTO_RECUSADO');
+  assert.equal(avisoRecusa.agendamento_id, recusada.id);
+  assert.match(avisoRecusa.mensagem, /Cadeira em manutencao/);
+});
+
+test('T-AGENDAMENTO-07c | RF-044: recusa sem antecedencia P-04 restante expira o horario', () => {
+  const c = cenarioBasico({ horasAteHorario: 100 / 60 });
+  parametrosRepo.salvarGlobal('antecedencia_min_reserva_min', 90, c.adminId);
+  const reserva = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+
+  // Faltam 88 min: dentro da janela de confirmacao, mas abaixo de P-04.
+  viajarPara(adicionarHoras(agoraDoTeste(), 12 / 60));
+  agendamentos.recusar({
+    prestadorId: c.prestador.id, agendamentoId: reserva.id, motivo: 'Agenda indisponivel',
+  });
+
+  assert.equal(horariosRepo.porId(c.horario.id).estado, 'EXPIRADO');
+  assert.ok(!busca.buscarPorFiltros().some(({ id }) => id === c.horario.id));
 });
 
 test('T-DISPUTA-07 | RF-074/RF-075: fila prioriza o SLA e destaca disputas vencidas', () => {
@@ -266,4 +328,32 @@ test('T-DISPUTA-07 | RF-074/RF-075: fila prioriza o SLA e destaca disputas venci
   viajarPara(adicionarHoras(fila[0].prazo_sla_em, 1));
   const atualizada = disputas.fila();
   assert.deepEqual(atualizada.map(({ foraDoSla }) => foraDoSla), [true, false]);
+});
+
+test('T-DISPUTA-07b | RF-074: no empate de SLA, a disputa de maior valor vem antes', () => {
+  const c = cenarioBasico({ horasAteHorario: 2 });
+  // O de maior valor tem id maior: a ordem so sai certa se o valor desempatar.
+  const caro = criarPrestadorComHorario(c, {
+    sufixo: 'disputa-cara', instante: c.horario.inicio, precoBase: '200,00',
+  });
+
+  const barato = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: barato.id });
+  const valioso = agendamentos.reservar({ clienteId: c.cliente2.id, horarioId: caro.horario.id });
+  agendamentos.confirmar({ prestadorId: caro.prestador.id, agendamentoId: valioso.id });
+
+  viajarPara(adicionarHoras(c.horario.inicio, 1.5));
+  agendamentos.concluir({ prestadorId: c.prestador.id, agendamentoId: barato.id });
+  agendamentos.concluir({ prestadorId: caro.prestador.id, agendamentoId: valioso.id });
+  for (const [usuarioId, agendamentoId] of [[c.cliente.id, barato.id], [c.cliente2.id, valioso.id]]) {
+    disputas.abrir({
+      usuarioId, agendamentoId, motivo: 'OUTRO',
+      evidencia: 'Evidencia suficiente para abrir a disputa no mesmo instante.',
+    });
+  }
+
+  const fila = disputas.fila();
+  assert.equal(fila[0].prazo_sla_em, fila[1].prazo_sla_em);
+  assert.ok(fila[0].valor_travado > fila[1].valor_travado);
+  assert.deepEqual(fila.map(({ agendamento_id: id }) => id), [valioso.id, barato.id]);
 });

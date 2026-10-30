@@ -194,6 +194,22 @@ BEGIN
   SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
 END;
 
+-- INV-02 / RN-06: o dominio ja recusa a sobreposicao; o banco recusa de novo.
+-- Basta o INSERT: nenhuma transicao leva um horario inativo de volta a ativo.
+-- Intervalos [inicio, inicio + duracao) que so se tocam nas bordas nao conflitam.
+CREATE TRIGGER IF NOT EXISTS horario_sem_sobreposicao
+BEFORE INSERT ON horario_vago
+WHEN NEW.estado IN ('PUBLICADO','BLOQUEADO','OCUPADO')
+BEGIN
+  SELECT RAISE(ABORT, 'INV-02: horario sobreposto a outro ativo do mesmo prestador')
+   WHERE EXISTS (
+     SELECT 1 FROM horario_vago h
+      WHERE h.prestador_id = NEW.prestador_id
+        AND h.estado IN ('PUBLICADO','BLOQUEADO','OCUPADO')
+        AND unixepoch(NEW.inicio) < unixepoch(h.inicio) + h.duracao_min * 60
+        AND unixepoch(h.inicio) < unixepoch(NEW.inicio) + NEW.duracao_min * 60);
+END;
+
 -- ----------------------------------------------------------- transacao
 CREATE TABLE IF NOT EXISTS agendamento (
   id                          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -224,6 +240,22 @@ CREATE UNIQUE INDEX IF NOT EXISTS ux_agendamento_ativo
   ON agendamento (horario_id)
   WHERE estado IN ('PENDENTE_CONFIRMACAO','CONFIRMADO','EM_DISPUTA');
 
+-- INV-03 / RN-04: o valor travado na reserva nunca muda depois.
+CREATE TRIGGER IF NOT EXISTS agendamento_valor_travado_imutavel
+BEFORE UPDATE OF valor_travado ON agendamento
+WHEN NEW.valor_travado IS NOT OLD.valor_travado
+BEGIN
+  SELECT RAISE(ABORT, 'INV-03: valor travado nao muda depois da reserva');
+END;
+
+-- INV-04 / RN-03: o valor travado respeita o piso gravado no horario.
+CREATE TRIGGER IF NOT EXISTS agendamento_respeita_piso
+BEFORE INSERT ON agendamento
+WHEN NEW.valor_travado < (SELECT preco_minimo_snapshot FROM horario_vago WHERE id = NEW.horario_id)
+BEGIN
+  SELECT RAISE(ABORT, 'INV-04: valor travado abaixo do preco minimo do horario');
+END;
+
 CREATE INDEX IF NOT EXISTS ix_agendamento_cliente   ON agendamento (cliente_id, estado);
 CREATE INDEX IF NOT EXISTS ix_agendamento_prestador ON agendamento (prestador_id, estado);
 
@@ -240,6 +272,24 @@ CREATE TABLE IF NOT EXISTS lancamento_comissao (
   criado_em          TEXT NOT NULL,
   CHECK (valor_comissao + valor_liquido = valor_bruto)
 );
+
+-- INV-12 / RN-17: comissao de agendamento em disputa nunca fica EFETIVADO. A abertura
+-- move o agendamento e retem a comissao na mesma transacao (aplicacao/disputas.js);
+-- aqui o banco recusa efetivar enquanto a disputa nao for resolvida.
+CREATE TRIGGER IF NOT EXISTS comissao_sem_efetivar_em_disputa_insert
+BEFORE INSERT ON lancamento_comissao
+WHEN NEW.estado = 'EFETIVADO'
+ AND (SELECT estado FROM agendamento WHERE id = NEW.agendamento_id) = 'EM_DISPUTA'
+BEGIN
+  SELECT RAISE(ABORT, 'INV-12: comissao de agendamento em disputa nao fica EFETIVADO');
+END;
+CREATE TRIGGER IF NOT EXISTS comissao_sem_efetivar_em_disputa_update
+BEFORE UPDATE OF estado ON lancamento_comissao
+WHEN NEW.estado = 'EFETIVADO'
+ AND (SELECT estado FROM agendamento WHERE id = NEW.agendamento_id) = 'EM_DISPUTA'
+BEGIN
+  SELECT RAISE(ABORT, 'INV-12: comissao de agendamento em disputa nao fica EFETIVADO');
+END;
 
 -- INV-09: no maximo uma avaliacao por (agendamento, autor).
 CREATE TABLE IF NOT EXISTS avaliacao (

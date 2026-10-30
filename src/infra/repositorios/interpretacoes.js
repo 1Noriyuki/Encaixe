@@ -51,10 +51,11 @@ export function estatisticas() {
 
 export function recentes(limite = 30) {
   return varios(
-    `SELECT i.*, u.nome AS cliente_nome, c.nome AS categoria_nome
+    `SELECT i.*, u.nome AS cliente_nome, c.nome AS categoria_nome, r.bairro AS regiao_bairro
        FROM interpretacao_busca i
        LEFT JOIN usuario u ON u.id = i.cliente_id
        LEFT JOIN categoria_servico c ON c.id = i.categoria_id
+       LEFT JOIN regiao r ON r.id = i.regiao_id
       ORDER BY i.id DESC
       LIMIT ?`,
     limite,

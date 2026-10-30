@@ -58,10 +58,17 @@ export function abrir({ usuarioId, agendamentoId, motivo, relato, evidencia }) {
   const p = params();
   const agora = agoraIso();
 
+  const textoEvidencia = String(evidencia ?? '').trim();
+  // RF-072: a recusa diz tudo o que falta, nao so o primeiro item.
+  if (!(motivo in MOTIVOS) && textoEvidencia.length < 10) {
+    throw new ErroDeRegra(
+      'RN-26',
+      'Faltam o motivo, escolhido da lista, e ao menos uma evidência (mínimo 10 caracteres).',
+    );
+  }
   if (!(motivo in MOTIVOS)) {
     throw new ErroDeValidacao('Escolha um motivo da lista.', 'motivo');
   }
-  const textoEvidencia = String(evidencia ?? '').trim();
   if (textoEvidencia.length < 10) {
     // RF-072 - abertura sem evidencia e recusada.
     throw new ErroDeRegra(
@@ -107,6 +114,10 @@ export function abrir({ usuarioId, agendamentoId, motivo, relato, evidencia }) {
     agendamentosRepo.atualizar(agendamentoId, {
       estado: 'EM_DISPUTA',
       estado_antes_disputa: ag.estado,
+    });
+    auditoria.registrar({
+      atorId: usuarioId, acao: 'AGENDAMENTO_EM_DISPUTA', entidade: 'agendamento', entidadeId: agendamentoId,
+      de: ag.estado, para: 'EM_DISPUTA', detalhe: { regra: 'RN-26' },
     });
 
     // ...a comissao e retida (RN-17, INV-12)...
@@ -255,7 +266,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
   switch (desfecho) {
     case 'MANTIDO': {
       estadoFinal = anterior;
-      transicionar(ag, estadoFinal);
+      transicionar(ag, estadoFinal, adminId, desfecho);
       aplicarEfeitosDe(estadoFinal, ag);
       // Quem abriu a disputa e perdeu leva a penalidade adicional (RN-23).
       reputacao.aplicarEvento({
@@ -271,7 +282,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
 
     case 'REVERTIDO': {
       estadoFinal = inverter(anterior);
-      transicionar(ag, estadoFinal);
+      transicionar(ag, estadoFinal, adminId, desfecho);
       aplicarEfeitosDe(estadoFinal, ag);
       reputacao.aplicarEvento({
         usuarioId: outraParte,
@@ -286,7 +297,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
 
     case 'PARCIAL': {
       estadoFinal = anterior;
-      transicionar(ag, estadoFinal);
+      transicionar(ag, estadoFinal, adminId, desfecho);
       // Efeitos de reputacao seguem revertidos: e exatamente o que "parcial" significa.
       comissao = restaurarComissao(ag, estadoFinal, adminId);
       break;
@@ -295,7 +306,7 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
     case 'ARQUIVADO':
     default: {
       estadoFinal = 'ARQUIVADO';
-      transicionar(ag, estadoFinal);
+      transicionar(ag, estadoFinal, adminId, desfecho);
       if (financeiroRepo.porAgendamento(ag.id)) {
         comissoes.transicionar({ agendamentoId: ag.id, para: 'ESTORNADO', atorId: adminId });
         comissao = 'ESTORNADO';
@@ -313,10 +324,15 @@ function aplicarDesfecho({ desfecho, ag, anterior, quemAbriu, outraParte, agora,
   return { estadoFinal, comissao };
 }
 
-function transicionar(ag, estadoFinal) {
+/** INV-13 - a decisao muda o agendamento, e a mudanca entra na trilha dele. */
+function transicionar(ag, estadoFinal, adminId, desfecho) {
   if (ag.estado === estadoFinal) return;
   assegurarTransicao('agendamento', ag.estado, estadoFinal);
   agendamentosRepo.atualizar(ag.id, { estado: estadoFinal });
+  auditoria.registrar({
+    atorId: adminId, acao: 'AGENDAMENTO_DECIDIDO_EM_DISPUTA', entidade: 'agendamento', entidadeId: ag.id,
+    de: ag.estado, para: estadoFinal, detalhe: { desfecho },
+  });
 }
 
 /** O oposto de cada desfecho contestavel. */

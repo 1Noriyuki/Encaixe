@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
-| Data | 2026-10-20 |
-| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. Seguem abertas as questões da §13: tamanho mínimo da justificativa, aviso à fila de moderação e OPEN-03 |
+| Versão | 1.1.0 |
+| Data | 2026-10-30 |
+| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. **Código conferido e corrigido** em 2026-10-30 (v1.1.0, etapa 45): CA-01 a CA-08 e INV-001 a INV-007 com teste, evidência na §12. **Não concluída:** a DoD 1 depende das questões da §13 (tamanho mínimo da justificativa, aviso à fila de moderação, OPEN-03) |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 5 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · RN-28 · ADR-004 |
 
@@ -209,6 +209,26 @@ Casos propostos para execução após aprovação da Spec.
 | `T-CONTA-02c \| RF-008/RF-009: estado nao pendente nao aceita decisao inicial` | CA-07, INV-005 |
 | `T-CONTA-02d \| RN-08: prestador nao aprovado nao publica` | CA-08, INV-006 |
 | `T-MODERACAO-04 \| RF-084: decisao registra ator e transicao da conta` | CA-04, CA-05, INV-007 |
+
+**Evidência (registro etapa 45, 2026-10-30).** Todos os testes acima existem em
+`tests/integracao/spec-005-moderacao.test.js` e passam. A conferência encontrou duas divergências, corrigidas no código:
+
+1. **CA-07 / INV-002 violados.** `aprovarPrestador()` só conferia se a máquina de contas aceitava ir para `ATIVO`. Como
+   `SUSPENSO → ATIVO`, `EM_REVISAO → ATIVO` e `RESTRITO → ATIVO` são transições válidas (as do RF-079), um POST em
+   `/admin/contas/:id/aprovar` reativava conta suspensa, inclusive de cliente, sem justificativa, e a auditoria gravava
+   `PRESTADOR_APROVADO`. Aprovar e reprovar agora exigem prestador em `PENDENTE_APROVACAO` (`carregarCadastroPendente`).
+2. **CA-02.** Sem pendências, a seção "Aguardando aprovação" sumia da tela; agora aparece com estado vazio.
+
+| Critério | Evidência |
+|---|---|
+| CA-01 | `T-MODERACAO-01`: dois pendentes listados; reprovado e ativo fora da fila |
+| CA-02 | `T-MODERACAO-02` |
+| CA-03, INV-001 | `T-MODERACAO-03`: cliente e prestador levam 403 na fila e nas duas decisões, com CSRF válido; a recusa não revela a fila; nada muda |
+| CA-04, INV-002 | `T-CONTA-02a` (pela rota, com aviso sem agendamento) |
+| CA-05, CA-06, INV-003, INV-004 | `T-CONTA-02b`: vazio, só espaços e curto recusados sem estado nem aviso; com texto, justificativa aparada na auditoria e no aviso |
+| CA-07, INV-005 | `T-CONTA-02c`: suspensa, em revisão, ativa e reprovada recusam aprovar e reprovar, pela aplicação e pela rota, sem estado, aviso nem registro novos |
+| CA-08, INV-006 | `T-CONTA-02d`: pendente recusado pela RN-28 (a regra específica do cadastro pendente) e reprovado pela RN-08; nenhum horário gravado |
+| INV-007, RNF-07, RNF-08 | `T-MODERACAO-04` |
 
 ## 13. Questões em aberto
 

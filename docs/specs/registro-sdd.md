@@ -706,3 +706,192 @@
 - **Produzido:** a busca limita a consulta ao primeiro horário que já atende P-04, preservando a janela solicitada quando ela começa depois; os filtros de estado `PUBLICADO` e conta `ATIVO` permanecem no repositório.
 - **Evidência:** `T-BUSCA-03` cobre categoria, região, janela e elegibilidade; `T-BUSCA-03b` cobre P-04, o limite inclusivo e as exclusões de horário cancelado e prestador inativo.
 - **Spec:** sem alteração; o comportamento implementa os RF-028 a RF-030 já aprovados em `docs/spec.md`.
+
+### Etapa 35 — Ordenação com desempate determinístico (T-29) · 2026-10-30
+
+- **Pedido:** resolver as issues do 2dart5, uma por commit, numa branch a partir da `main` (`issues-2dart5-lote`).
+- **Conferência:** `ordenar_()` em `aplicacao/busca.js` já desempata pelo id em todos os critérios (RF-031). `T-BUSCA-04` só provava o empate por proximidade, onde a ordem do banco e a do id coincidem.
+- **Evidência:** `T-BUSCA-04b` monta dois horários de mesmo preço e mesma reputação em que o de id menor começa depois, e exige a ordem pelo id em preço, desconto e reputação, igual em três leituras seguidas.
+- **Divergência registrada, não corrigida:** `horariosRepo.buscar()` corta em `LIMIT 200` ordenando por início, antes da ordenação por preço ou reputação. Com mais de 200 horários na janela, "Menor preço" pode deixar de fora horários mais baratos. O teto é decisão de desempenho; mudar exige decisão da equipe (paginar, ou ordenar no SQL).
+
+### Etapa 36 — Confirmação e recusa pelo prestador (T-33) · 2026-10-30
+
+- **Conferência:** `confirmar()`, `recusar()` e `liberarHorario()` em `aplicacao/agendamentos.js` atendem RF-042 a RF-044, inclusive as notificações e o desvio para `EXPIRADO`. Faltava evidência de duas partes do critério.
+- **Evidência nova:** `T-AGENDAMENTO-07b` prova que o cliente recebe o aviso da confirmação e o da recusa, este com o motivo; `T-AGENDAMENTO-07c` recusa uma reserva quando faltam 88 min para um P-04 de 90 e exige o horário em `EXPIRADO`, fora da busca.
+- **Sem alteração de código nem de spec.**
+
+### Etapa 37 — Fila de disputas ordenada por SLA (T-53) · 2026-10-30
+
+- **Conferência:** `moderacaoRepo.filaDeDisputas()` ordena por `prazo_sla_em` e, no empate, por `valor_travado` decrescente (RF-074); `disputas.fila()` calcula `foraDoSla` e a tela `/admin/disputas` usa o selo de perigo (RF-075).
+- **Evidência nova:** `T-DISPUTA-07b` abre duas disputas no mesmo instante, com a de maior valor e id maior, e exige que ela venha primeiro. `T-DISPUTA-07c`, no novo `tests/integracao/telas-admin.test.js`, sobe o servidor e prova que a fila só mostra o selo "vencido" depois do prazo e que o painel conta a disputa fora do SLA.
+- **Sem alteração de código nem de spec.**
+
+### Etapa 38 — Fila de revisão de contas e decisão do admin (T-55) · 2026-10-30
+
+- **Conferência:** `decidirSobreConta()` já atendia RF-079 (justificativa de 10 caracteres, transição validada, auditoria com o admin e aviso ao titular com o texto). A fila não atendia RF-078: listava reputação e estado, **sem o motivo do sinalizador nem as ocorrências**, e o dossiê carregava o histórico da conta sem exibi-lo.
+- **Correção (código, não spec):** `admin.filaDeRevisao()` compõe, na aplicação, o motivo a partir da última transição auditada para o estado atual (RN-22 por reputação, RN-21 por ocorrências, RF-079 por suspensão do admin) e a contagem de eventos negativos não revertidos. A tela `/admin/contas` ganhou as colunas "Motivo do sinalizador" e "Ocorrências"; o dossiê, a seção "Histórico da conta".
+- **Evidência:** `T-CONTA-REVISAO-01` (RN-22, aplicação e tela), `T-CONTA-REVISAO-01b` (RN-21 com três cancelamentos, contagem e histórico no dossiê) e `T-CONTA-REVISAO-02` (decisão pela tela recusada sem justificativa, aceita com ela, auditada e notificada).
+- **Verificação:** `npm test`, 345/345.
+
+### Etapa 39 — Tela de parâmetros do domínio (T-58) · 2026-10-30
+
+- **Conferência:** a faixa e a vigência já tinham evidência na aplicação (`T-PARAM-01` a `08`, SPEC-001). Faltava provar pela tela, e a conferência achou uma divergência: `admin.ajustarParametro()` gravava o valor e só depois registrava a auditoria, fora de transação. Se a auditoria falhasse, o parâmetro mudava sem rastro, ao contrário de `ajustarComissao()` e da ordem de `aplicacao/` (grava em transação → audita).
+- **Correção:** `ajustarParametro()` passa a envolver gravação e auditoria na mesma `transacao()`.
+- **Evidência:** `T-PARAM-TELA-01` altera P-04 pelo formulário, sem reinício, e a busca deixa de mostrar o horário que ficou abaixo da antecedência nova, com auditoria do admin; `T-PARAM-TELA-02` envia valor fora da faixa e a tela mostra RN-00 e P-04 sem nada mudar; `T-PARAM-09` derruba a auditoria por gatilho e exige o valor anterior.
+
+### Etapa 40 — Provedor Anthropic com JSON Schema (T-61) · 2026-10-30
+
+- **Conferência contra a API atual:** `infra/llm/anthropic.js` usa o SDK oficial como dependência opcional (ADR-001), `claude-opus-5`, `output_config: { effort: 'low', format: { type: 'json_schema', schema } }`, nenhum parâmetro de amostragem (recusado pela API desde 2026-10-21), nenhum prefill, e trata `stop_reason: 'refusal'` como FALHA (RN-31).
+- **Divergência corrigida (RF-038/RNF-05):** o SDK repete a chamada 2 vezes por padrão e trata timeout como repetível; com `LLM_TIMEOUT_MS` de 15 s a espera real chegava a 45 s. O pedido agora leva `maxRetries: 0`. Também: `LLM_MODELO` ou `LLM_TIMEOUT_MS` definidos vazios viravam modelo `''` e timeout de 0 ms; passam a valer como ausentes.
+- **Testabilidade:** `criar()` aceita `sdk` injetado, e `tests/unidade/llm-anthropic.test.js` confere o pedido sem rede nem pacote: `T-LLM-ANTHROPIC-01` (modelo, esquema, effort, sem amostragem), `02` (timeout configurável, sem repetição, variáveis vazias) e `03` (timeout, recusa, resposta sem texto, JSON quebrado e confiança fora da faixa viram FALHA).
+- **Propostas para a equipe, não aplicadas (decisão de mérito):** (1) o modelo atual da linha Opus é `claude-opus-5-5`, mais barato que o `claude-opus-5` da ADR-003; trocar exige rever a ADR. (2) A API oferece `fallbacks: "default"` (beta) para reexecutar uma recusa em outro modelo; hoje a recusa cai no formulário (RN-31), que é o comportamento especificado.
+
+### Etapa 41 — Notificações por evento e central do usuário (T-66) · 2026-10-30
+
+- **Conferência:** cada categoria de transição do RF-082 tem aviso no código. Faltava evidência de conjunto e não havia teste nenhum da central `/notificacoes` (RF-083).
+- **Evidência nova** (`tests/integracao/notificacoes.test.js`): `T-NOTIF-MATRIZ-01/02/03` percorrem as nove categorias e conferem destinatário, vínculo com o agendamento e instante UTC; `T-NOTIF-03/04/05/07` (IDs da SPEC-004 §12) provam pela tela ordem decrescente e isolamento, marcar lidas com CSRF, só os avisos próprios e de forma idempotente, estado vazio e escape.
+- **Matriz praticada pelo código** (proposta para a questão em aberto da SPEC-004 §13, **não aprovada**): quem age recebe a resposta na tela e a outra parte recebe o aviso; transição que muda a situação das duas partes avisa as duas.
+
+| Transição | Destinatário | Tipo |
+|---|---|---|
+| Reserva | prestador | `RESERVA_RECEBIDA` |
+| Confirmação manual / automática | cliente / cliente e prestador | `AGENDAMENTO_CONFIRMADO` |
+| Recusa | cliente, com o motivo | `AGENDAMENTO_RECUSADO` |
+| Expiração (LIBERAR) | cliente e prestador | `RESERVA_EXPIRADA` |
+| Cancelamento | a outra parte | `AGENDAMENTO_CANCELADO` |
+| No-show / no-show mútuo | quem foi acusado / as duas partes | `NO_SHOW_REGISTRADO` / `DISPUTA_ABERTA` |
+| Conclusão | cliente e prestador | `AGENDAMENTO_CONCLUIDO` |
+| Abertura / resolução de disputa | a outra parte / as duas partes | `DISPUTA_ABERTA` / `DISPUTA_RESOLVIDA` |
+| Aprovação, reprovação, revisão, restrição, reativação, suspensão | o titular (revisão também os admins) | `CADASTRO_*`, `CONTA_*` |
+
+- **Premissa do agente, a confirmar:** o desempate da central, aberto na SPEC-004 §13, passa a ser `id DESC` (a gravada por último primeiro), como o RF-031 faz na busca. Antes a ordem de dois avisos no mesmo instante ficava a critério do SQLite.
+- **Verificação:** `npm test`, 358/358.
+
+### Etapa 42 — Trilha de auditoria e tela do admin (T-67) · 2026-10-30
+
+- **Método:** em vez de conferir fluxo por fluxo, `tests/integracao/auditoria-inv13.test.js` cria gatilhos temporários que espiam **toda** mudança de estado de agendamento, horário, conta e disputa (as quatro entidades do RF-084) e exige, para cada uma, registro em `log_auditoria` com a mesma entidade, id e estados.
+- **Violações do INV-13 encontradas e corrigidas:** (1) a confirmação movia o horário `BLOQUEADO → OCUPADO` sem registro; (2) a conclusão (manual e automática) e o no-show moviam o horário `OCUPADO → ENCERRADO` sem registro; (3) abrir disputa movia o agendamento para `EM_DISPUTA` e a resolução o movia para o estado final, mas só a disputa era auditada. As três passam por `moverHorario()` em `agendamentos.js` e por registros `AGENDAMENTO_EM_DISPUTA` / `AGENDAMENTO_DECIDIDO_EM_DISPUTA` em `disputas.js`, com o ator real (cliente, prestador, admin ou `null` na rotina).
+- **Tela:** a correlação (RNF-07) era gravada e nunca exibida, o que impedia reconstruir uma operação inteira (RF-085). `/admin/auditoria` ganhou a coluna "Correlação" e o filtro `?correlacao=`, que mostra tudo o que uma requisição gravou, na ordem.
+- **Evidência:** `T-AUDIT-05` (reserva a disputa resolvida), `T-AUDIT-06` (recusa, cancelamento, cancelamento de horário livre, expiração, no-show, autoconclusão e expiração de horário pelas rotinas), `T-AUDIT-07` (cadastro, reputação, suspensão) e `T-AUDIT-08` (tela com ator, correlação e filtro).
+- **Verificação:** `npm test`, 362/362.
+
+### Etapa 43 — Conferência do código contra a SPEC-003 · 2026-10-30
+
+- **Pedido:** conferir o código contra a SPEC-003 (aprovada na etapa 21), pendência do 2dart5 desde a etapa 28.
+- **Resultado:** o código atende CA-01 a CA-07 e INV-001 a INV-006 sem alteração. Os oito testes da §12 foram escritos em `tests/integracao/spec-003-autorizacao.test.js`; o `T-AUTORIZ-02` percorre todas as rotas com os três perfis, o que liga cada linha da matriz §4.5 a uma rota (DoD 2). Spec sobe para v1.1.0 com a tabela de evidência na §12.
+- **Divergências registradas na §13, sem correção:** a matriz admite o admin cancelar qualquer agendamento com justificativa, e não há esse caminho no código (decisão de regra da SPEC-017); e admite o admin ver o extrato de comissão, que hoje é só do prestador (SPEC-024).
+- **Por que a issue #82 não fecha:** a DoD 1 exige resolver as questões da §13 que alteram comportamento. A auditoria das tentativas sobre recurso alheio e as duas linhas da matriz são decisão da equipe.
+
+### Etapa 44 — Conferência do código contra a SPEC-004 · 2026-10-30
+
+- **Resultado:** com os testes da etapa 41 (T-66) e três novos, todos os CA, INV e RNFs da SPEC-004 têm evidência; a Spec sobe para v1.1.0 com a tabela na §12. Novos: `T-NOTIF-01` (nada de aviso órfão; chave estrangeira recusa usuário inexistente), `T-NOTIF-09` (RNF-01, reabertura do banco em arquivo) e `T-NOTIF-10` (o aviso está na mesma transação da mudança de estado).
+- **Sem alteração de código** além do desempate já registrado na etapa 41.
+- **Por que a issue #83 não fecha:** a DoD 1 pede que a equipe aprove a matriz de eventos e decida atomicidade e paginação. A §13 agora traz a proposta de matriz (etapa 41), o fato sobre atomicidade (`T-NOTIF-10`) e a premissa de desempate, para a decisão ser tomada sobre o que o código já faz.
+
+### Etapa 45 — Conferência do código contra a SPEC-005 · 2026-10-30
+
+- **Divergência grave corrigida (CA-07, INV-002):** `aprovarPrestador()` aceitava qualquer conta cuja máquina de estados permitisse ir para `ATIVO`. Como `SUSPENSO`, `EM_REVISAO` e `RESTRITO` vão para `ATIVO` pelo RF-079, um POST em `/admin/contas/:id/aprovar` reativava conta suspensa, até de cliente, **sem justificativa**, e a auditoria registrava `PRESTADOR_APROVADO`. O formulário só aparecia para pendentes, mas a rota aceitava qualquer id. Aprovar e reprovar agora passam por `carregarCadastroPendente()`, que exige prestador em `PENDENTE_APROVACAO` e recusa com RF-008 / RF-009 apontando o caminho certo.
+- **Divergência corrigida (CA-02):** sem pendências, a seção da fila desaparecia; agora mostra estado vazio.
+- **Evidência:** os oito testes da §12 em `tests/integracao/spec-005-moderacao.test.js`; Spec em v1.1.0 com a tabela. Observação sem correção: o pendente que tenta publicar é barrado com RN-28 (regra específica do cadastro pendente), não com a RN-08 citada no CA-08; as duas regras vedam a publicação.
+- **Por que a issue #84 não fecha:** a DoD 1 depende das questões da §13 que mudam o critério de decisão — se 10 caracteres de justificativa é regra de produto, e se o RF-003 ("notificar a fila de moderação") exige aviso ao admin além da fila consultável.
+- **Verificação:** `npm test`, 381/381.
+
+### Etapa 46 — Rascunho e conferência da SPEC-010 · 2026-10-30
+
+- **Critério desta série (etapas 46 a 60):** a pedido do 2dart5, cada Spec ainda inexistente da Trilha B e da Trilha C é escrita como **rascunho v0.1.0**, conferida contra o código e completada com os testes da §12. Divergência do código em relação à baseline **já aprovada** (`docs/spec.md`, constituição, ADRs) é corrigida, como manda a OPEN-01; o que exigiria regra nova vira questão da §13. Nenhuma Spec é aprovada por esta série, e as issues recebem `Refs`, não `Closes`.
+- **SPEC-010:** [`SPEC-010-publicacao-de-horario-vago.md`](SPEC-010-publicacao-de-horario-vago.md), RF-014 a RF-016.
+- **Divergência corrigida:** INV-02 (sem sobreposição) só era barrado no domínio. O gatilho `horario_sem_sobreposicao` em `schema.sql` recusa no banco a gravação sobreposta; só no `INSERT`, porque nenhuma transição leva horário inativo de volta a ativo. Seed refeito do zero num banco temporário para provar.
+- **Evidência:** `T-PUBLICACAO-01` a `07`. Questões: OPEN-09 (editar horário vago) e passo de minutos da hora de início.
+
+### Etapa 47 — Rascunho e conferência da SPEC-012 · 2026-10-30
+
+- **SPEC-012:** [`SPEC-012-manutencao-da-agenda.md`](SPEC-012-manutencao-da-agenda.md), RF-022 e RF-023.
+- **Divergências corrigidas:** (1) `deLocalParaUtc()` aceitava `25:00`, `10:75` e `31/02`; o `Date.UTC` transbordava e o horário era publicado **em outro dia**, sem aviso. A conversão agora recusa o que não existe no calendário. (2) A entrada inválida subia como `TypeError` e virava erro 500 sem regra; `publicar()` a devolve como `ErroDeValidacao` no campo `hora`. (3) O relato do lote na tela trazia a regra só da primeira recusa; agora cada item mostra `hora (REGRA: motivo)`.
+- **Evidência:** `T-AGENDA-01` a `05`. Questão: formato e limite do lote.
+- **Verificação:** `npm test`, 393/393.
+
+### Etapa 48 — Rascunho e conferência da SPEC-013 · 2026-10-30
+
+- **SPEC-013:** [`SPEC-013-busca-por-filtros.md`](SPEC-013-busca-por-filtros.md), RF-028 a RF-031.
+- **Divergência corrigida (UC-03 1a):** sem janela informada, a busca olhava as próximas **72 h**; a baseline diz **24 h**. Não há decisão registrada para as 72 h, que vinham do código anterior às Specs (`a653fa7`). O padrão vira `JANELA_PADRAO_H = 24` em `aplicacao/busca.js`, e a home e o estado vazio leem a constante em vez de repetir "72". **Mudança visível:** a home e a busca sem filtro passam a mostrar menos horários; se a equipe preferir 72 h, muda-se a spec.
+- **Divergência corrigida (RF-028):** o formulário não tinha campo de janela; ela só chegava pela descrição ao LLM, o que deixava a busca por filtros sem um dos três filtros do RF. Campo "Quando" (6 a 72 h) adicionado; a escolha no formulário vale mais que a janela extraída da descrição. Conferido no navegador a 800 e a 375 px, sem rolagem lateral.
+- **Evidência:** `T-BUSCA-02` a `08`; `T-BUSCA-08` mede RNF-05 com 131 horários nos quatro critérios. Questão mantida: o corte de 200 (etapa 35).
+
+### Etapa 49 — Rascunho e conferência da SPEC-014 · 2026-10-30
+
+- **SPEC-014:** [`SPEC-014-reserva-preco-travado-exclusividade.md`](SPEC-014-reserva-preco-travado-exclusividade.md), RF-017, RF-039 a RF-041 e RF-047.
+- **Conferência:** `reservar()` atende todos os RF, com recusa por regra e a reserva inteira numa transação. INV-01 já tinha o índice único parcial.
+- **Divergência corrigida:** INV-03 (valor travado imutável) e INV-04 (valor travado ≥ piso) só eram garantidas no domínio. Gatilhos `agendamento_valor_travado_imutavel` e `agendamento_respeita_piso` em `schema.sql`. Seed refeito do zero.
+- **Evidência:** `T-RESERVA-07` a `12`, mais os testes de reserva anteriores. Questão: RF-017 é atendido porque não existe edição de horário (OPEN-09).
+- **Verificação:** `npm test`, 403/403.
+
+### Etapa 50 — Rascunho e conferência da SPEC-015 · 2026-10-30
+
+- **SPEC-015:** [`SPEC-015-confirmacao-e-recusa.md`](SPEC-015-confirmacao-e-recusa.md), RF-042 a RF-044.
+- **Divergências corrigidas:** (1) **RN-11:** a recusa deveria contar na "taxa de recusa exibida ao admin", que não existia. `admin.dossieDaConta()` compõe recusas e taxa sobre as reservas recebidas (`respostasDoPrestador()`), e o dossiê do prestador mostra a métrica; o perfil público não. (2) **UC-06 1a:** `recusar()` não conferia o prazo de confirmação; chamada fora da rota aceitava recusa depois do prazo, cujo desfecho é da política P-02.
+- **Evidência:** `T-CONFIRMA-01` a `04`, além de `T-AGENDAMENTO-06` a `07c` (T-33). Questões: janela da taxa de recusa e o mínimo de 5 caracteres do motivo.
+- **Verificação:** `npm test`, 407/407.
+
+### Etapa 51 — Rascunho e conferência da SPEC-016 · 2026-10-30
+
+- **SPEC-016:** [`SPEC-016-expiracao-automatica-da-reserva.md`](SPEC-016-expiracao-automatica-da-reserva.md), RF-044 a RF-046.
+- **Divergência corrigida:** o aviso de expiração ao cliente dizia sempre que o horário voltou para a busca, inclusive quando ele expirava por falta da antecedência P-04 (RF-044). O texto agora segue o destino real do horário.
+- **Evidência:** `T-EXPIRA-05` a `08` (leitura pela rota, avisos, autoconfirmação com ator sistema, idempotência), além de `T-EXPIRA-01` a `04`. Questões: OPEN-19 e o intervalo de 15 s da rota.
+
+### Etapa 52 — Rascunho e conferência da SPEC-017 · 2026-10-30
+
+- **SPEC-017:** [`SPEC-017-cancelamento-com-penalidade.md`](SPEC-017-cancelamento-com-penalidade.md), RF-048 a RF-051.
+- **Divergência corrigida (RF-051):** o aviso à outra parte trazia faixa e motivo, mas não o efeito na reputação de quem cancelou. O horário cancelado pelo prestador passa por `moverHorario()` (etapa 42) em vez de repetir a auditoria.
+- **Evidência:** `T-CANCEL-08` a `11`, além dos `T-CANCEL-01` a `07` e `01i` a `05i`. Questões: cancelamento pelo admin (OPEN-09), OPEN-18 e a tensão RN-19 × RN-21 sobre a faixa livre.
+
+### Etapa 53 — Rascunho e conferência da SPEC-018 · 2026-10-30
+
+- **SPEC-018:** [`SPEC-018-revisao-por-ocorrencias.md`](SPEC-018-revisao-por-ocorrencias.md), RF-056.
+- **Divergência corrigida:** `verificarOcorrenciasDoPrestador()` não conferia o perfil. Os três chamadores atuais só a usam para prestador, mas, chamada para um cliente com três ausências, ela o moveria para `EM_REVISAO` com o aviso "publicação de horários suspensa". A RN-21 é regra do prestador; a função agora ignora outros perfis.
+- **Evidência:** `T-REVISAO-03` a `05`, além de `T-REVISAO-01`. Questões: "consecutivas" × acumuladas, e se a reativação pelo admin zera a contagem.
+
+### Etapa 54 — Rascunho e conferência da SPEC-019 · 2026-10-30
+
+- **SPEC-019:** [`SPEC-019-registro-de-no-show.md`](SPEC-019-registro-de-no-show.md), RF-052 a RF-054.
+- **Divergência corrigida (RF-052):** o reporte sobre agendamento fora de `CONFIRMADO` era recusado sem informar a janela válida; agora a recusa traz a janela, como nos outros dois casos.
+- **Questão nova, para a Trilha A:** as faixas permitem P-17 (conclusão automática) menor que P-16b (prazo de no-show); a rotina então conclui o agendamento com a janela de no-show ainda aberta. Proposta registrada na §13 da SPEC-019, sem alteração de código, porque a regra é da SPEC-020, aprovada.
+- **Evidência:** `T-NOSHOW-05` a `07`, além de `T-NOSHOW-01i` a `03`.
+
+### Etapa 55 — Rascunho e conferência da SPEC-022 · 2026-10-30
+
+- **SPEC-022:** [`SPEC-022-abertura-de-disputa.md`](SPEC-022-abertura-de-disputa.md), RF-055 e RF-071 a RF-073.
+- **Divergências corrigidas:** (1) INV-12 (comissão de agendamento em disputa nunca `EFETIVADO`) só existia no domínio; gatilhos `comissao_sem_efetivar_em_disputa_insert/update` em `schema.sql`, com seed refeito do zero. (2) RF-072: sem motivo e sem evidência, a recusa citava só o motivo; agora cita os dois.
+- **Evidência:** `T-DISPUTA-08` a `11`. Questões: OPEN-07 (o código pratica "abre quem acusa por último"), OPEN-17 e evidência em arquivo.
+- **Verificação:** `npm test`, 425/425.
+
+### Etapa 56 — Rascunho e conferência da SPEC-023 · 2026-10-30
+
+- **SPEC-023:** [`SPEC-023-fila-e-resolucao-de-disputas.md`](SPEC-023-fila-e-resolucao-de-disputas.md), RF-074 a RF-077.
+- **Conferência:** o código atende a RN-27 em todos os desfechos, inclusive na acusação mútua. Sem divergência nesta Spec; a auditoria do agendamento na resolução já fora corrigida na etapa 42.
+- **Evidência:** `T-DISPUTA-12` a `15`, além de `03` a `07c`. Questões: assumir (`EM_ANALISE`) é opcional no código; mínimo de 15 caracteres da justificativa.
+
+### Etapa 57 — Rascunho e conferência da SPEC-025 · 2026-10-30
+
+- **SPEC-025:** [`SPEC-025-revisao-administrativa-e-suspensao.md`](SPEC-025-revisao-administrativa-e-suspensao.md), RF-078, RF-079 e RN-28.
+- **Divergência corrigida (UC-13 passo 2):** o dossiê carregava as disputas da conta sem exibi-las e não tinha a taxa de expiração que o passo lista. Agora há a seção "Disputas" e a métrica "Sem resposta" (`respostasDoPrestador()` conta as expiradas). A taxa não tem limiar: o sinal de baixa responsividade segue na OPEN-19.
+- **Evidência:** `T-SUSPENSAO-01` a `03`, além dos testes de T-55 e da SPEC-002. Questões: OPEN-19, suspensão de conta de admin e reservas pendentes de prestador suspenso.
+
+### Etapa 58 — Rascunho e conferência da SPEC-027 · 2026-10-30
+
+- **SPEC-027:** [`SPEC-027-administracao-dos-parametros.md`](SPEC-027-administracao-dos-parametros.md), RN-00 e RNF-10 (sem RF próprio, OPEN-09).
+- **Divergência corrigida:** o limite de interpretações por dia aparecia como `RNF-13` no catálogo, na tela e na mensagem de faixa; desde a spec v0.1.7 ele é o parâmetro P-21. A recusa por excesso continua citando o RNF-13, que é o requisito.
+- **Evidência:** `T-PARAM-10` lê a tabela da §6.1 do `docs/spec.md` e exige formulário para cada parâmetro global; `T-PARAM-11` confere o P-21. Questões: OPEN-09 e o desdobramento de P-11 em P-11a/P-11b na spec.
+
+### Etapa 59 — Rascunho e conferência da SPEC-028 · 2026-10-30
+
+- **SPEC-028:** [`SPEC-028-busca-por-linguagem-natural.md`](SPEC-028-busca-por-linguagem-natural.md), RF-032 a RF-038.
+- **Divergência corrigida (RN-30, RF-035, RF-036):** com confiança baixa ou categoria fora do catálogo, `/buscar` avisava "confira os filtros", mas executava a busca e listava os horários; com a categoria desconhecida, listava todas as categorias. Os testes de aplicação (`T-LLM-02/03`) só conferiam a flag. Agora a tela mostra o entendido e não lista nada até o cliente buscar com os filtros ("Buscar com estes filtros") ou escolher a categoria no formulário, que sai sem o texto para não reinterpretar.
+- **Divergência corrigida (RN-32):** `registrarConfirmacao()` existia sem nenhum chamador; o desfecho ficava o palpite da criação. A busca seguinte à confirmação compara os filtros usados com os propostos e grava `ACEITA` ou `CORRIGIDA`, e só para o dono da interpretação.
+- **Evidência:** `T-LLM-07` a `10` pela tela, conferido no navegador a 375 px. Questões: desfecho de quem abandona a confirmação, e a reinterpretação a cada filtro.
+
+### Etapa 60 — Rascunho e conferência da SPEC-029 · 2026-10-30
+
+- **SPEC-029:** [`SPEC-029-trilha-de-auditoria-consultavel.md`](SPEC-029-trilha-de-auditoria-consultavel.md), RF-084 (consulta) e RF-085.
+- **Divergências corrigidas:** (1) a varredura do INV-13 (etapa 42) não espiava o lançamento de comissão, que o RF-084 lista; incluída, e passou sem correção de código. (2) As interpretações na tela da auditoria não mostravam região nem janela, que são o que permite refazer a busca que o cliente viu (RF-085); as colunas entraram.
+- **Evidência:** `T-AUDIT-09` (todas as oito ações do admin, com ele como ator) e `T-AUDIT-10`. Questões: paginação e retenção da trilha.
+- **Fim da série das etapas 46 a 60:** 15 Specs escritas como rascunho e conferidas; nenhuma aprovada; todas as issues com `Refs`.

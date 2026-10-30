@@ -99,7 +99,13 @@ export function offsetFusoMin(instante = agora()) {
 export function deLocalParaUtc(data, hora) {
   const [ano, mes, dia] = String(data).split('-').map(Number);
   const [h, min] = String(hora).split(':').map(Number);
-  if ([ano, mes, dia, h, min].some((n) => Number.isNaN(n))) {
+  // Date.UTC aceita 25:00 ou 31/02 e transborda para o dia seguinte: sem esta
+  // checagem, um horario digitado errado era publicado em outra data.
+  const diasNoMes = new Date(Date.UTC(ano, mes, 0)).getUTCDate();
+  const valido = [ano, mes, dia, h, min].every(Number.isInteger)
+    && mes >= 1 && mes <= 12 && dia >= 1 && dia <= diasNoMes
+    && h >= 0 && h <= 23 && min >= 0 && min <= 59;
+  if (!valido) {
     throw new TypeError(`Data ou hora inválida: "${data} ${hora}"`);
   }
   const ingenuo = Date.UTC(ano, mes - 1, dia, h, min);

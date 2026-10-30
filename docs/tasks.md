@@ -85,11 +85,11 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
 | T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Filtros, elegibilidade e janela; `T-BUSCA-03/03b` | ✅ |
-| T-29 | Ordenação com desempate determinístico | RF-031 | Desempate por ID estável; `T-BUSCA-04` | 🔄 |
+| T-29 | Ordenação com desempate determinístico | RF-031 | Desempate por ID estável em todos os critérios; `T-BUSCA-04/04b` | ✅ |
 | T-30 | Reserva com preço travado e bloqueio do horário | RF-039, RF-040, RN-04 | Valor travado não muda depois | ✅ |
 | T-31 | Exclusividade sob concorrência | RF-041, INV-01 | Segunda reserva simultânea é recusada | ✅ |
 | T-32 | Limite de reservas simultâneas por reputação | RF-047, RN-12 | Cliente restrito é barrado na segunda reserva | ✅ |
-| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Confirmação e recusa validada liberam/ocupam; `T-AGENDAMENTO-06/07` | 🔄 |
+| T-33 | Confirmação e recusa pelo prestador | RF-042 a RF-044 | Confirmação ocupa, recusa exige motivo, notifica e libera ou expira; `T-AGENDAMENTO-06/07/07b/07c` | ✅ |
 | T-34 | Expiração automática com as duas políticas | RF-045, RF-046, RN-10 | `LIBERAR` devolve à busca; `AUTOCONFIRMAR` confirma | ✅ |
 | T-35 | ADR-004 (autenticação) | QA-04 | Registrado com limites conhecidos | ✅ |
 
@@ -119,21 +119,21 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 |---|---|---|---|:--:|
 | T-51 | Abertura de disputa com evidência obrigatória | RF-071 a RF-073, RN-26 | Sem evidência ou fora do prazo é recusada | ✅ |
 | T-52 | Retenção de comissão e suspensão de penalidades | RN-17, INV-12 | Lançamento vira `RETIDO` ao abrir disputa | ✅ |
-| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação e destaque fora do SLA; `T-DISPUTA-07` | 🔄 |
+| T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação por SLA e valor, destaque fora do SLA na tela; `T-DISPUTA-07/07b/07c` | ✅ |
 | T-54 | Resolução com os quatro desfechos | RF-076, RF-077, RN-27 | `MANTIDO`/`REVERTIDO`/`PARCIAL`/`ARQUIVADO` com efeitos distintos | ✅ |
-| T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Decisão exige justificativa e notifica o titular | 🔄 |
+| T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Fila com motivo, reputação e ocorrências; decisão com justificativa e aviso; `T-CONTA-REVISAO-01/01b/02` | ✅ |
 | T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |
 | T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras | 🔄 |
-| T-58 | Tela de parâmetros do domínio | RN-00 | Alterável sem deploy, com faixa validada | 🔄 |
+| T-58 | Tela de parâmetros do domínio | RN-00 | Alteração pela tela vale na hora, fora da faixa é recusada, auditoria atômica; `T-PARAM-TELA-01/02`, `T-PARAM-09` | ✅ |
 | T-59 | Contrato do provedor de LLM + validação de saída | RN-29, RNF-12 | Saída fora do formato vira `FALHA`, não exceção | ✅ |
 | T-60 | Provedor simulado determinístico | ADR-003 | Sistema funciona sem chave e sem rede | ✅ |
-| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout configurável | 🔄 |
+| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout sem repetição; `T-LLM-ANTHROPIC-01/02/03` | ✅ |
 | T-62 | Limiar de confiança e confirmação de filtros | RF-035, RF-036, RN-30 | Confiança baixa ou categoria inválida pedem confirmação | ✅ |
 | T-63 | Degradação segura na falha do LLM | RF-037, RF-038, RN-31 | Busca por filtros continua funcionando | ✅ |
 | T-64 | Persistência e telemetria das interpretações | RF-034, RN-32 | Painel mostra taxa de sucesso e de correção | ✅ |
 | T-65 | ADR-003 (uso de LLM) | QA-03 | Registrado com fronteira e limites | ✅ |
-| T-66 | Notificações por evento e central do usuário | RF-082, RF-083 | Toda transição relevante gera aviso | 🔄 |
-| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Toda transição registrada com ator e correlação | 🔄 |
+| T-66 | Notificações por evento e central do usuário | RF-082, RF-083 | As 9 categorias do RF-082 com aviso; central ordenada, isolada, com CSRF e escape; `T-NOTIF-MATRIZ-01/02/03`, `T-NOTIF-03/04/05/07` | ✅ |
+| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Varredura do INV-13 por gatilho em todos os fluxos; tela com ator e correlação; `T-AUDIT-05/06/07/08` | ✅ |
 
 ## Marco M4 — Fechamento
 

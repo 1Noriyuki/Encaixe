@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
-| Data | 2026-10-20 |
-| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. Seguem abertas as questões da §13: matriz de eventos e destinatários, atomicidade, paginação e OPEN-03 |
+| Versão | 1.1.0 |
+| Data | 2026-10-30 |
+| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. **Código conferido** em 2026-10-30 (v1.1.0, etapas 41 e 44): CA-01 a CA-07, INV-001 a INV-006 e RNFs com teste, evidência na §12. **Não concluída:** a DoD 1 exige a equipe aprovar a matriz de eventos e decidir atomicidade e paginação (§13, com proposta e fatos anotados) |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 4 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · plan §2 e §5 |
 
@@ -199,11 +199,28 @@ Casos propostos para execução após aprovação da Spec.
 | `T-NOTIF-07 \| C-VIII: conteudo da notificacao e escapado na tela` | CA-07, INV-006 |
 | `T-NOTIF-08 \| RNF-08: instantes de criacao e leitura estao em UTC` | RNF-08 |
 
+**Evidência (registro etapas 41 e 44, 2026-10-30).** Testes em `tests/integracao/notificacoes.test.js`, todos
+passando. Os casos 02, 06 e 08 da tabela acima foram absorvidos pelos testes de matriz, que cobrem as nove
+categorias do RF-082 de uma vez; nenhum ID foi reaproveitado com outro sentido.
+
+| Critério | Evidência |
+|---|---|
+| CA-01, INV-001 | `T-NOTIF-MATRIZ-01/02/03` (cada categoria do RF-082 gera aviso para a parte afetada); `T-NOTIF-01` (sem destinatário nada é gravado; o banco recusa usuário inexistente por chave estrangeira) |
+| CA-02 | `T-NOTIF-MATRIZ-01` (conclusão e resolução de disputa) e `T-NOTIF-MATRIZ-02` (expiração): um aviso em cada conta |
+| CA-03, INV-002, INV-003 | `T-NOTIF-03`: só os próprios, mais recente primeiro; empate pelo id |
+| CA-04, INV-004 | `T-NOTIF-04`: sem CSRF recusa; com CSRF grava `lida_em` só nos próprios não lidos; repetir não regrava |
+| CA-05 | `T-NOTIF-05` |
+| CA-06, INV-005 | `T-NOTIF-MATRIZ-03`: aprovação, reprovação e suspensão sem `agendamento_id` |
+| CA-07, INV-006 | `T-NOTIF-07` |
+| RNF-01 | `T-NOTIF-09`: avisos e leitura sobrevivem à reabertura de um banco em arquivo |
+| RNF-08 | `T-NOTIF-MATRIZ-*` (formato UTC de `criada_em` em todo aviso) e `T-NOTIF-04` (`lida_em` em UTC) |
+| §13 atomicidade (fato, não decisão) | `T-NOTIF-10`: hoje o aviso é gravado na mesma transação da mudança de estado; falhar o aviso desfaz a recusa |
+
 ## 13. Questões em aberto
 
-- **Matriz de eventos e destinatários:** RF-082 enumera categorias de transição, mas não define exaustivamente cada tipo, texto e destinatário; validar a matriz com as Specs produtoras de eventos.
-- **Atomicidade:** confirmar se a gravação de cada notificação deve compartilhar a mesma transação da mudança de estado; a baseline não enuncia a exigência explicitamente.
-- **Paginação e empate:** RF-083 não define limite de itens nem desempate quando `criada_em` é idêntico.
+- **Matriz de eventos e destinatários:** RF-082 enumera categorias de transição, mas não define exaustivamente cada tipo, texto e destinatário; validar a matriz com as Specs produtoras de eventos. *Proposta (etapa 41):* a matriz que o código pratica, transcrita no registro, em que quem age recebe a resposta na tela e a outra parte recebe o aviso.
+- **Atomicidade:** confirmar se a gravação de cada notificação deve compartilhar a mesma transação da mudança de estado; a baseline não enuncia a exigência explicitamente. *Fato (etapa 44):* hoje compartilha (`T-NOTIF-10`); um aviso que falha desfaz a transição.
+- **Paginação e empate:** RF-083 não define limite de itens nem desempate quando `criada_em` é idêntico. *Premissa do agente (etapa 41), a confirmar:* desempate por `id` decrescente. O limite praticado é de 50 avisos na central, sem paginação.
 - **OPEN-03:** drivers arquiteturais continuam derivados de spec §1.5 e da constituição, sem catálogo formal aprovado.
 
 ## 14. Definition of Done

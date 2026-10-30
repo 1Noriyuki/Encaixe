@@ -31,7 +31,7 @@ import {
   faixaDeCancelamento, penalidadeDeCancelamento, previaDeCancelamento as previaDominio, FAIXA,
 } from '../dominio/cancelamento.js';
 import {
-  assegurarJanelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
+  assegurarJanelaNoShow, janelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
   prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAvaliacaoDo, prazoAutoConclusao,
 } from '../dominio/prazos.js';
 import { calcularComissao, competenciaDe } from '../dominio/comissao.js';
@@ -168,8 +168,7 @@ function aplicarConfirmacao(ag, agora, atorId, acao) {
     autoconclusao_prazo_em: prazoCongelado,
   });
 
-  assegurarTransicao('horario', ag.horario_estado, 'OCUPADO');
-  horariosRepo.atualizarEstado(ag.horario_id, 'OCUPADO');
+  moverHorario({ id: ag.horario_id, estado: ag.horario_estado }, 'OCUPADO', atorId, 'HORARIO_OCUPADO');
 
   auditoria.registrar({
     atorId, acao, entidade: 'agendamento', entidadeId: ag.id,
@@ -211,6 +210,14 @@ export function recusar({ prestadorId, agendamentoId, motivo }) {
     const ag = carregarDoPrestador(agendamentoId, prestadorId);
     if (ag.estado !== 'PENDENTE_CONFIRMACAO') {
       throw new ErroDeRegra('RN-11', 'Só é possível recusar uma reserva ainda pendente.');
+    }
+    // UC-06 1a: esgotado o prazo, o desfecho e da politica P-02 (UC-07), nao do prestador.
+    // Pela rota a rotina ja teria expirado a reserva; aqui a regra vale mesmo sem ela.
+    if (!antesDe(agora, ag.prazo_confirmacao_em)) {
+      throw new ErroDeRegra(
+        'RN-10',
+        `O prazo de confirmação terminou em ${formatarDataHora(ag.prazo_confirmacao_em)}.`,
+      );
     }
 
     assegurarTransicao('agendamento', ag.estado, 'RECUSADO');
@@ -257,6 +264,19 @@ function liberarHorario(ag, agora, p, atorId) {
   return destino;
 }
 
+/**
+ * INV-13 - o horario muda junto com o agendamento, e a mudanca dele tambem
+ * entra na trilha: sem isso, a confirmacao e a conclusao mexiam no horario em
+ * silencio.
+ */
+function moverHorario(horario, destino, atorId, acao) {
+  assegurarTransicao('horario', horario.estado, destino);
+  horariosRepo.atualizarEstado(horario.id, destino);
+  auditoria.registrar({
+    atorId, acao, entidade: 'horario', entidadeId: horario.id, de: horario.estado, para: destino,
+  });
+}
+
 // =====================================================================
 // UC-07 - expiracao automatica (chamada pela rotina temporal)
 // =====================================================================
@@ -295,8 +315,11 @@ export function resolverExpiracao(ag) {
       tipo: 'RESERVA_EXPIRADA',
       titulo: 'Sua reserva expirou',
       agendamentoId: atual.id,
+      // RF-044: o horario so volta para a busca se ainda resta P-04.
       mensagem: `${atual.nome_exibicao ?? atual.prestador_nome} não respondeu no prazo. `
-        + 'O horário voltou para a busca e você não foi penalizado.',
+        + (destinoHorario === 'PUBLICADO'
+          ? 'O horário voltou para a busca e você não foi penalizado.'
+          : 'Já não há antecedência para reservar este horário de novo. Você não foi penalizado.'),
     });
     notificar(atual.prestador_id, {
       tipo: 'RESERVA_EXPIRADA',
@@ -359,13 +382,7 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
     if (papel === 'CLIENTE') {
       liberarHorario(ag, agora, p, usuarioId);
     } else {
-      const horario = horariosRepo.porId(ag.horario_id);
-      assegurarTransicao('horario', horario.estado, 'CANCELADO');
-      horariosRepo.atualizarEstado(horario.id, 'CANCELADO');
-      auditoria.registrar({
-        atorId: usuarioId, acao: 'HORARIO_CANCELADO', entidade: 'horario',
-        entidadeId: horario.id, de: horario.estado, para: 'CANCELADO',
-      });
+      moverHorario(horariosRepo.porId(ag.horario_id), 'CANCELADO', usuarioId, 'HORARIO_CANCELADO');
     }
 
     reputacao.aplicarEvento({
@@ -382,14 +399,17 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
       detalhe: { papel, faixa, delta: penalidade.delta, antecedenciaMin: antecedencia },
     });
 
+    // RF-051: a outra parte sabe o motivo, a faixa e o efeito na reputacao de quem cancelou.
+    const quem = papel === 'CLIENTE' ? 'do cliente' : 'do prestador';
+    const efeito = penalidade.delta === 0 ? 'nenhum' : `${penalidade.delta} pontos`;
     const outraParte = papel === 'CLIENTE' ? ag.prestador_id : ag.cliente_id;
     notificar(outraParte, {
       tipo: 'AGENDAMENTO_CANCELADO',
       titulo: `Agendamento cancelado pelo ${papel === 'CLIENTE' ? 'cliente' : 'prestador'}`,
       agendamentoId: ag.id,
       mensagem: `${ag.servico_nome} de ${formatarDataHora(ag.inicio)} foi cancelado. `
-        + `Faixa aplicada: ${penalidade.rotulo}.`
-        + (String(motivo ?? '').trim() ? ` Motivo: ${motivo}.` : ''),
+        + `Faixa aplicada: ${penalidade.rotulo}. Efeito na reputação ${quem}: ${efeito}.`
+        + (String(motivo ?? '').trim() ? ` Motivo: ${String(motivo).trim()}` : ''),
     });
 
     return { agendamento: agendamentosRepo.porId(ag.id), penalidade, papel };
@@ -419,7 +439,14 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     // RF-055 - acusacao mutua: quem ja foi acusado responde acusando de volta.
     const jaAcusado = ag.estado === `NO_SHOW_${papel}`;
     if (!jaAcusado && ag.estado !== 'CONFIRMADO') {
-      throw new ErroDeRegra('RN-20', `Não é possível registrar ausência neste estado (${ag.estado}).`);
+      // RF-052: a recusa informa a janela valida, inclusive quando o motivo e o estado.
+      const { abreEm, fechaEm } = janelaNoShow(ag.inicio, ag.duracao_min, p);
+      throw new ErroDeRegra(
+        'RN-20',
+        `Não é possível registrar ausência neste estado (${ag.estado}). O registro vale só para agendamento `
+        + `confirmado, de ${formatarDataHora(abreEm)} a ${formatarDataHora(fechaEm)}.`,
+        { abreEm, fechaEm },
+      );
     }
 
     assegurarJanelaNoShow(ag.inicio, ag.duracao_min, agora, p);
@@ -437,10 +464,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     });
 
     const horario = horariosRepo.porId(ag.horario_id);
-    if (horario.estado === 'OCUPADO') {
-      assegurarTransicao('horario', horario.estado, 'ENCERRADO');
-      horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
-    }
+    if (horario.estado === 'OCUPADO') moverHorario(horario, 'ENCERRADO', usuarioId, 'HORARIO_ENCERRADO');
 
     const deltaNoShow = p.delta_reputacao_noshow ?? DELTA_NO_SHOW;
     reputacao.aplicarEvento({
@@ -577,10 +601,7 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
   });
 
   const horario = horariosRepo.porId(ag.horario_id);
-  if (horario.estado === 'OCUPADO') {
-    assegurarTransicao('horario', horario.estado, 'ENCERRADO');
-    horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
-  }
+  if (horario.estado === 'OCUPADO') moverHorario(horario, 'ENCERRADO', atorId, 'HORARIO_ENCERRADO');
 
   const lancamento = apurarComissao(ag, agora, atorId);
 
