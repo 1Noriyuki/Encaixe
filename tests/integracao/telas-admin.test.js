@@ -223,7 +223,7 @@ test('T-AUDIT-08 | RF-084/RNF-07: a tela da auditoria mostra ator e correlacao e
     'registros de outra operacao ficam de fora');
 });
 
-test('T-PARAM-09 | RN-00: falha na auditoria desfaz a alteracao do parametro', () => {
+test('T-PARAM-12 | RN-00: falha na auditoria desfaz a alteracao do parametro', () => {
   const c = cenarioBasico();
   executar(
     `CREATE TRIGGER falha_auditoria_parametro BEFORE INSERT ON log_auditoria
