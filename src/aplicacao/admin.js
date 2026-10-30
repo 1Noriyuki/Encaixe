@@ -112,6 +112,41 @@ export function rastreabilidade({ limite = 100 } = {}) {
   };
 }
 
+/**
+ * RF-078 - fila de revisao de contas. O motivo do sinalizador nao e guardado
+ * na conta: sai da ultima transicao auditada para o estado atual, que ja traz
+ * a regra que a disparou (RN-21, RN-22) ou a justificativa do admin.
+ */
+export function filaDeRevisao() {
+  return usuariosRepo.contasEmRevisao().map((conta) => {
+    const entrada = auditoria.historicoDe('conta', conta.id)
+      .filter((linha) => linha.estado_novo === conta.estado_conta)
+      .reduce((ultima, linha) => (!ultima || linha.id > ultima.id ? linha : ultima), null);
+    return {
+      ...conta,
+      motivo: motivoDoSinalizador(entrada),
+      ocorrencias: social.eventosDoUsuario(conta.id)
+        .filter((e) => e.delta < 0 && !e.revertido_em).length,
+    };
+  });
+}
+
+function motivoDoSinalizador(entrada) {
+  const d = entrada?.detalhe ?? {};
+  switch (entrada?.acao) {
+    case 'CONTA_RECLASSIFICADA_POR_REPUTACAO':
+      return { regra: 'RN-22', texto: `Reputação caiu para ${d.reputacao} pontos, abaixo do limiar` };
+    case 'PRESTADOR_EM_REVISAO_POR_OCORRENCIAS':
+      return { regra: 'RN-21', texto: `${d.ocorrencias} ocorrências negativas em ${d.janelaDias} dias` };
+    case 'CONTA_SUSPENSA':
+      return { regra: 'RF-079', texto: `Suspensa pelo admin: ${d.justificativa}` };
+    case undefined:
+      return { regra: null, texto: 'Sem transição registrada na auditoria' };
+    default:
+      return { regra: null, texto: entrada.acao };
+  }
+}
+
 /** UC-13 - dossie da conta que o admin precisa para decidir. */
 export function dossieDaConta(usuarioId) {
   const resumo = usuariosRepo.resumoPublico(usuarioId);

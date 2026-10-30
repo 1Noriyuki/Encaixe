@@ -7,11 +7,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  prepararBanco, encerrar, cenarioBasico, viajarPara,
+  prepararBanco, encerrar, cenarioBasico, viajarPara, agoraDoTeste, publicarDaquiA,
 } from '../apoio/cenario.js';
 import { criarAplicacao } from '../../src/interface/http/servidor.js';
 import * as agendamentos from '../../src/aplicacao/agendamentos.js';
 import * as disputas from '../../src/aplicacao/disputas.js';
+import * as adminApp from '../../src/aplicacao/admin.js';
+import * as reputacao from '../../src/aplicacao/reputacao.js';
+import * as auditoria from '../../src/infra/auditoria.js';
+import * as notificacoes from '../../src/infra/notificacoes.js';
+import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
+import { TIPO_EVENTO } from '../../src/dominio/reputacao.js';
 import { adicionarHoras } from '../../src/dominio/tempo.js';
 
 let servidor;
@@ -88,4 +94,73 @@ test('T-DISPUTA-07c | RF-075: a fila do admin destaca a disputa fora do SLA', as
   const vencida = await pagina('/admin/disputas', novaSessao);
   assert.match(vencida, /selo-perigo">vencido/);
   assert.match(await pagina('/admin', novaSessao), /1 disputa fora do SLA/);
+});
+
+/** Derruba a reputacao do cliente abaixo do limiar de revisao (RN-22). */
+function clienteEmRevisao(c) {
+  reputacao.aplicarEvento({
+    usuarioId: c.cliente.id, tipo: TIPO_EVENTO.AJUSTE_ADMIN, delta: -35,
+    origemTipo: 'ajuste_admin', origemId: c.adminId,
+  });
+  assert.equal(usuariosRepo.porId(c.cliente.id).estado_conta, 'EM_REVISAO');
+}
+
+test('T-CONTA-REVISAO-01 | RF-078: a fila de revisao traz motivo, reputacao e ocorrencias', async () => {
+  const c = cenarioBasico();
+  clienteEmRevisao(c);
+
+  const [conta] = adminApp.filaDeRevisao();
+  assert.equal(conta.id, c.cliente.id);
+  assert.equal(conta.reputacao, usuariosRepo.porId(c.cliente.id).reputacao);
+  assert.equal(conta.motivo.regra, 'RN-22');
+  assert.equal(conta.ocorrencias, 1);
+
+  const tela = await pagina('/admin/contas', await entrar('admin@teste.dev'));
+  assert.match(tela, /Motivo do sinalizador/);
+  assert.ok(tela.includes(`Reputação caiu para ${conta.reputacao} pontos`));
+  assert.match(tela, /selo-regra">RN-22/);
+});
+
+test('T-CONTA-REVISAO-01b | RF-078/RN-21: prestador sinalizado por ocorrencias mostra a contagem e o historico', async () => {
+  const c = cenarioBasico({ horasAteHorario: 10 });
+  const lista = [c.horario, ...[12, 14].map((h) => publicarDaquiA(c.prestador.id, c.servico.id, c.regua.id, h))];
+  for (const horario of lista) {
+    const ag = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: horario.id });
+    agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: ag.id });
+    const volta = agoraDoTeste();
+    viajarPara(adicionarHoras(horario.inicio, -1)); // faixa TOTAL
+    agendamentos.cancelar({ usuarioId: c.prestador.id, agendamentoId: ag.id });
+    viajarPara(volta);
+  }
+
+  const conta = adminApp.filaDeRevisao().find(({ id }) => id === c.prestador.id);
+  assert.equal(conta.estado_conta, 'EM_REVISAO');
+  assert.equal(conta.motivo.regra, 'RN-21');
+  assert.match(conta.motivo.texto, /^3 ocorrências negativas em \d+ dias$/);
+  assert.equal(conta.ocorrencias, 3);
+
+  const dossie = await pagina(`/admin/contas/${c.prestador.id}`, await entrar('admin@teste.dev'));
+  assert.match(dossie, /Histórico da conta/);
+  assert.match(dossie, /PRESTADOR_EM_REVISAO_POR_OCORRENCIAS/);
+});
+
+test('T-CONTA-REVISAO-02 | RF-079: decisao pela tela exige justificativa, aplica e notifica o titular', async () => {
+  const c = cenarioBasico();
+  clienteEmRevisao(c);
+  const cookie = await entrar('admin@teste.dev');
+  const caminho = `/admin/contas/${c.cliente.id}/decidir`;
+
+  await enviar(caminho, cookie, { decisao: 'ATIVO', justificativa: 'curta' });
+  assert.equal(usuariosRepo.porId(c.cliente.id).estado_conta, 'EM_REVISAO');
+
+  const texto = 'Ausencias justificadas por atestado medico.';
+  const r = await enviar(caminho, cookie, { decisao: 'ATIVO', justificativa: texto });
+  assert.equal(r.status, 302);
+  assert.equal(usuariosRepo.porId(c.cliente.id).estado_conta, 'ATIVO');
+
+  const aviso = notificacoes.listar(c.cliente.id).find((n) => n.tipo === 'CONTA_REATIVADA');
+  assert.equal(aviso.mensagem, texto);
+  const registro = auditoria.historicoDe('conta', c.cliente.id).find((l) => l.acao === 'CONTA_REATIVADA');
+  assert.equal(registro.ator_id, c.adminId);
+  assert.equal(registro.detalhe.justificativa, texto);
 });

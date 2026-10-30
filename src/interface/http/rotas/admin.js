@@ -398,9 +398,37 @@ function tabelaDeContas(lista) {
     </div>`;
 }
 
+/** RF-078 - a fila de revisao mostra por que cada conta foi sinalizada. */
+function tabelaDeRevisao(lista) {
+  return html`
+    <div class="cartao tabela-rolagem">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Nome</th><th scope="col">Motivo do sinalizador</th>
+            <th scope="col" class="direita">Reputação</th>
+            <th scope="col" class="direita">Ocorrências</th><th scope="col">Estado</th>
+            <th scope="col"><span class="so-leitor">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${juntar(lista.map((u) => html`
+            <tr>
+              <td>${u.nome_exibicao ?? u.nome}<div class="mini fraco">${u.email}</div></td>
+              <td>${u.motivo.texto} ${seloRegra(u.motivo.regra)}</td>
+              <td class="direita num">${u.reputacao ?? '—'}</td>
+              <td class="direita num">${u.ocorrencias}</td>
+              <td>${selo(u.estado_conta)}</td>
+              <td class="direita"><a class="pequeno" href="/admin/contas/${u.id}">abrir</a></td>
+            </tr>`))}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 function telaContas(ctx) {
   const pendentes = usuariosRepo.prestadoresPendentes();
-  const revisao = usuariosRepo.contasEmRevisao();
+  const revisao = adminApp.filaDeRevisao();
   const prestadores = usuariosRepo.listarPorPerfil('PRESTADOR');
   const clientes = usuariosRepo.listarPorPerfil('CLIENTE');
 
@@ -412,7 +440,7 @@ function telaContas(ctx) {
     </div>
 
     ${revisao.length
-    ? html`<h2 class="sem-topo">Em revisão ou suspensas (${revisao.length})</h2>${tabelaDeContas(revisao)}`
+    ? html`<h2 class="sem-topo">Em revisão ou suspensas (${revisao.length})</h2>${tabelaDeRevisao(revisao)}`
     : cru('')}
     ${pendentes.length
     ? html`<h2>Aguardando aprovação (${pendentes.length})</h2>${tabelaDeContas(pendentes)}`
@@ -517,6 +545,33 @@ function dossie(ctx) {
       </div>
       ${notaDeRegra('INV-08', 'A reputação é a soma destes eventos dentro da janela móvel, truncada ao '
       + 'intervalo de 0 a 100 — nunca um campo editado à mão.')}`}
+
+    <h2>Histórico da conta</h2>
+    ${d.historico.length === 0
+    ? vazio('Nenhuma transição registrada para esta conta.')
+    : html`
+      <div class="cartao tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Quando</th><th scope="col">Ação</th><th scope="col">Transição</th>
+              <th scope="col">Quem</th><th scope="col">Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${juntar(d.historico.map((l) => html`
+              <tr>
+                <td class="mini">${formatarDataHora(l.criado_em)}</td>
+                <td class="mono">${l.acao}</td>
+                <td class="mini">${l.estado_anterior ?? '—'} → ${l.estado_novo ?? '—'}</td>
+                <td class="mini">${l.ator_nome ?? 'sistema'}</td>
+                <td class="mini">${l.detalhe?.justificativa ?? l.detalhe?.regra ?? '—'}</td>
+              </tr>`))}
+          </tbody>
+        </table>
+      </div>
+      ${notaDeRegra('RF-078', 'O motivo do sinalizador e cada decisão sobre a conta saem da trilha de '
+      + 'auditoria, com quem decidiu e quando.')}`}
   `, { titulo: d.nome_exibicao ?? d.nome });
 }
 

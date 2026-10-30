@@ -725,3 +725,10 @@
 - **Conferência:** `moderacaoRepo.filaDeDisputas()` ordena por `prazo_sla_em` e, no empate, por `valor_travado` decrescente (RF-074); `disputas.fila()` calcula `foraDoSla` e a tela `/admin/disputas` usa o selo de perigo (RF-075).
 - **Evidência nova:** `T-DISPUTA-07b` abre duas disputas no mesmo instante, com a de maior valor e id maior, e exige que ela venha primeiro. `T-DISPUTA-07c`, no novo `tests/integracao/telas-admin.test.js`, sobe o servidor e prova que a fila só mostra o selo "vencido" depois do prazo e que o painel conta a disputa fora do SLA.
 - **Sem alteração de código nem de spec.**
+
+### Etapa 38 — Fila de revisão de contas e decisão do admin (T-55) · 2026-10-30
+
+- **Conferência:** `decidirSobreConta()` já atendia RF-079 (justificativa de 10 caracteres, transição validada, auditoria com o admin e aviso ao titular com o texto). A fila não atendia RF-078: listava reputação e estado, **sem o motivo do sinalizador nem as ocorrências**, e o dossiê carregava o histórico da conta sem exibi-lo.
+- **Correção (código, não spec):** `admin.filaDeRevisao()` compõe, na aplicação, o motivo a partir da última transição auditada para o estado atual (RN-22 por reputação, RN-21 por ocorrências, RF-079 por suspensão do admin) e a contagem de eventos negativos não revertidos. A tela `/admin/contas` ganhou as colunas "Motivo do sinalizador" e "Ocorrências"; o dossiê, a seção "Histórico da conta".
+- **Evidência:** `T-CONTA-REVISAO-01` (RN-22, aplicação e tela), `T-CONTA-REVISAO-01b` (RN-21 com três cancelamentos, contagem e histórico no dossiê) e `T-CONTA-REVISAO-02` (decisão pela tela recusada sem justificativa, aceita com ela, auditada e notificada).
+- **Verificação:** `npm test`, 345/345.
