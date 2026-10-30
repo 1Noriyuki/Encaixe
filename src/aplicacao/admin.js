@@ -155,6 +155,10 @@ function motivoDoSinalizador(entrada) {
   }
 }
 
+function percentual(parte, total) {
+  return total > 0 ? Math.round((parte / total) * 100) : 0;
+}
+
 /** UC-13 - dossie da conta que o admin precisa para decidir. */
 export function dossieDaConta(usuarioId) {
   const resumo = usuariosRepo.resumoPublico(usuarioId);
@@ -165,9 +169,11 @@ export function dossieDaConta(usuarioId) {
 
   return {
     ...resumo,
+    // UC-13 passo 2: o admin ve tambem a taxa de expiracao (sem limiar: OPEN-19).
     recusas: respostas && {
       ...respostas,
-      taxa: respostas.recebidas > 0 ? Math.round((respostas.recusadas / respostas.recebidas) * 100) : 0,
+      taxa: percentual(respostas.recusadas, respostas.recebidas),
+      taxaExpiracao: percentual(respostas.expiradas, respostas.recebidas),
     },
     eventos: social.eventosDoUsuario(usuarioId, { limite: 30 }),
     historico: auditoria.historicoDe('conta', usuarioId),

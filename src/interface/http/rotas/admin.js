@@ -476,7 +476,8 @@ function dossie(ctx) {
         ${metrica('Ausências', d.noshows, `${d.taxa_noshow}% dos encerrados`)}
         ${metrica('Cancelamentos', d.cancelamentos)}
         ${d.recusas
-    ? metrica('Recusas', d.recusas.recusadas, `${d.recusas.taxa}% das ${d.recusas.recebidas} reservas recebidas`)
+    ? html`${metrica('Recusas', d.recusas.recusadas, `${d.recusas.taxa}% das ${d.recusas.recebidas} reservas recebidas`)}
+      ${metrica('Sem resposta', d.recusas.expiradas, `${d.recusas.taxaExpiracao}% expiraram sem confirmação`)}`
     : cru('')}
       </div>
       <hr class="divisor">
@@ -520,6 +521,32 @@ function dossie(ctx) {
       </form>
       ${notaDeRegra('RF-079', 'Sair de EM_REVISAO ou de SUSPENSO exige decisão do admin com justificativa: '
     + 'a reputação sozinha nunca reabilita uma conta bloqueada.')}`}
+
+    <h2>Disputas</h2>
+    ${d.disputas.length === 0
+    ? vazio('Nenhuma disputa envolvendo esta conta.')
+    : html`
+      <div class="cartao tabela-rolagem">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">#</th><th scope="col">Aberta em</th><th scope="col">Motivo</th>
+              <th scope="col">Estado</th><th scope="col"><span class="so-leitor">Ações</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${juntar(d.disputas.map((x) => html`
+              <tr>
+                <td class="num">${x.id}</td>
+                <td class="mini">${formatarDataHora(x.aberta_em)}</td>
+                <td>${disputas.MOTIVOS[x.motivo] ?? x.motivo}</td>
+                <td>${selo(x.estado)}${x.desfecho
+    ? html`<div class="mini fraco">${disputas.DESFECHOS[x.desfecho]}</div>` : cru('')}</td>
+                <td class="direita"><a class="pequeno" href="/admin/disputas/${x.id}">abrir</a></td>
+              </tr>`))}
+          </tbody>
+        </table>
+      </div>`}
 
     <h2>Eventos de reputação</h2>
     ${d.eventos.length === 0

@@ -99,11 +99,12 @@ export function doPrestador(prestadorId, { estados = null } = {}) {
 }
 
 /** RN-12 - quantas reservas o cliente mantem em aberto agora. */
-/** RN-11 - reservas que o prestador recebeu e quantas recusou. */
+/** RN-11 / UC-13 - reservas que o prestador recebeu, quantas recusou e quantas deixou expirar. */
 export function respostasDoPrestador(prestadorId) {
   return um(
     `SELECT COUNT(*) AS recebidas,
-            COALESCE(SUM(CASE WHEN estado = 'RECUSADO' THEN 1 ELSE 0 END), 0) AS recusadas
+            COALESCE(SUM(CASE WHEN estado = 'RECUSADO' THEN 1 ELSE 0 END), 0) AS recusadas,
+            COALESCE(SUM(CASE WHEN estado = 'EXPIRADO' THEN 1 ELSE 0 END), 0) AS expiradas
        FROM agendamento WHERE prestador_id = ?`,
     prestadorId,
   );

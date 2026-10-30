@@ -106,7 +106,7 @@ test('T-CONFIRMA-04 | RN-11: a taxa de recusa do prestador aparece para o admin'
     agendamentos.confirmar({ prestadorId: c.prestador.id, agendamentoId: ag.id });
   }
 
-  assert.deepEqual(adminApp.dossieDaConta(c.prestador.id).recusas, { recebidas: 4, recusadas: 1, taxa: 25 });
+  assert.deepEqual(adminApp.dossieDaConta(c.prestador.id).recusas, { recebidas: 4, recusadas: 1, taxa: 25, expiradas: 0, taxaExpiracao: 0 });
   assert.equal(adminApp.dossieDaConta(c.cliente.id).recusas, null, 'cliente nao recebe reservas');
 
   const tela = await (await fetch(`${base}/admin/contas/${c.prestador.id}`, { headers: { Cookie: await entrar('admin@teste.dev') } })).text();

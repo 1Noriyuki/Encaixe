@@ -869,3 +869,9 @@
 - **SPEC-023:** [`SPEC-023-fila-e-resolucao-de-disputas.md`](SPEC-023-fila-e-resolucao-de-disputas.md), RF-074 a RF-077.
 - **Conferência:** o código atende a RN-27 em todos os desfechos, inclusive na acusação mútua. Sem divergência nesta Spec; a auditoria do agendamento na resolução já fora corrigida na etapa 42.
 - **Evidência:** `T-DISPUTA-12` a `15`, além de `03` a `07c`. Questões: assumir (`EM_ANALISE`) é opcional no código; mínimo de 15 caracteres da justificativa.
+
+### Etapa 57 — Rascunho e conferência da SPEC-025 · 2026-10-30
+
+- **SPEC-025:** [`SPEC-025-revisao-administrativa-e-suspensao.md`](SPEC-025-revisao-administrativa-e-suspensao.md), RF-078, RF-079 e RN-28.
+- **Divergência corrigida (UC-13 passo 2):** o dossiê carregava as disputas da conta sem exibi-las e não tinha a taxa de expiração que o passo lista. Agora há a seção "Disputas" e a métrica "Sem resposta" (`respostasDoPrestador()` conta as expiradas). A taxa não tem limiar: o sinal de baixa responsividade segue na OPEN-19.
+- **Evidência:** `T-SUSPENSAO-01` a `03`, além dos testes de T-55 e da SPEC-002. Questões: OPEN-19, suspensão de conta de admin e reservas pendentes de prestador suspenso.
