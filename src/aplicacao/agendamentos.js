@@ -211,6 +211,14 @@ export function recusar({ prestadorId, agendamentoId, motivo }) {
     if (ag.estado !== 'PENDENTE_CONFIRMACAO') {
       throw new ErroDeRegra('RN-11', 'Só é possível recusar uma reserva ainda pendente.');
     }
+    // UC-06 1a: esgotado o prazo, o desfecho e da politica P-02 (UC-07), nao do prestador.
+    // Pela rota a rotina ja teria expirado a reserva; aqui a regra vale mesmo sem ela.
+    if (!antesDe(agora, ag.prazo_confirmacao_em)) {
+      throw new ErroDeRegra(
+        'RN-10',
+        `O prazo de confirmação terminou em ${formatarDataHora(ag.prazo_confirmacao_em)}.`,
+      );
+    }
 
     assegurarTransicao('agendamento', ag.estado, 'RECUSADO');
     agendamentosRepo.atualizar(ag.id, {

@@ -99,6 +99,16 @@ export function doPrestador(prestadorId, { estados = null } = {}) {
 }
 
 /** RN-12 - quantas reservas o cliente mantem em aberto agora. */
+/** RN-11 - reservas que o prestador recebeu e quantas recusou. */
+export function respostasDoPrestador(prestadorId) {
+  return um(
+    `SELECT COUNT(*) AS recebidas,
+            COALESCE(SUM(CASE WHEN estado = 'RECUSADO' THEN 1 ELSE 0 END), 0) AS recusadas
+       FROM agendamento WHERE prestador_id = ?`,
+    prestadorId,
+  );
+}
+
 export function contarEmAberto(clienteId) {
   const marcadores = AGENDAMENTO_EM_ABERTO.map(() => '?').join(',');
   return contar(

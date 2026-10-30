@@ -475,6 +475,9 @@ function dossie(ctx) {
         ${metrica('Concluídos', d.concluidos)}
         ${metrica('Ausências', d.noshows, `${d.taxa_noshow}% dos encerrados`)}
         ${metrica('Cancelamentos', d.cancelamentos)}
+        ${d.recusas
+    ? metrica('Recusas', d.recusas.recusadas, `${d.recusas.taxa}% das ${d.recusas.recebidas} reservas recebidas`)
+    : cru('')}
       </div>
       <hr class="divisor">
       <div class="linha entre">

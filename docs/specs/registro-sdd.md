@@ -824,3 +824,10 @@
 - **Divergência corrigida:** INV-03 (valor travado imutável) e INV-04 (valor travado ≥ piso) só eram garantidas no domínio. Gatilhos `agendamento_valor_travado_imutavel` e `agendamento_respeita_piso` em `schema.sql`. Seed refeito do zero.
 - **Evidência:** `T-RESERVA-07` a `12`, mais os testes de reserva anteriores. Questão: RF-017 é atendido porque não existe edição de horário (OPEN-09).
 - **Verificação:** `npm test`, 403/403.
+
+### Etapa 50 — Rascunho e conferência da SPEC-015 · 2026-10-30
+
+- **SPEC-015:** [`SPEC-015-confirmacao-e-recusa.md`](SPEC-015-confirmacao-e-recusa.md), RF-042 a RF-044.
+- **Divergências corrigidas:** (1) **RN-11:** a recusa deveria contar na "taxa de recusa exibida ao admin", que não existia. `admin.dossieDaConta()` compõe recusas e taxa sobre as reservas recebidas (`respostasDoPrestador()`), e o dossiê do prestador mostra a métrica; o perfil público não. (2) **UC-06 1a:** `recusar()` não conferia o prazo de confirmação; chamada fora da rota aceitava recusa depois do prazo, cujo desfecho é da política P-02.
+- **Evidência:** `T-CONFIRMA-01` a `04`, além de `T-AGENDAMENTO-06` a `07c` (T-33). Questões: janela da taxa de recusa e o mínimo de 5 caracteres do motivo.
+- **Verificação:** `npm test`, 407/407.

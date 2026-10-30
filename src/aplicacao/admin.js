@@ -8,6 +8,7 @@ import * as financeiroRepo from '../infra/repositorios/financeiro.js';
 import * as catalogoRepo from '../infra/repositorios/catalogo.js';
 import * as interpretacoesRepo from '../infra/repositorios/interpretacoes.js';
 import * as social from '../infra/repositorios/social.js';
+import * as agendamentosRepo from '../infra/repositorios/agendamentos.js';
 import * as auditoria from '../infra/auditoria.js';
 import { transacao } from '../infra/db/conexao.js';
 import { assegurarPercentualValido } from '../dominio/comissao.js';
@@ -159,8 +160,15 @@ export function dossieDaConta(usuarioId) {
   const resumo = usuariosRepo.resumoPublico(usuarioId);
   if (!resumo) return null;
 
+  // RN-11: a recusa nao e cancelamento, mas o admin ve a taxa de recusa do prestador.
+  const respostas = resumo.perfil === 'PRESTADOR' ? agendamentosRepo.respostasDoPrestador(usuarioId) : null;
+
   return {
     ...resumo,
+    recusas: respostas && {
+      ...respostas,
+      taxa: respostas.recebidas > 0 ? Math.round((respostas.recusadas / respostas.recebidas) * 100) : 0,
+    },
     eventos: social.eventosDoUsuario(usuarioId, { limite: 30 }),
     historico: auditoria.historicoDe('conta', usuarioId),
     disputas: disputas.doUsuario(usuarioId),
