@@ -706,3 +706,10 @@
 - **Produzido:** a busca limita a consulta ao primeiro horário que já atende P-04, preservando a janela solicitada quando ela começa depois; os filtros de estado `PUBLICADO` e conta `ATIVO` permanecem no repositório.
 - **Evidência:** `T-BUSCA-03` cobre categoria, região, janela e elegibilidade; `T-BUSCA-03b` cobre P-04, o limite inclusivo e as exclusões de horário cancelado e prestador inativo.
 - **Spec:** sem alteração; o comportamento implementa os RF-028 a RF-030 já aprovados em `docs/spec.md`.
+
+### Etapa 35 — Ordenação com desempate determinístico (T-29) · 2026-10-30
+
+- **Pedido:** resolver as issues do 2dart5, uma por commit, numa branch a partir da `main` (`issues-2dart5-lote`).
+- **Conferência:** `ordenar_()` em `aplicacao/busca.js` já desempata pelo id em todos os critérios (RF-031). `T-BUSCA-04` só provava o empate por proximidade, onde a ordem do banco e a do id coincidem.
+- **Evidência:** `T-BUSCA-04b` monta dois horários de mesmo preço e mesma reputação em que o de id menor começa depois, e exige a ordem pelo id em preço, desconto e reputação, igual em três leituras seguidas.
+- **Divergência registrada, não corrigida:** `horariosRepo.buscar()` corta em `LIMIT 200` ordenando por início, antes da ordenação por preço ou reputação. Com mais de 200 horários na janela, "Menor preço" pode deixar de fora horários mais baratos. O teto é decisão de desempenho; mudar exige decisão da equipe (paginar, ou ordenar no SQL).

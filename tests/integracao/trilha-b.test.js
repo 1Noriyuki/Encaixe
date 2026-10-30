@@ -193,6 +193,31 @@ test('T-BUSCA-04 | RF-031: empate na ordenacao por proximidade usa id estavel', 
   assert.deepEqual(segundaLeitura, primeiraLeitura);
 });
 
+test('T-BUSCA-04b | RF-031: empate em preco, desconto e reputacao cai no id, nao no inicio', () => {
+  // O horario de id menor comeca DEPOIS: se o desempate usasse a ordem do banco
+  // (por inicio), a ordem por preco sairia invertida.
+  const c = cenarioBasico({ horasAteHorario: 7 });
+  const maisCedo = criarPrestadorComHorario(c, {
+    sufixo: 'empate-preco', instante: adicionarHoras(agoraDoTeste(), 6),
+  });
+  const porId = [c.horario.id, maisCedo.horario.id];
+
+  const resultados = busca.buscarPorFiltros({ ordenar: 'preco' });
+  assert.equal(resultados[0].preco.precoVigente, resultados[1].preco.precoVigente);
+  assert.equal(resultados[0].prestador_reputacao, resultados[1].prestador_reputacao);
+
+  assert.deepEqual(
+    busca.buscarPorFiltros({ ordenar: 'proximidade' }).map(({ id }) => id),
+    [maisCedo.horario.id, c.horario.id],
+  );
+  for (const criterio of ['preco', 'desconto', 'reputacao']) {
+    const leituras = [1, 2, 3].map(() => busca.buscarPorFiltros({ ordenar: criterio }).map(({ id }) => id));
+    assert.deepEqual(leituras[0], porId, criterio);
+    assert.deepEqual(leituras[1], leituras[0], criterio);
+    assert.deepEqual(leituras[2], leituras[0], criterio);
+  }
+});
+
 test('T-AGENDAMENTO-06 | RF-042: prestador confirma reserva pendente e ocupa o horario', () => {
   const c = cenarioBasico();
   const reserva = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
