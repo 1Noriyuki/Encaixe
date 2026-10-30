@@ -194,6 +194,22 @@ BEGIN
   SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
 END;
 
+-- INV-02 / RN-06: o dominio ja recusa a sobreposicao; o banco recusa de novo.
+-- Basta o INSERT: nenhuma transicao leva um horario inativo de volta a ativo.
+-- Intervalos [inicio, inicio + duracao) que so se tocam nas bordas nao conflitam.
+CREATE TRIGGER IF NOT EXISTS horario_sem_sobreposicao
+BEFORE INSERT ON horario_vago
+WHEN NEW.estado IN ('PUBLICADO','BLOQUEADO','OCUPADO')
+BEGIN
+  SELECT RAISE(ABORT, 'INV-02: horario sobreposto a outro ativo do mesmo prestador')
+   WHERE EXISTS (
+     SELECT 1 FROM horario_vago h
+      WHERE h.prestador_id = NEW.prestador_id
+        AND h.estado IN ('PUBLICADO','BLOQUEADO','OCUPADO')
+        AND unixepoch(NEW.inicio) < unixepoch(h.inicio) + h.duracao_min * 60
+        AND unixepoch(h.inicio) < unixepoch(NEW.inicio) + NEW.duracao_min * 60);
+END;
+
 -- ----------------------------------------------------------- transacao
 CREATE TABLE IF NOT EXISTS agendamento (
   id                          INTEGER PRIMARY KEY AUTOINCREMENT,

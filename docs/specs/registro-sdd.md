@@ -795,3 +795,10 @@
 - **Evidência:** os oito testes da §12 em `tests/integracao/spec-005-moderacao.test.js`; Spec em v1.1.0 com a tabela. Observação sem correção: o pendente que tenta publicar é barrado com RN-28 (regra específica do cadastro pendente), não com a RN-08 citada no CA-08; as duas regras vedam a publicação.
 - **Por que a issue #84 não fecha:** a DoD 1 depende das questões da §13 que mudam o critério de decisão — se 10 caracteres de justificativa é regra de produto, e se o RF-003 ("notificar a fila de moderação") exige aviso ao admin além da fila consultável.
 - **Verificação:** `npm test`, 381/381.
+
+### Etapa 46 — Rascunho e conferência da SPEC-010 · 2026-10-30
+
+- **Critério desta série (etapas 46 a 60):** a pedido do 2dart5, cada Spec ainda inexistente da Trilha B e da Trilha C é escrita como **rascunho v0.1.0**, conferida contra o código e completada com os testes da §12. Divergência do código em relação à baseline **já aprovada** (`docs/spec.md`, constituição, ADRs) é corrigida, como manda a OPEN-01; o que exigiria regra nova vira questão da §13. Nenhuma Spec é aprovada por esta série, e as issues recebem `Refs`, não `Closes`.
+- **SPEC-010:** [`SPEC-010-publicacao-de-horario-vago.md`](SPEC-010-publicacao-de-horario-vago.md), RF-014 a RF-016.
+- **Divergência corrigida:** INV-02 (sem sobreposição) só era barrado no domínio. O gatilho `horario_sem_sobreposicao` em `schema.sql` recusa no banco a gravação sobreposta; só no `INSERT`, porque nenhuma transição leva horário inativo de volta a ativo. Seed refeito do zero num banco temporário para provar.
+- **Evidência:** `T-PUBLICACAO-01` a `07`. Questões: OPEN-09 (editar horário vago) e passo de minutos da hora de início.
