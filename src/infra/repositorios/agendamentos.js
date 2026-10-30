@@ -98,7 +98,6 @@ export function doPrestador(prestadorId, { estados = null } = {}) {
   );
 }
 
-/** RN-12 - quantas reservas o cliente mantem em aberto agora. */
 /** RN-11 / UC-13 - reservas que o prestador recebeu, quantas recusou e quantas deixou expirar. */
 export function respostasDoPrestador(prestadorId) {
   return um(
@@ -110,6 +109,7 @@ export function respostasDoPrestador(prestadorId) {
   );
 }
 
+/** RN-12 - quantas reservas o cliente mantem em aberto agora. */
 export function contarEmAberto(clienteId) {
   const marcadores = AGENDAMENTO_EM_ABERTO.map(() => '?').join(',');
   return contar(

@@ -902,3 +902,27 @@
 - **Aplicado:** as 15 sobem de rascunho v0.1.0 para **v1.0.0, aprovadas e concluídas**; as SPEC-003 a 005 sobem para v1.2.0, concluídas. A evidência de cada uma é a tabela da §12, com os testes passando (440/440).
 - **O que a aprovação não decide:** as questões abertas na §13 de cada Spec (entre elas OPEN-07, 09, 17, 18, 19, o corte de 200 da busca, P-17 × P-16b e o desfecho pendente da interpretação) seguem registradas para decisão posterior. Nenhuma foi resolvida em silêncio.
 - **Issues fechadas:** #82, #83, #84, #89, #91 a #98, #101, #102, #104, #106, #107 e #108, com comentário apontando o PR #147. O código delas entra na `main` com o merge desse PR.
+
+### Etapa 62 — Revisão do trabalho das etapas 34 a 61 · 2026-10-30
+
+- **Pedido (Enzo):** revisar o que o 2dart5 entregou nos PRs #146, #147 e #148 (etapas 34 a 61), corrigir os erros encontrados e listar os próximos passos.
+- **Código (`src/`, 478 linhas):** conferido inteiro, sem defeito de comportamento.
+  - **Banco:** as travas novas (sobreposição de horário, valor travado imutável, piso e comissão em disputa) só valem para gravações novas e não quebram dados existentes.
+  - **Aplicação:** a fila de revisão lê da auditoria nomes de ação e campos que existem de fato. A janela padrão de 24 h vem da spec (UC-03 1a). O único chamador de `registrarConfirmacao` foi atualizado.
+  - **Defeito encontrado:** em `infra/repositorios/agendamentos.js`, a função nova `respostasDoPrestador` foi inserida entre o comentário da RN-12 e a função que ele documenta (`contarEmAberto`). Corrigido.
+- **IDs de teste duplicados:** cinco IDs nomeavam dois testes de assuntos diferentes. Dois vinham das etapas recentes: `T-REVISAO-03` (SPEC-018) e `T-PARAM-09` (SPEC-027). Três eram antigos: `T-PRECO-06`, `T-PRECO-07` e `T-COMISSAO-06`. Em cada caso o ID ficou com o teste citado pela Spec ou pela `spec.md`, e o outro foi renomeado:
+
+  | Era | Passou a ser | Onde |
+  |---|---|---|
+  | `T-REVISAO-03` | `T-REVISAO-06` | SPEC-018 |
+  | `T-PARAM-09` | `T-PARAM-12` | SPEC-027 e `tasks.md` |
+  | `T-COMISSAO-06` | `T-COMISSAO-07` | competência contábil |
+  | `T-PRECO-06`, `T-PRECO-07` | `T-PRECO-08`, `T-PRECO-09` | vitrine |
+
+  As etapas anteriores deste registro citam os IDs antigos e ficam como estão, por serem histórico. Para não se repetir, o novo teste `T-CONVENCAO-01` falha se dois testes dividirem um ID; ele foi conferido contra a versão anterior e pega exatamente as cinco colisões.
+- **Evidência das 18 Specs da etapa 61:** os 117 testes citados nas §12 foram conferidos pelo título, não só pelo ID.
+  - **SPEC-004:** os três testes que não existem (`T-NOTIF-02`, `06` e `08`) estão explicados na própria Spec, absorvidos pelos testes de matriz.
+  - **Demais títulos:** as outras divergências são títulos mais completos no teste, sem mudança de assunto.
+- **Divergência de processo, registrada e não resolvida:** nas SPEC-003, 004, 005, 013, 017, 018, 019, 022, 025, 027, 028 e 029, o item 1 da Definition of Done exige que a equipe **decida** questões específicas da §13. Exemplos: o corte de 200 na SPEC-013, RN-19 × RN-21 na SPEC-017, OPEN-07 e OPEN-17 na SPEC-022, OPEN-09 na SPEC-027. A etapa 61 marcou essas Specs como concluídas e fechou as issues deixando as questões "para decisão posterior". Pela regra do roteiro, o conflito precisa de escolha explícita: decidir as questões (como na etapa 32, para a Trilha A) ou registrar a exceção e ajustar a DoD. Nenhuma issue foi reaberta nesta etapa; a escolha é da equipe.
+- **Documentos:** o CLAUDE.md e o mapa descreviam o estado da etapa 60, com 15 Specs "em rascunho". Foram atualizados.
+- **Verificação:** `npm test`: 441/441.

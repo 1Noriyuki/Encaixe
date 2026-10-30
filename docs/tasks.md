@@ -124,7 +124,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Fila com motivo, reputação e ocorrências; decisão com justificativa e aviso; `T-CONTA-REVISAO-01/01b/02` | ✅ |
 | T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |
 | T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras | 🔄 |
-| T-58 | Tela de parâmetros do domínio | RN-00 | Alteração pela tela vale na hora, fora da faixa é recusada, auditoria atômica; `T-PARAM-TELA-01/02`, `T-PARAM-09` | ✅ |
+| T-58 | Tela de parâmetros do domínio | RN-00 | Alteração pela tela vale na hora, fora da faixa é recusada, auditoria atômica; `T-PARAM-TELA-01/02`, `T-PARAM-12` | ✅ |
 | T-59 | Contrato do provedor de LLM + validação de saída | RN-29, RNF-12 | Saída fora do formato vira `FALHA`, não exceção | ✅ |
 | T-60 | Provedor simulado determinístico | ADR-003 | Sistema funciona sem chave e sem rede | ✅ |
 | T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout sem repetição; `T-LLM-ANTHROPIC-01/02/03` | ✅ |

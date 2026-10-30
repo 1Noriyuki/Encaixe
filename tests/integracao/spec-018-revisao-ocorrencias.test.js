@@ -28,7 +28,7 @@ function ocorrencia(usuarioId, origemId, tipo = TIPO_EVENTO.CANCELAMENTO_PARCIAL
   return reputacao.verificarOcorrenciasDoPrestador(usuarioId);
 }
 
-test('T-REVISAO-03 | RF-056: em revisao, o prestador sai da busca e da publicacao, e o confirmado continua valendo', () => {
+test('T-REVISAO-06 | RF-056: em revisao, o prestador sai da busca e da publicacao, e o confirmado continua valendo', () => {
   const c = cenarioBasico({ horasAteHorario: 3 });
   const livre = publicarDaquiA(c.prestador.id, c.servico.id, c.regua.id, 6);
   const ag = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });

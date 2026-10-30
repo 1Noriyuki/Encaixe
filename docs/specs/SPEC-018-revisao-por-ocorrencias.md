@@ -97,12 +97,12 @@ Depois de gravar a ocorrência (fora da transação que a gerou), o sistema cont
 | `T-REVISAO-01 \| RN-21: tres cancelamentos com penalidade levam o prestador a revisao` | CA-01 |
 | `RN-21: cancelamento livre nao conta como ocorrencia negativa` | CA-05 |
 | `T-CONTA-REVISAO-01b \| RF-078/RN-21: prestador sinalizado por ocorrencias mostra a contagem e o historico` | CA-01 |
-| `T-REVISAO-03 \| RF-056: em revisao, o prestador sai da busca e da publicacao, e o confirmado continua valendo` | CA-01, CA-02, INV-003, INV-004 |
+| `T-REVISAO-06 \| RF-056: em revisao, o prestador sai da busca e da publicacao, e o confirmado continua valendo` | CA-01, CA-02, INV-003, INV-004 |
 | `T-REVISAO-04 \| RN-21: so conta ocorrencia dentro de P-12b e nao revertida; P-12a vem do parametro` | CA-03, INV-001, INV-005 |
 | `T-REVISAO-05 \| RN-21: cliente nunca entra em revisao por esta regra` | CA-04, INV-002 |
 
 **Evidência (registro etapa 53, 2026-10-30).** `T-REVISAO-01` e o caso da faixa livre em `penalidades.test.js`,
-`T-CONTA-REVISAO-01b` em `telas-admin.test.js`, `T-REVISAO-03` a `05` em `spec-018-revisao-ocorrencias.test.js`; todos
+`T-CONTA-REVISAO-01b` em `telas-admin.test.js`, `T-REVISAO-04` a `06` em `spec-018-revisao-ocorrencias.test.js`; todos
 passam. **Divergência corrigida:** `verificarOcorrenciasDoPrestador()` não conferia o perfil; os chamadores atuais só a
 usam para prestador, mas a função moveria um cliente para revisão "sem poder publicar" se chamada para ele.
 

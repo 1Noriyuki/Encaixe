@@ -94,7 +94,7 @@ O admin abre a tela, altera um valor e salva. Dentro da faixa: o valor passa a v
 | `T-PARAM-01..08` (SPEC-001) | CA-02, CA-03, INV-002, INV-003 |
 | `T-PARAM-TELA-01 \| RN-00: o admin altera P-04 pela tela e a busca usa o valor novo sem reinicio` | CA-02 |
 | `T-PARAM-TELA-02 \| RN-00: valor fora da faixa pela tela e recusado com a regra e nada muda` | CA-03 |
-| `T-PARAM-09 \| RN-00: falha na auditoria desfaz a alteracao do parametro` | CA-04, INV-004 |
+| `T-PARAM-12 \| RN-00: falha na auditoria desfaz a alteracao do parametro` | CA-04, INV-004 |
 | `T-PARAM-10 \| RN-00: todo parametro global da §6.1 tem formulario na tela do admin` | CA-01, INV-001 |
 | `T-PARAM-11 \| RN-00: o limite de interpretacoes e identificado como P-21, como na spec` | CA-01, CA-03 |
 

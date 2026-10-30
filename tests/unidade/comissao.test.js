@@ -70,7 +70,7 @@ test('T-COMISSAO-05 | RN-16: so agendamento concluido gera comissao', () => {
   }
 });
 
-test('T-COMISSAO-06 | competencia contabil vem da data da conclusao', () => {
+test('T-COMISSAO-07 | competencia contabil vem da data da conclusao', () => {
   assert.equal(competenciaDe('2026-08-21T17:30:00.000Z'), '2026-08');
 });
 

@@ -39,7 +39,7 @@ function pegar(caminho) {
 
 // ------------------------------------------------------------- aplicacao
 
-test('T-PRECO-06 | RF-027: o detalhe do horario traz a regua projetada, do preco cheio ao menor', () => {
+test('T-PRECO-08 | RF-027: o detalhe do horario traz a regua projetada, do preco cheio ao menor', () => {
   // Regua padrao do cenario: 240 min -> 20%, 60 min -> 35%, sobre R$ 100,00.
   const c = cenarioBasico({ horasAteHorario: 10 });
   const detalhe = horariosApp.detalhe(c.horario.id);
@@ -55,7 +55,7 @@ test('T-PRECO-06 | RF-027: o detalhe do horario traz a regua projetada, do preco
   assert.deepEqual(descontos, [0, 20, 35]);
 });
 
-test('T-PRECO-07 | RN-04: a projecao usa os snapshots do horario, nao o servico editado depois', async () => {
+test('T-PRECO-09 | RN-04: a projecao usa os snapshots do horario, nao o servico editado depois', async () => {
   const c = cenarioBasico({ horasAteHorario: 10, precoBase: '100,00' });
   const catalogo = await import('../../src/aplicacao/catalogo.js');
 
