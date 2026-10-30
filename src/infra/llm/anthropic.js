@@ -29,10 +29,18 @@ async function carregarSdk() {
   return Anthropic;
 }
 
+/**
+ * @param {object}   [opcoes]
+ * @param {Function} [opcoes.sdk] classe do cliente; os testes injetam um duble
+ *   para conferir o pedido sem rede e sem o pacote instalado.
+ */
 export function criar({
-  modelo = process.env.LLM_MODELO ?? MODELO_PADRAO,
-  timeoutMs = Number(process.env.LLM_TIMEOUT_MS ?? 15000),
+  // `||`, nao `??`: variavel definida vazia vale como ausente, e nao como
+  // modelo '' ou timeout de 0 ms.
+  modelo = process.env.LLM_MODELO || MODELO_PADRAO,
+  timeoutMs = Number(process.env.LLM_TIMEOUT_MS || 15000),
   apiKey = process.env.ANTHROPIC_API_KEY,
+  sdk = null,
 } = {}) {
   let cliente = null;
 
@@ -42,7 +50,7 @@ export function criar({
     async interpretar({ texto, categorias, regioes, agoraIso }) {
       try {
         if (!cliente) {
-          const Sdk = await carregarSdk();
+          const Sdk = sdk ?? await carregarSdk();
           cliente = apiKey ? new Sdk({ apiKey }) : new Sdk();
         }
 
@@ -61,7 +69,10 @@ export function criar({
               content: montarPedido(texto, regioes),
             }],
           },
-          { timeout: timeoutMs },
+          // RF-038: o SDK repete 2 vezes por padrao, e timeout conta como
+          // repetivel - a espera chegaria a 3x LLM_TIMEOUT_MS. Sem repeticao,
+          // o teto configurado e o teto real; a falha cai na RN-31.
+          { timeout: timeoutMs, maxRetries: 0 },
         );
 
         // RN-31: uma recusa do modelo nao pode derrubar a busca.

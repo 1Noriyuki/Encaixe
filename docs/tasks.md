@@ -127,7 +127,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-58 | Tela de parâmetros do domínio | RN-00 | Alteração pela tela vale na hora, fora da faixa é recusada, auditoria atômica; `T-PARAM-TELA-01/02`, `T-PARAM-09` | ✅ |
 | T-59 | Contrato do provedor de LLM + validação de saída | RN-29, RNF-12 | Saída fora do formato vira `FALHA`, não exceção | ✅ |
 | T-60 | Provedor simulado determinístico | ADR-003 | Sistema funciona sem chave e sem rede | ✅ |
-| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout configurável | 🔄 |
+| T-61 | Provedor Anthropic com JSON Schema | ADR-003 | `claude-opus-5`, `output_config.format`, timeout sem repetição; `T-LLM-ANTHROPIC-01/02/03` | ✅ |
 | T-62 | Limiar de confiança e confirmação de filtros | RF-035, RF-036, RN-30 | Confiança baixa ou categoria inválida pedem confirmação | ✅ |
 | T-63 | Degradação segura na falha do LLM | RF-037, RF-038, RN-31 | Busca por filtros continua funcionando | ✅ |
 | T-64 | Persistência e telemetria das interpretações | RF-034, RN-32 | Painel mostra taxa de sucesso e de correção | ✅ |
