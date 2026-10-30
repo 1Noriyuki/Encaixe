@@ -19,6 +19,15 @@ import { params } from './parametros.js';
 const PERFIS_PUBLICOS = ['CLIENTE', 'PRESTADOR'];
 
 /**
+ * RF-004 - canal pelo qual a conta suspensa fala com a administracao. Fica fora
+ * do sistema porque a conta suspensa nao autentica (RN-28); e configuracao de
+ * implantacao, e nao parametro de regra, por isso nao mora na tabela parametro.
+ */
+export function contatoDeSuporte() {
+  return process.env.CONTATO_SUPORTE ?? 'suporte@encaixe.dev';
+}
+
+/**
  * RF-001 a RF-003 - cadastro.
  * Prestador nasce PENDENTE_APROVACAO; cliente ja nasce ATIVO.
  */
@@ -59,6 +68,8 @@ export function cadastrar({ nome, email, senha, perfil, nomeExibicao, telefone, 
         usuario_id: id,
         nome_exibicao: String(nomeExibicao ?? nome).trim(),
         regiao_id: regiaoId ? Number(regiaoId) : null,
+        janela_confirmacao_min: p.janela_confirmacao_min,
+        politica_expiracao: p.politica_expiracao,
       });
     } else {
       usuarios.criarPerfilCliente({
@@ -100,7 +111,11 @@ export function autenticar({ email, senha }) {
   // RN-28 - so depois de a senha conferir: com a senha errada, vale a mensagem
   // generica, para nao revelar o estado da conta a quem nao e o titular.
   if (usuario.estado_conta === 'SUSPENSO') {
-    throw new ErroDeRegra('RN-28', 'Sua conta está suspensa e não pode entrar. Fale com o suporte da plataforma.');
+    const contato = contatoDeSuporte();
+    throw new ErroDeRegra('RN-28',
+      `Sua conta está suspensa e não pode entrar. Para entender o motivo ou pedir revisão, `
+      + `fale com a administração pelo e-mail ${contato}.`,
+      { contato });
   }
 
   return usuario;
@@ -226,23 +241,29 @@ export function salvarPerfilPrestador({ prestadorId, nomeExibicao, descricao, re
     throw new ErroDeValidacao('Política de expiração inválida.', 'politicaExpiracao');
   }
 
-  usuarios.atualizarPerfilPrestador(prestadorId, {
-    nome_exibicao: nome,
-    descricao: String(descricao ?? '').trim(),
-    regiao_id: regiaoId ? Number(regiaoId) : null,
-    janela_confirmacao_min: janela,
-    politica_expiracao: politicaExpiracao,
-  });
+  return transacao(() => {
+    // Não auditar como sucesso uma atualização em perfil inexistente.
+    if (!usuarios.prestador(prestadorId)) {
+      throw new NaoEncontrado('Perfil do prestador não encontrado.');
+    }
+    usuarios.atualizarPerfilPrestador(prestadorId, {
+      nome_exibicao: nome,
+      descricao: String(descricao ?? '').trim(),
+      regiao_id: regiaoId ? Number(regiaoId) : null,
+      janela_confirmacao_min: janela,
+      politica_expiracao: politicaExpiracao,
+    });
 
-  auditoria.registrar({
-    atorId: prestadorId,
-    acao: 'PERFIL_PRESTADOR_ATUALIZADO',
-    entidade: 'conta',
-    entidadeId: prestadorId,
-    detalhe: { janela, politicaExpiracao },
-  });
+    auditoria.registrar({
+      atorId: prestadorId,
+      acao: 'PERFIL_PRESTADOR_ATUALIZADO',
+      entidade: 'conta',
+      entidadeId: prestadorId,
+      detalhe: { janela, politicaExpiracao },
+    });
 
-  return usuarios.prestador(prestadorId);
+    return usuarios.prestador(prestadorId);
+  });
 }
 
 export function salvarPerfilCliente({ clienteId, telefone, regiaoId }) {

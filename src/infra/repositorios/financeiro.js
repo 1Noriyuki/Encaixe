@@ -22,6 +22,7 @@ export function porAgendamento(agendamentoId) {
   return um('SELECT * FROM lancamento_comissao WHERE agendamento_id = ?', agendamentoId);
 }
 
+/** So persiste: a maquina e a auditoria ficam em aplicacao/comissao.js. */
 export function atualizarEstado(agendamentoId, estado) {
   executar('UPDATE lancamento_comissao SET estado = ? WHERE agendamento_id = ?', estado, agendamentoId);
 }
@@ -66,12 +67,17 @@ export function totaisPrestador(prestadorId, { de = null, ate = null } = {}) {
     ...params,
   );
 
+  // RF-062: usar o MESMO intervalo dos lançamentos efetivados.
+  const filtrosRetido = ['a.prestador_id = ?', "l.estado = 'RETIDO'"];
+  const parametrosRetido = [prestadorId];
+  if (de) { filtrosRetido.push('l.criado_em >= ?'); parametrosRetido.push(de); }
+  if (ate) { filtrosRetido.push('l.criado_em <= ?'); parametrosRetido.push(ate); }
   const retido = um(
     `SELECT COUNT(*) AS qtd, COALESCE(SUM(l.valor_liquido), 0) AS liquido
        FROM lancamento_comissao l
        JOIN agendamento a ON a.id = l.agendamento_id
-      WHERE a.prestador_id = ? AND l.estado = 'RETIDO'`,
-    prestadorId,
+      WHERE ${filtrosRetido.join(' AND ')}`,
+    ...parametrosRetido,
   );
 
   return { ...efetivado, retido_qtd: retido.qtd, retido_liquido: retido.liquido };
@@ -138,11 +144,15 @@ export function metricasPlataforma({ de = null, ate = null, categoriaId = null, 
 }
 
 /** Comissao por categoria, para a quebra do painel. */
-export function comissaoPorCategoria({ de = null, ate = null } = {}) {
+export function comissaoPorCategoria({
+  de = null, ate = null, categoriaId = null, prestadorId = null,
+} = {}) {
   const filtros = ["l.estado = 'EFETIVADO'"];
   const params = [];
   if (de) { filtros.push('l.criado_em >= ?'); params.push(de); }
   if (ate) { filtros.push('l.criado_em <= ?'); params.push(ate); }
+  if (categoriaId) { filtros.push('s.categoria_id = ?'); params.push(categoriaId); }
+  if (prestadorId) { filtros.push('a.prestador_id = ?'); params.push(prestadorId); }
 
   return varios(
     `SELECT c.id, c.nome, c.percentual_comissao,

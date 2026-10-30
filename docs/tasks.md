@@ -41,7 +41,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-04 | Esqueleto do projeto: `package.json`, scripts, `.gitignore` | ADR-001 | `npm start` e `npm test` respondem | ✅ |
 | T-05 | Módulos base do domínio: `tempo`, `dinheiro`, `erros` | RNF-08, ADR-002 | Relógio injetável; centavos; `ErroDeRegra` carrega o ID da regra | ✅ |
 | T-06 | Esquema físico `schema.sql` + conexão + transações | §9.2, ADR-002 | 20 tabelas (19 entidades da spec + `sessao`); `npm run db:migrar` idempotente | ✅ |
-| T-07 | Parâmetros do domínio como dados | RN-00 | Tabela `parametro` + metadados; nenhum número solto no código | 🔄 |
+| T-07 | Parâmetros do domínio como dados | RN-00 | Tabela `parametro` + metadados; nenhum número solto no código | ✅ |
 | T-08 | Máquinas de estado com `assegurarTransicao` | §9.4–9.7, INV-13 | Transição não declarada lança erro | ✅ |
 
 ## Marco M1 — Núcleo transacional

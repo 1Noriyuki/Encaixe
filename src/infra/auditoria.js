@@ -6,18 +6,22 @@
  * uma disputa.
  */
 
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { registrarAuditoria, auditoriaDaEntidade, auditoriaRecente } from './repositorios/moderacao.js';
 import { agoraIso } from '../dominio/tempo.js';
 
-/** Identificador de correlacao da requisicao em curso (preenchido pela camada HTTP). */
-let correlacaoAtual = null;
+/**
+ * RNF-07 / SPEC-001 CA-10: contexto separado por fluxo assíncrono.
+ * O estado anterior, em variável global, podia ser sobrescrito por outra
+ * requisição durante um await.
+ */
+const correlacoes = new AsyncLocalStorage();
 
-export function definirCorrelacao(id) {
-  correlacaoAtual = id;
-}
-
-export function limparCorrelacao() {
-  correlacaoAtual = null;
+/** Executa um fluxo preservando o identificador em todos os seus awaits. */
+export function comCorrelacao(id, acao) {
+  if (typeof id !== 'string' || !id.trim()) throw new TypeError('Correlação inválida.');
+  if (typeof acao !== 'function') throw new TypeError('Ação de correlação inválida.');
+  return correlacoes.run(id, acao);
 }
 
 /**
@@ -39,7 +43,7 @@ export function registrar({ atorId = null, acao, entidade, entidadeId = null, de
     estado_anterior: de,
     estado_novo: para,
     detalhe: detalhe == null ? null : JSON.stringify(detalhe),
-    correlacao_id: correlacaoAtual,
+    correlacao_id: correlacoes.getStore() ?? null,
     criado_em: agoraIso(),
   });
 }

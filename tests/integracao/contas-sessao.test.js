@@ -10,6 +10,7 @@ import assert from 'node:assert/strict';
 import { prepararBanco, encerrar, cenarioBasico, avancarHoras, T0 } from '../apoio/cenario.js';
 import { criarAplicacao } from '../../src/interface/http/servidor.js';
 import * as contas from '../../src/aplicacao/contas.js';
+import * as reputacao from '../../src/aplicacao/reputacao.js';
 import { params } from '../../src/aplicacao/parametros.js';
 import * as auditoria from '../../src/infra/auditoria.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
@@ -182,6 +183,43 @@ test('T-CONTA-01i | RF-001: cadastro aceito ja sai com sessao valida', async () 
   assert.equal(totalDeSessoes(), 2);
 });
 
+test('T-CONTA-01j | RF-002: e-mail com espacos ou maiusculas e o mesmo e-mail', async () => {
+  cadastrarCliente('ana@teste.dev');
+
+  assert.throws(
+    () => cadastrarCliente('  Ana@Teste.DEV '),
+    (erro) => erro.campo === 'email' && /não está disponível/.test(erro.message),
+    'antes da OPEN-208 isto estourava UNIQUE constraint failed',
+  );
+  const { cookie } = await entrar(' ANA@teste.dev ');
+  assert.ok(cookie && await autenticado(cookie), 'o login normaliza o e-mail do mesmo jeito');
+});
+
+test('T-CONTA-01k | SPEC-002 INV-004: o banco recusa conta nascida no estado errado', () => {
+  const inserirDireto = (perfil, estado) => usuariosRepo.criar({
+    nome: 'Atalho', email: `${perfil}-${estado}@teste.dev`, senha_hash: 'x',
+    perfil, estado_conta: estado, reputacao: 70, criado_em: T0,
+  });
+
+  assert.throws(() => inserirDireto('PRESTADOR', 'ATIVO'), /INV-004/);
+  assert.throws(() => inserirDireto('CLIENTE', 'PENDENTE_APROVACAO'), /INV-004/);
+  assert.ok(inserirDireto('ADMIN', 'ATIVO'), 'o admin nasce por implantacao (OPEN-206)');
+
+  const prestador = contas.cadastrar({ nome: 'P', email: 'p@teste.dev', senha: SENHA, perfil: 'PRESTADOR' });
+  usuariosRepo.atualizarEstadoConta(prestador.id, 'ATIVO');
+  assert.equal(usuariosRepo.porId(prestador.id).estado_conta, 'ATIVO', 'o gatilho olha so a criacao');
+});
+
+test('T-CONTA-01l | RN-00: mudar P-08 nao altera a reputacao de conta existente', () => {
+  const antiga = cadastrarCliente('antiga@teste.dev');
+  parametrosRepo.salvarGlobal('reputacao_inicial', 55, null);
+
+  reputacao.recalcular(antiga.id);
+
+  assert.equal(usuariosRepo.porId(antiga.id).reputacao, 70, 'antes da OPEN-207 o recalculo usava a P-08 atual');
+  assert.equal(usuariosRepo.porId(antiga.id).reputacao_inicial, 70);
+});
+
 // ------------------------------------------------------- login e sessao
 
 test('T-SESSAO-01 | RF-004: login valido cria sessao com cookie HttpOnly e SameSite', async () => {
@@ -219,6 +257,9 @@ test('T-SESSAO-03 | RN-28: conta suspensa nao autentica e recebe mensagem propri
   assert.equal(certa.cookie, null);
   assert.match(certa.corpo, /conta está suspensa/);
   assert.match(certa.corpo, /RN-28/);
+  // RF-004 - a conta suspensa nao autentica, entao o canal tem de estar na propria tela.
+  assert.ok(certa.corpo.includes(contas.contatoDeSuporte()), 'o e-mail de contato aparece na tela');
+  assert.match(certa.corpo, /href="mailto:/);
 
   // Com a senha errada, quem tenta nao fica sabendo que a conta existe e esta suspensa.
   const errada = await entrar('cliente@teste.dev', 'errada123');
@@ -273,6 +314,21 @@ test('T-SESSAO-04c | RNF-02: 12 h desde o login expiram a sessao mesmo em uso', 
 
   avancarHoras(1);
   assert.equal(await autenticado(cookie), false, 'o teto de 12 h vale mesmo com uso continuo');
+});
+
+test('T-SESSAO-04d | RNF-02: a renovacao nao grava no banco a cada requisicao', async () => {
+  cenarioBasico();
+  const { cookie } = await entrar('cliente@teste.dev');
+  const prazo = () => um('SELECT expira_em FROM sessao').expira_em;
+
+  const inicial = prazo();
+  avancarHoras(0.5 / 60);
+  assert.ok(await autenticado(cookie));
+  assert.equal(prazo(), inicial, '30 s depois, o prazo nao e regravado (ADR-004)');
+
+  avancarHoras(1);
+  assert.ok(await autenticado(cookie));
+  assert.notEqual(prazo(), inicial, 'passado mais de 1 min, a renovacao e gravada');
 });
 
 test('T-SESSAO-07 | RF-004: pendente, reprovado, em revisao e restrito autenticam', async () => {

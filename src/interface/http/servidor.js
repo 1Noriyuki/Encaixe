@@ -36,18 +36,16 @@ export function criarAplicacao() {
 
   return createServer(async (req, res) => {
     const correlacao = randomUUID();
-    auditoria.definirCorrelacao(correlacao);
-
-    try {
-      await atender(req, res, roteador);
-    } catch (erro) {
-      console.error(`[${correlacao}]`, erro);
-      if (!res.headersSent) {
-        responder(res, 500, paginaDeErro(500, 'Erro interno', 'Algo quebrou do nosso lado. Tente de novo em instantes.'));
+    await auditoria.comCorrelacao(correlacao, async () => {
+      try {
+        await atender(req, res, roteador);
+      } catch (erro) {
+        console.error(`[${correlacao}]`, erro);
+        if (!res.headersSent) {
+          responder(res, 500, paginaDeErro(500, 'Erro interno', 'Algo quebrou do nosso lado. Tente de novo em instantes.'));
+        }
       }
-    } finally {
-      auditoria.limparCorrelacao();
-    }
+    });
   });
 }
 
@@ -274,6 +272,9 @@ function tratarErroDeAcao(ctx, erro) {
       <p class="medida">A operação foi recusada e <strong>nada mudou de estado</strong>. O aviso acima
       traz a regra que decidiu isso.</p>
       <p class="linha sem-fundo">
+        ${erro?.detalhes?.contato
+          ? html`<a class="botao" href="mailto:${erro.detalhes.contato}">Escrever para a administração</a>`
+          : ''}
         <a class="botao botao-secundario" href="${ctx.req.headers.referer ?? '/'}">Tentar de novo</a>
         <a class="botao botao-secundario" href="/">Início</a>
       </p>

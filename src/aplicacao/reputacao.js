@@ -10,6 +10,7 @@ import * as social from '../infra/repositorios/social.js';
 import * as usuarios from '../infra/repositorios/usuarios.js';
 import * as agendamentosRepo from '../infra/repositorios/agendamentos.js';
 import * as auditoria from '../infra/auditoria.js';
+import { transacao } from '../infra/db/conexao.js';
 import { notificar } from '../infra/notificacoes.js';
 import {
   calcularReputacao, classificarPorReputacao, TIPOS_OCORRENCIA_NEGATIVA,
@@ -24,27 +25,32 @@ import { params } from './parametros.js';
  * livre" e util para o admin em UC-13.
  */
 export function aplicarEvento({ usuarioId, tipo, delta, origemTipo, origemId }) {
-  social.registrarEvento({
-    usuario_id: usuarioId,
-    tipo,
-    delta,
-    origem_tipo: origemTipo,
-    origem_id: origemId,
-    criado_em: agoraIso(),
-  });
+  return transacao(() => {
+    social.registrarEvento({
+      usuario_id: usuarioId,
+      tipo,
+      delta,
+      origem_tipo: origemTipo,
+      origem_id: origemId,
+      criado_em: agoraIso(),
+    });
 
-  return recalcular(usuarioId);
+    return recalcular(usuarioId);
+  });
 }
 
 /** Recalcula a reputacao a partir dos eventos e reclassifica a conta (RN-22). */
 export function recalcular(usuarioId) {
+  // A projeção e a classificação não podem divergir em caso de falha.
+  return transacao(() => {
   const p = params();
   const usuario = usuarios.porId(usuarioId);
   if (!usuario) return null;
 
   const eventos = social.eventosDoUsuario(usuarioId);
   const nova = calcularReputacao(eventos, {
-    inicial: p.reputacao_inicial,
+    // RN-00: a P-08 da criacao da conta, nao a vigente agora.
+    inicial: usuario.reputacao_inicial,
     janelaDias: p.janela_reputacao_dias,
     agora: agoraIso(),
   });
@@ -63,6 +69,7 @@ export function recalcular(usuarioId) {
 
   reclassificarConta({ ...usuario, reputacao: nova }, p);
   return nova;
+  });
 }
 
 /**
@@ -96,6 +103,15 @@ function reclassificarConta(usuario, p) {
       mensagem: `Sua reputação está em ${usuario.reputacao} pontos, abaixo do limite de `
         + `${p.limiar_revisao}. Um administrador vai analisar sua conta.`,
     });
+    // RF-057: além do titular, os administradores precisam receber o alerta.
+    for (const admin of usuarios.listarPorPerfil('ADMIN')) {
+      if (admin.id === usuario.id) continue;
+      notificar(admin.id, {
+        tipo: 'CONTA_EM_REVISAO',
+        titulo: 'Conta encaminhada para revisão',
+        mensagem: `A conta ${usuario.id} entrou em revisão por reputação (${usuario.reputacao} pontos).`,
+      });
+    }
   } else if (alvo === 'RESTRITO') {
     notificar(usuario.id, {
       tipo: 'CONTA_RESTRITA',
@@ -148,6 +164,7 @@ export function verificarOcorrenciasDoPrestador(prestadorId) {
 
 /** RN-27 - a resolucao de disputa reverte os eventos daquele agendamento. */
 export function reverterEventosDoAgendamento(agendamentoId, usuarioId = null) {
+  return transacao(() => {
   const afetados = social.eventosDaOrigem('agendamento', agendamentoId)
     .filter((e) => !e.revertido_em)
     .filter((e) => !usuarioId || e.usuario_id === usuarioId)
@@ -157,4 +174,5 @@ export function reverterEventosDoAgendamento(agendamentoId, usuarioId = null) {
 
   for (const id of new Set(afetados)) recalcular(id);
   return [...new Set(afetados)];
+  });
 }

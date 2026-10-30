@@ -17,9 +17,9 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 158 testes, ~3 s
+npm test             # suíte completa (node --test), 235 testes, ~7 s
 npm run db:seed      # cria o banco e popula demonstração
-npm run db:migrar    # só cria as 20 tabelas (idempotente)
+npm run db:migrar    # cria as 21 tabelas fisicas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
 ```
 
@@ -78,15 +78,26 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 - **Nomes:** o roteiro chama regra de "RB"; aqui continua `RN-xx`. Invariantes de uma Spec são
   `INV-001` locais; fora dela, cite como "SPEC-002 INV-003" para não confundir com os `INV-01..14`.
 - **Issues:** `T-nn` é a issue `#nn+2`; #79 foram as decisões OPEN-01/02/210; #80–#108 são as SPEC-001..029.
-  Divididas por trilha do `tasks.md` entre 1Noriyuki, gostislavs e 2dart5 (`niltonmack` é o
-  professor). `docs/proximos-passos.docx` é o documento de passagem para a equipe.
-- **Estado em 2026-10-01:** mapa, SPEC-001 e SPEC-002 aprovados; próxima é a SPEC-003. Tudo isso está
-  na branch `sdd/especificacao-e-identidade`, **ainda sem PR nem merge na `main`**.
-- **SPEC-002 conferida e corrigida** (etapa 15): `SUSPENSO` não entra (mensagem própria, RN-28) e a
-  suspensão apaga as sessões; os demais estados entram; a sessão expira com 2 h sem uso ou 12 h desde
-  o login (`expira_em` é o prazo deslizante). Testes em `integracao/contas-sessao.test.js`.
-- **Depois do cadastro a conta já sai logada** (OPEN-210, spec v0.1.6): o prestador pendente prepara
-  perfil, serviços e régua, mas só publica quando estiver `ATIVO` (RN-08).
+  Divididas por trilha do `tasks.md` (`niltonmack` é o professor). Em 2026-10-18 o 2dart5 assumiu
+  também a Trilha C (etapa 18 do registro):
+
+  | Trilha | Responsável | Specs abertas |
+  |---|---|---|
+  | A: domínio e financeiro | gostislavs | SPEC-006–009, 011, 020, 021, 024, 026 |
+  | B: transação e consequência | 2dart5 | SPEC-010, 012–019, 022, 023 |
+  | C: acesso, admin e IA | 2dart5 (era 1Noriyuki até a SPEC-002 e a #79) | SPEC-003–005, 025, 027–029 |
+
+  `docs/proximos-passos.docx` é o documento de passagem: estado, quem faz o quê e decisões. É gerado
+  com a lib `docx` instalada numa pasta temporária, nunca no projeto (ADR-001). Esta máquina não tem
+  pandoc, LibreOffice nem pdftoppm: para conferir o resultado, exporte para PDF pelo Word via COM
+  (PowerShell) e renderize as páginas com a API `Windows.Data.Pdf`.
+- **Fechar issue:** o GitHub só fecha no merge se o PR disser `Closes #N`, e o critério é a Definition of
+  Done inteira da Spec, não a aprovação do texto. Modelo: a seção 12 da SPEC-001, com tabela de evidência
+  dizendo qual teste cobre cada CA, INV e RNF. **Rascunho mergeado não é Spec aprovada.**
+- **Estado em 2026-10-22 (etapa 28):** spec v0.1.9. SPEC-001 e 002 concluídas; 003 a 005 aprovadas, com
+  a conferência do código pendente (2dart5, que o Enzo decidiu não assumir). SPEC-006 a 009, 011, 020,
+  021, 024 e 026 estão na `main` como **rascunhos não aprovados**; a próxima a aprovar é a SPEC-006.
+  Issues: 61 fechadas, 46 abertas.
 
 ## Arquitetura
 
@@ -102,7 +113,10 @@ são recebe o tempo como parâmetro. É isso que torna as regras temporais test�
 
 Todo método de `aplicacao/` que muda estado segue a mesma ordem, e vale seguir ao adicionar um novo:
 autoriza → valida no domínio → `assegurarTransicao` na máquina de estados → grava em transação →
-registra auditoria e notifica.
+registra auditoria e notifica. Nessa ordem, a máquina e a auditoria ficam na aplicação, não no
+repositório. A auditoria leva o **ator real**: `atorId: null` significa "o sistema" (§9.2, OPEN-104) e
+só vale para rotina temporal. A comissão passa por `aplicacao/comissao.js`, cujo `transicionar()`
+exige o ator explícito.
 
 Cálculo que a tela precisa mostrar é composto na **aplicação**, não na view: `horarios.detalhe()`
 devolve o preço vigente *e* a projeção da régua (`projetarRegua`), e a interface só desenha. Se uma
@@ -154,6 +168,10 @@ o intervalo falhar.
   `vazio(texto, { titulo, acoes: [[href, rótulo]] })` — estado vazio sem ação é um beco.
 - **`grade-2/3/4` usam `minmax(min(Xpx, 100%), 1fr)`.** O `min()` não é enfeite: sem ele a coluna
   fica mais larga que a viewport em 320 px e a página inteira rola para o lado.
+- **Dentro de `.grade`, o espaço vem do `gap`.** Margem de irmão desalinha a linha: `.cartao + .cartao`
+  descia o 2º e o 3º cartão 12 px, e o último `.campo` (sem margem) descia o botão. Por isso existem
+  `.grade > .cartao + .cartao` e `.grade-campos`. Do mesmo jeito, `.preco` é flex: `text-align` não o
+  move, e quem alinha é `justify-content`.
 - **A Bricolage é mais larga que a fonte do sistema.** Texto novo pode quebrar mal em 320 px (a
   etiqueta do hero deixava "h" sozinho; resolvido com `&nbsp;`). Confira nessa largura.
 - **Chrome headless não desce abaixo de 500 px de janela**: um print com `--window-size=320` é só um
@@ -162,8 +180,17 @@ o intervalo falhar.
   `C:/Program Files/Git/buscar`). Use `MSYS_NO_PATHCONV=1` ao passar rotas para scripts.
 - **Os arquivos são CRLF.** Buscar um trecho com `\n` no meio falha em silêncio, e `sed` quebra em
   linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`.
-- **Cinco regras ainda não têm teste nomeado** (RN-00, RN-05, RN-08, RN-11, RN-33; issue
-  T-68). "Tudo verde" não significa "toda regra coberta".
+- **A RN-05 ainda tem teste só parcial** (issue T-68): "tudo verde" não significa "toda regra coberta".
+- **PR empilhado não chega à `main`.** Se o PR B aponta para a branch do PR A e A é mergeado antes,
+  B entra só na branch de A. Aconteceu com os #111–#113 (recuperados no #114). Abra todo PR contra a
+  `main`, mesmo partindo da branch de outro.
+- **SQLite não tem `ADD COLUMN IF NOT EXISTS`.** O `schema.sql` é reexecutado a cada início, então
+  coluna nova em tabela existente precisa entrar também em `migrar()` (`infra/db/conexao.js`),
+  checando `PRAGMA table_info` e preenchendo as linhas antigas. Exemplo: `usuario.reputacao_inicial`.
+- **Invariante de estado inicial não cabe em `CHECK`**, porque o estado muda depois. Use gatilho
+  `BEFORE INSERT`, como `usuario_nasce_no_estado_inicial` (SPEC-002 INV-004).
+- **Normalização de entrada mora num lugar só.** O e-mail era minusculizado na busca e aparado na
+  gravação, e um repetido com espaços estourava `UNIQUE`. Hoje é `normalizarEmail()` no repositório.
 
 ## Testes
 
@@ -190,7 +217,7 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.6): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.9): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
@@ -213,3 +240,4 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 | `LLM_TIMEOUT_MS` | `15000` | teto da espera pela interpretação (RNF-05) |
 | `ANTHROPIC_API_KEY` | — | só com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | intervalo das rotinas temporais |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | e-mail mostrado à conta suspensa (RF-004) |

@@ -8,7 +8,7 @@
  */
 
 import { calcularPreco, proximoDegrau } from '../dominio/precificacao.js';
-import { minutosEntre, adicionarMinutos } from '../dominio/tempo.js';
+import { minutosEntre, adicionarMinutos, paraDate } from '../dominio/tempo.js';
 import * as horariosRepo from '../infra/repositorios/horarios.js';
 
 /**
@@ -18,22 +18,26 @@ import * as horariosRepo from '../infra/repositorios/horarios.js';
  * @param {string} agoraIso instante de referencia
  */
 export function precificar(horario, faixas, p, agoraIso) {
+  // Minutos inteiros servem para exibição, mas arredondar para baixo
+  // antecipava a mudança de preço em até 59,999 segundos (RN-01).
+  const antecedenciaExata = (paraDate(horario.inicio).getTime()
+    - paraDate(agoraIso).getTime()) / 60_000;
   const antecedencia = minutosEntre(agoraIso, horario.inicio);
 
   const preco = calcularPreco({
     precoBase: horario.preco_base_snapshot,
     precoMinimo: horario.preco_minimo_snapshot ?? 0,
     faixas,
-    antecedenciaMin: antecedencia,
+    antecedenciaMin: antecedenciaExata,
     tetoPct: p.desconto_maximo_pct,
   });
 
-  const degrau = proximoDegrau(faixas, antecedencia);
+  const degrau = proximoDegrau(faixas, antecedenciaExata);
 
   return {
     ...preco,
     antecedenciaMin: antecedencia,
-    reservavel: antecedencia >= p.antecedencia_min_reserva_min && horario.estado === 'PUBLICADO',
+    reservavel: antecedenciaExata >= p.antecedencia_min_reserva_min && horario.estado === 'PUBLICADO',
     proximoDegrau: degrau && {
       ...degrau,
       // instante em que o proximo degrau entra em vigor

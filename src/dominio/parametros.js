@@ -6,6 +6,30 @@
  * apenas para fatos posteriores.
  */
 
+import { ErroDeRegra } from './erros.js';
+
+/**
+ * P-22 — deltas inteiros configuráveis; mesmo sinal e faixa de metade ao dobro.
+ * Na spec é um parâmetro só (a tabela da RN-23), então todos levam o id P-22 e se
+ * distinguem pelo rótulo.
+ */
+const DELTAS_REPUTACAO = {
+  delta_reputacao_conclusao: [1, 'atendimento concluído'],
+  delta_reputacao_avaliacao_5: [3, 'avaliação nota 5'],
+  delta_reputacao_avaliacao_4: [1, 'avaliação nota 4'],
+  delta_reputacao_avaliacao_3: [0, 'avaliação nota 3'],
+  delta_reputacao_avaliacao_2: [-2, 'avaliação nota 2'],
+  delta_reputacao_avaliacao_1: [-4, 'avaliação nota 1'],
+  delta_reputacao_cancelamento_cliente_livre: [0, 'cliente cancela na faixa livre'],
+  delta_reputacao_cancelamento_cliente_parcial: [-3, 'cliente cancela na faixa parcial'],
+  delta_reputacao_cancelamento_cliente_total: [-6, 'cliente cancela na faixa total'],
+  delta_reputacao_cancelamento_prestador_livre: [-1, 'prestador cancela na faixa livre'],
+  delta_reputacao_cancelamento_prestador_parcial: [-5, 'prestador cancela na faixa parcial'],
+  delta_reputacao_cancelamento_prestador_total: [-10, 'prestador cancela na faixa total'],
+  delta_reputacao_noshow: [-12, 'no-show'],
+  delta_reputacao_disputa_contra: [-8, 'disputa decidida contra'],
+};
+
 export const PARAMETROS = {
   janela_confirmacao_min: {
     id: 'P-01', rotulo: 'Janela de confirmação do prestador',
@@ -39,7 +63,7 @@ export const PARAMETROS = {
   },
   cancelamento_total_h: {
     id: 'P-07', rotulo: 'Penalidade total abaixo de (Y)',
-    padrao: 2, min: 1, max: 6, unidade: 'h',
+    padrao: 2, min: 0.5, max: 6, unidade: 'h', decimal: true,
     ajuda: 'Abaixo desta antecedência, a penalidade é a máxima.',
   },
   reputacao_inicial: {
@@ -118,6 +142,16 @@ export const PARAMETROS = {
     padrao: 20, min: 1, max: 200, unidade: 'buscas',
     ajuda: 'Trava de custo do provedor de LLM.',
   },
+  ...Object.fromEntries(Object.entries(DELTAS_REPUTACAO).map(([chave, [padrao, evento]]) => {
+    const min = padrao < 0 ? 2 * padrao : (padrao > 0 ? Math.ceil(padrao / 2) : 0);
+    const max = padrao < 0 ? Math.floor(padrao / 2) : (padrao > 0 ? 2 * padrao : 0);
+    return [chave, {
+      id: 'P-22',
+      rotulo: `Reputação: ${evento}`,
+      padrao, min, max, unidade: 'pts',
+      ajuda: 'Pontos somados à reputação (negativo tira). Mesmo sinal do padrão, de metade ao dobro.',
+    }];
+  })),
 };
 
 /** Mapa chave -> valor padrao. */
@@ -138,19 +172,39 @@ export function normalizarParametro(chave, valorBruto) {
   const meta = PARAMETROS[chave];
   if (!meta) throw new Error(`Parâmetro desconhecido: ${chave}`);
 
+  const faixa = meta.opcoes
+    ? meta.opcoes.join(' ou ')
+    : `${meta.min} a ${meta.max} ${meta.unidade ?? ''}`.trim();
+
+  const rejeitar = (motivo) => {
+    throw new ErroDeRegra(
+      'RN-00',
+      `${meta.id} — ${meta.rotulo}: ${motivo} Valor permitido: ${faixa}.`,
+      { parametro: meta.id, chave, faixa },
+    );
+  };
+
   if (meta.opcoes) {
-    const v = String(valorBruto).toUpperCase();
-    if (!meta.opcoes.includes(v)) {
-      throw new Error(`${meta.rotulo}: valor inválido. Use ${meta.opcoes.join(' ou ')}.`);
-    }
-    return v;
+    if (typeof valorBruto !== 'string') rejeitar('tipo inválido.');
+    const valor = valorBruto.trim().toUpperCase();
+    if (!meta.opcoes.includes(valor)) rejeitar('opção inválida.');
+    return valor;
   }
 
-  const numero = meta.decimal ? Number(String(valorBruto).replace(',', '.')) : Number.parseInt(valorBruto, 10);
-  if (!Number.isFinite(numero)) throw new Error(`${meta.rotulo}: informe um número.`);
-  if (numero < meta.min || numero > meta.max) {
-    throw new Error(`${meta.rotulo}: use um valor entre ${meta.min} e ${meta.max} ${meta.unidade ?? ''}.`.trim());
+  // parseInt('90abc') e parseInt('90.5') aceitavam valores incorretos.
+  // RN-00 exige o tipo integral, não apenas um prefixo numérico válido.
+  if (typeof valorBruto !== 'string' && typeof valorBruto !== 'number') {
+    rejeitar('tipo inválido.');
   }
+  const texto = String(valorBruto).trim();
+  const formato = meta.decimal ? /^[+-]?\d+(?:[.,]\d+)?$/ : /^[+-]?\d+$/;
+  if (!formato.test(texto)) rejeitar('informe um número no formato esperado.');
+
+  const numero = Number(meta.decimal ? texto.replace(',', '.') : texto);
+  if (!Number.isFinite(numero) || (!meta.decimal && !Number.isSafeInteger(numero))) {
+    rejeitar('número inválido.');
+  }
+  if (numero < meta.min || numero > meta.max) rejeitar('fora da faixa permitida.');
   return numero;
 }
 

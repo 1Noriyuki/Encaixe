@@ -32,7 +32,7 @@ import {
 } from '../dominio/cancelamento.js';
 import {
   assegurarJanelaNoShow, assegurarAtendimentoTerminou, fimDoHorario,
-  prazoDisputa, prazoSlaDisputa, prazoAvaliacao,
+  prazoDisputa, prazoSlaDisputa, prazoAvaliacao, prazoAutoConclusao,
 } from '../dominio/prazos.js';
 import { calcularComissao, competenciaDe } from '../dominio/comissao.js';
 import {
@@ -161,7 +161,12 @@ export function confirmar({ prestadorId, agendamentoId }) {
 /** Compartilhado entre confirmacao manual (RF-042) e automatica (RF-046). */
 function aplicarConfirmacao(ag, agora, atorId, acao) {
   assegurarTransicao('agendamento', ag.estado, 'CONFIRMADO');
-  agendamentosRepo.atualizar(ag.id, { estado: 'CONFIRMADO', confirmado_em: agora });
+  // RN-00 / P-17: guarda o prazo com a configuração vigente na confirmação.
+  const prazoCongelado = prazoAutoConclusao(ag.inicio, ag.duracao_min, params());
+  agendamentosRepo.atualizar(ag.id, {
+    estado: 'CONFIRMADO', confirmado_em: agora,
+    autoconclusao_prazo_em: prazoCongelado,
+  });
 
   assegurarTransicao('horario', ag.horario_estado, 'OCUPADO');
   horariosRepo.atualizarEstado(ag.horario_id, 'OCUPADO');
@@ -338,7 +343,7 @@ export function cancelar({ usuarioId, agendamentoId, motivo = '' }) {
 
     const antecedencia = minutosEntre(agora, ag.inicio);
     const faixa = faixaDeCancelamento(antecedencia, p);
-    const penalidade = penalidadeDeCancelamento(faixa, papel); // lanca se ja comecou
+    const penalidade = penalidadeDeCancelamento(faixa, papel, p); // lanca se ja comecou
 
     const novoEstado = papel === 'CLIENTE' ? 'CANCELADO_CLIENTE' : 'CANCELADO_PRESTADOR';
     assegurarTransicao('agendamento', ag.estado, novoEstado);
@@ -437,10 +442,11 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
       horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
     }
 
+    const deltaNoShow = p.delta_reputacao_noshow ?? DELTA_NO_SHOW;
     reputacao.aplicarEvento({
       usuarioId: alvoId,
       tipo: TIPO_EVENTO.NO_SHOW,
-      delta: DELTA_NO_SHOW,
+      delta: deltaNoShow,
       origemTipo: 'agendamento',
       origemId: ag.id,
     });
@@ -448,7 +454,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     auditoria.registrar({
       atorId: usuarioId, acao: 'NO_SHOW_REGISTRADO', entidade: 'agendamento',
       entidadeId: ag.id, de: ag.estado, para: novoEstado,
-      detalhe: { acusador: papel, alvoId, delta: DELTA_NO_SHOW, regra: 'RN-20' },
+      detalhe: { acusador: papel, alvoId, delta: deltaNoShow, regra: 'RN-20' },
     });
 
     const prazo = prazoDisputa(ag.inicio, ag.duracao_min, p);
@@ -457,7 +463,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
       titulo: 'Registraram sua ausência em um atendimento',
       agendamentoId: ag.id,
       mensagem: `Foi registrada sua ausência no atendimento de ${formatarDataHora(ag.inicio)}. `
-        + `Sua reputação caiu ${Math.abs(DELTA_NO_SHOW)} pontos. `
+        + `Sua reputação caiu ${Math.abs(deltaNoShow)} pontos. `
         + `Se você discorda, abra uma disputa até ${formatarDataHora(prazo)}.`,
     });
 
@@ -573,14 +579,15 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
     horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
   }
 
-  const lancamento = apurarComissao(ag, agora);
+  const lancamento = apurarComissao(ag, agora, atorId);
 
-  // +1 para os dois lados: atendimento concluido sem incidente (RN-23).
+  // P-22 vigente ao concluir, congelado em cada evento do livro-razão (RN-23).
+  const deltaConclusao = params().delta_reputacao_conclusao ?? DELTA_CONCLUSAO;
   for (const id of [ag.cliente_id, ag.prestador_id]) {
     reputacao.aplicarEvento({
       usuarioId: id,
       tipo: TIPO_EVENTO.CONCLUSAO,
-      delta: DELTA_CONCLUSAO,
+      delta: deltaConclusao,
       origemTipo: 'agendamento',
       origemId: ag.id,
     });
@@ -613,13 +620,13 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
 }
 
 /** RN-14 a RN-16 - lancamento de comissao sobre o valor final travado. */
-function apurarComissao(ag, agora) {
+function apurarComissao(ag, agora, atorId) {
   const existente = financeiroRepo.porAgendamento(ag.id);
   if (existente) return existente;
 
   const calculo = calcularComissao(ag.valor_travado, ag.percentual_comissao);
 
-  financeiroRepo.criarLancamento({
+  const lancamentoId = financeiroRepo.criarLancamento({
     agendamento_id: ag.id,
     valor_bruto: calculo.valorBruto,
     percentual_aplicado: calculo.percentualAplicado,
@@ -630,9 +637,11 @@ function apurarComissao(ag, agora) {
     criado_em: agora,
   });
 
+  // RF-084 / §9.7.1: o nascimento EFETIVADO abre a trilha do proprio lancamento,
+  // com o ator que concluiu (null so na conclusao automatica).
   auditoria.registrar({
-    atorId: null, acao: 'COMISSAO_APURADA', entidade: 'agendamento', entidadeId: ag.id,
-    detalhe: calculo,
+    atorId, acao: 'COMISSAO_APURADA', entidade: 'comissao', entidadeId: lancamentoId,
+    de: null, para: 'EFETIVADO', detalhe: { agendamentoId: ag.id, ...calculo },
   });
 
   return financeiroRepo.porAgendamento(ag.id);

@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 0.1.0 |
-| Data | 2026-10-18 |
-| Status | **Proposta em rascunho; aguarda revisão e aprovação da equipe.** Não implementar antes da aprovação |
+| Versão | 1.0.0 |
+| Data | 2026-10-20 |
+| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. Seguem abertas as questões da §13: matriz de eventos e destinatários, atomicidade, paginação e OPEN-03 |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 4 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · plan §2 e §5 |
 

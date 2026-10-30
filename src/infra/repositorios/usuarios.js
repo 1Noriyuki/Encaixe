@@ -6,11 +6,21 @@ import { um, varios, inserir, executar, contar } from '../db/conexao.js';
 
 // ------------------------------------------------------------------- contas
 
+/**
+ * RF-002 (OPEN-208): o e-mail e comparado sem os espacos das pontas e sem
+ * diferenciar maiusculas. Normalizar so aqui garante que cadastro, checagem de
+ * duplicidade e login enxergam o mesmo valor.
+ */
+export function normalizarEmail(email) {
+  return String(email ?? '').trim().toLowerCase();
+}
+
+/** A reputacao com que a conta nasce fica gravada como a inicial dela (RN-23). */
 export function criar({ nome, email, senha_hash, perfil, estado_conta, reputacao, criado_em }) {
   return inserir(
-    `INSERT INTO usuario (nome, email, senha_hash, perfil, estado_conta, reputacao, criado_em)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    nome, email.toLowerCase(), senha_hash, perfil, estado_conta, reputacao, criado_em,
+    `INSERT INTO usuario (nome, email, senha_hash, perfil, estado_conta, reputacao, reputacao_inicial, criado_em)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    nome, normalizarEmail(email), senha_hash, perfil, estado_conta, reputacao, reputacao, criado_em,
   );
 }
 
@@ -24,11 +34,11 @@ export function porId(id) {
 }
 
 export function porEmail(email) {
-  return um('SELECT * FROM usuario WHERE email = ?', String(email ?? '').toLowerCase());
+  return um('SELECT * FROM usuario WHERE email = ?', normalizarEmail(email));
 }
 
 export function emailExiste(email) {
-  return contar('SELECT COUNT(*) AS total FROM usuario WHERE email = ?', String(email ?? '').toLowerCase()) > 0;
+  return contar('SELECT COUNT(*) AS total FROM usuario WHERE email = ?', normalizarEmail(email)) > 0;
 }
 
 export function atualizarEstadoConta(id, estado) {
@@ -45,11 +55,15 @@ export function atualizarSenha(id, senhaHash) {
 
 // ------------------------------------------------------------------ perfis
 
-export function criarPerfilPrestador({ usuario_id, nome_exibicao, descricao = '', regiao_id = null }) {
+export function criarPerfilPrestador({
+  usuario_id, nome_exibicao, descricao = '', regiao_id = null,
+  janela_confirmacao_min, politica_expiracao,
+}) {
   executar(
-    `INSERT INTO perfil_prestador (usuario_id, nome_exibicao, descricao, regiao_id)
-     VALUES (?, ?, ?, ?)`,
-    usuario_id, nome_exibicao, descricao, regiao_id,
+    `INSERT INTO perfil_prestador
+       (usuario_id, nome_exibicao, descricao, regiao_id, janela_confirmacao_min, politica_expiracao)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    usuario_id, nome_exibicao, descricao, regiao_id, janela_confirmacao_min, politica_expiracao,
   );
 }
 

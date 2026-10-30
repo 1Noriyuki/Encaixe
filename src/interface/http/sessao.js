@@ -8,7 +8,7 @@
 
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { um, executar, inserir } from '../../infra/db/conexao.js';
-import { agoraIso, adicionarHoras, antesDe } from '../../dominio/tempo.js';
+import { agoraIso, adicionarHoras, antesDe, minutosEntre } from '../../dominio/tempo.js';
 import * as usuariosRepo from '../../infra/repositorios/usuarios.js';
 
 const COOKIE = 'encaixe_sid';
@@ -17,6 +17,10 @@ const COOKIE = 'encaixe_sid';
 // inatividade e anda a cada uso, mas nunca passa de `criada_em` + teto.
 const INATIVIDADE_HORAS = 2;
 const TETO_HORAS = 12;
+// O ADR-004 pede que a renovacao nao escreva no banco a cada requisicao: so
+// grava quando o prazo andaria ao menos isto. Custo: a sessao pode expirar ate
+// 1 min antes das 2 h exatas de inatividade.
+const RENOVACAO_MINIMA_MIN = 1;
 
 /** Mensagens efemeras entre requisicoes (pos-redirect). Vivem so no processo. */
 const avisos = new Map();
@@ -56,10 +60,13 @@ export function carregarSessao(req) {
   const usuario = usuariosRepo.porId(sessao.usuario_id);
   if (!usuario) return null;
 
-  const expiraEm = proximoPrazo(sessao.criada_em, agora);
-  executar('UPDATE sessao SET expira_em = ? WHERE id = ?', expiraEm, id);
+  const prazo = proximoPrazo(sessao.criada_em, agora);
+  if (minutosEntre(sessao.expira_em, prazo) < RENOVACAO_MINIMA_MIN) {
+    return { ...sessao, usuario };
+  }
+  executar('UPDATE sessao SET expira_em = ? WHERE id = ?', prazo, id);
 
-  return { ...sessao, expira_em: expiraEm, usuario };
+  return { ...sessao, expira_em: prazo, usuario };
 }
 
 export function encerrarSessao(id) {

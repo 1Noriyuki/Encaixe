@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.2.0 |
-| Data | 2026-10-08 |
-| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões das OPEN-12, 202 e 203; v1.2.0, as das OPEN-01, 02 e 210 (2026-10-08), todas aprovadas. Seguem abertas as OPEN 201, 204 a 209 |
-| Layout | [canvas com 8 telas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) · fontes em [`layouts/SPEC-002/`](layouts/SPEC-002/) · aguardando aprovação |
+| Versão | 1.4.0 |
+| Data | 2026-10-20 |
+| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões das OPEN-12, 202 e 203; v1.2.0, as das OPEN-01, 02 e 210 (2026-10-08); v1.3.0, as das OPEN-201 e 204 a 209 e o INV-004 no banco (2026-10-20, registro etapa 24); v1.4.0, o canal de contato da conta suspensa (spec v0.1.9, etapa 25). Nenhuma OPEN segue aberta |
+| Layout | [canvas com 8 telas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) · fontes em [`layouts/SPEC-002/`](layouts/SPEC-002/) · **aprovado** por Enzo em 2026-10-20 (registro, etapa 23). O `[CANAL DE CONTATO]` virou o e-mail de suporte na etapa 25 |
 
 > **v0.1.1:** acrescentados o layout das telas (seção 8.1) e a OPEN-210. Nenhum critério, invariante ou
 > escopo mudou.
@@ -126,12 +126,12 @@
 | INV-001 | O e-mail é único entre todas as contas | teste: segundo cadastro com o mesmo e-mail é recusado; a unicidade também é garantida no banco | RF-002, spec §9.2 |
 | INV-002 | Nenhuma senha é armazenada ou registrada em texto puro, nem na conta, nem na auditoria, nem no log | teste: inspeção da conta e da auditoria após o cadastro | RNF-02, `seguranca.md` §6 |
 | INV-003 | Cada hash de senha usa sal próprio: duas contas com a mesma senha têm hashes diferentes | teste | RNF-02 |
-| INV-004 | Conta de cliente nasce `ATIVO`; conta de prestador nasce `PENDENTE_APROVACAO`; nenhuma outra combinação é possível pelo cadastro | teste por perfil mais tentativa com perfil `ADMIN` | RF-001, RF-003, RN-28 |
+| INV-004 | Conta de cliente nasce `ATIVO`; conta de prestador nasce `PENDENTE_APROVACAO`; nenhuma outra combinação é possível pelo cadastro | teste por perfil mais tentativa com perfil `ADMIN`; no banco, gatilho `BEFORE INSERT` que olha só a criação | RF-001, RF-003, RN-28 |
 | INV-005 | A resposta de autenticação recusada é idêntica para e-mail inexistente e para senha errada | teste comparando as duas respostas | RF-005 |
 | INV-006 | Nenhuma sessão é criada para credencial inválida ou conta `SUSPENSO` | teste | RF-004, RF-005 |
 | INV-007 | Sessão expirada ou encerrada não autentica | teste com relógio controlado e teste de logout | RNF-02, ADR-004 |
 | INV-008 | A criação de conta gera exatamente um registro de auditoria da transição inicial | teste | RF-084, INV-13 (via SPEC-001) |
-| INV-009 | A reputação inicial é a P-08 vigente no instante do cadastro e respeita [0, 100] | teste com P-08 alterado antes do cadastro | RN-23, INV-07 |
+| INV-009 | A reputação inicial é a P-08 vigente no instante do cadastro, fica gravada na conta e respeita [0, 100]; mudar a P-08 depois não a altera | teste com P-08 alterado antes do cadastro e depois dele | RN-23, RN-00, INV-07 |
 
 ## 7. Modelo de domínio envolvido
 
@@ -165,7 +165,7 @@ JavaScript. [Ver o canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW).
 |---|---|---|
 | Entrar | CA-06 | |
 | Entrar · credencial inválida | CA-07, INV-005 | mensagem única com o selo `RF-005`; o e-mail digitado é mantido, a senha não |
-| Entrar · conta suspensa | CA-08 | decisão da OPEN-203 aprovada; canal de contato não definido → `[CANAL DE CONTATO]` |
+| Entrar · conta suspensa | CA-08 | decisão da OPEN-203 aprovada; canal de contato é o e-mail de suporte (`CONTATO_SUPORTE`, etapa 25) |
 | Criar conta | CA-01, CA-02, CA-05 | perfil escolhido entre duas opções; só o campo Nome além de e-mail e senha (OPEN-205); política de senha visível (OPEN-201); nota `RN-28` |
 | Criar conta · campos inválidos | CA-03, CA-04 | e-mail indisponível (`RF-002`) e senha fora da política, erro no próprio campo |
 | Prestador · aguardando aprovação | CA-02, CA-12 | já autenticado (OPEN-210); a tela aponta para preparar perfil, serviços e régua |
@@ -232,7 +232,8 @@ genérica não está na baseline e fica a cargo da implementação, desde que cu
 **CA-08 — Conta suspensa**
 - **Dado** uma conta `SUSPENSO` com senha correta,
 - **quando** o titular tenta se autenticar,
-- **então** a autenticação é recusada com a mensagem de que a conta está suspensa, e nenhuma sessão é criada.
+- **então** a autenticação é recusada com a mensagem de que a conta está suspensa e com o e-mail de contato da
+  administração (RF-004), e nenhuma sessão é criada.
 
 **CA-09a — Expiração por inatividade**
 - **Dado** uma sessão usada pela última vez no instante t,
@@ -277,6 +278,9 @@ genérica não está na baseline e fica a cargo da implementação, desde que cu
 | `T-CONTA-01g \| RF-084: criacao de conta gera um registro de auditoria` | CA-01, INV-008 |
 | `T-CONTA-01h \| RN-23: reputacao inicial usa P-08 vigente no cadastro` | INV-009 |
 | `T-CONTA-01i \| RF-001: cadastro aceito ja sai com sessao valida` | CA-12 |
+| `T-CONTA-01j \| RF-002: e-mail com espacos ou maiusculas e o mesmo e-mail` | CA-03, INV-001 |
+| `T-CONTA-01k \| SPEC-002 INV-004: o banco recusa conta nascida no estado errado` | INV-004 |
+| `T-CONTA-01l \| RN-00: mudar P-08 nao altera a reputacao de conta existente` | INV-009 |
 | `T-SESSAO-01 \| RF-004: login valido cria sessao com cookie HttpOnly e SameSite` | CA-06 |
 | `T-SESSAO-02 \| RF-005: credencial invalida devolve mensagem generica identica` | CA-07, INV-005, INV-006 |
 | `T-SESSAO-03 \| RN-28: conta suspensa nao autentica e recebe mensagem propria` | CA-08, INV-006 |
@@ -284,6 +288,7 @@ genérica não está na baseline e fica a cargo da implementação, desde que cu
 | `T-SESSAO-04a \| RNF-02: 2 h sem uso expiram a sessao` | CA-09a, INV-007 |
 | `T-SESSAO-04b \| RNF-02: cada uso renova o prazo de inatividade` | CA-09b |
 | `T-SESSAO-04c \| RNF-02: 12 h desde o login expiram a sessao mesmo em uso` | CA-09c, INV-007 |
+| `T-SESSAO-04d \| RNF-02: a renovacao nao grava no banco a cada requisicao` | ADR-004 (revisão) |
 | `T-SESSAO-07 \| RF-004: pendente, reprovado, em revisao e restrito autenticam` | CA-11 |
 | `T-SESSAO-05 \| RNF-02: logout revoga a sessao` | CA-10, INV-007 |
 | `T-SESSAO-06 \| RNF-03: identificador de sessao forjado nao autentica` | RNF-03 |
@@ -300,15 +305,15 @@ Herdadas do mapa e pertinentes a esta Spec:
 
 Novas, surgidas nesta Spec:
 
-- **OPEN-201 — decisão necessária:** a política de senha não está na spec. RF-001 diz só "senha válida". A regra "8 caracteres, misturando letras e números" aparece apenas em `seguranca.md` §3. Decisão: promovê-la à spec (como RNF ou parâmetro) ou manter o documento de segurança como fonte.
+- ~~**OPEN-201**~~ **resolvida em 2026-10-20:** a política (8 caracteres, letras e números) entra na RF-001 e não vira parâmetro, para o admin não poder baixar um piso de segurança. Pergunta original: a política de senha não está na spec. RF-001 diz só "senha válida". A regra "8 caracteres, misturando letras e números" aparece apenas em `seguranca.md` §3. Decisão: promovê-la à spec (como RNF ou parâmetro) ou manter o documento de segurança como fonte.
 - ~~**OPEN-202**~~ **resolvida em 2026-10-01:** todos os estados autenticam, exceto `SUSPENSO` (RF-004, spec v0.1.5; CA-11). Texto original: a autenticação de contas `PENDENTE_APROVACAO`, `REPROVADO` e `EM_REVISAO`. RF-004 só exclui "suspensa". Não está definido se um prestador pendente pode entrar para ver o andamento, nem se um reprovado pode entrar para ler o motivo.
 - ~~**OPEN-203**~~ **resolvida em 2026-10-01:** conta suspensa não autentica, recebe mensagem própria com a senha certa, e a suspensão encerra as sessões (RN-28, spec v0.1.5; CA-08). Texto original: a RN-28 diz que a conta `SUSPENSO` "não autentica **em funcionalidades de negócio**", o que sugere que ela autentica mas fica bloqueada. Já a RF-004 condiciona o login a "conta não suspensa", ou seja, sem login algum. Esta Spec segue a RF-004 (CA-08) até a decisão.
-- **OPEN-204 — decisão necessária:** o logout não tem RF. Ele vem do ADR-004 e da tarefa T-11. Incluí-lo na spec como requisito?
-- **OPEN-205 — decisão necessária:** quais dados o cadastro exige além de e-mail, senha e perfil. `Usuario.nome` existe no modelo, e `PerfilCliente.telefone` também, mas RF-001 não exige nenhum dos dois.
-- **OPEN-206 — decisão necessária:** como nasce uma conta de admin. Nenhum RF trata disso, e o cadastro público só oferece cliente e prestador.
-- **OPEN-207 — decisão necessária:** a reputação inicial P-08 não é um evento, mas o INV-08 diz que a reputação é **sempre igual à soma** dos eventos. Uma conta nova teria soma 0 e reputação 70. Decisão: a reputação passa a ser "P-08 + soma dos eventos", ou a conta nasce com um evento de abertura? Afeta principalmente SPEC-006.
-- **OPEN-208 — decisão necessária:** a normalização do e-mail (maiúsculas e minúsculas, espaços). Não está definido se `Ana@x.dev` e `ana@x.dev` são o mesmo e-mail para RF-002.
-- **OPEN-209 — decisão necessária:** a RF-002 manda dizer que o e-mail "não está disponível", o que revela que ele já existe. Já o modelo de ameaças (`seguranca.md` A2) só protege a descoberta de e-mail no login. Aceitar a enumeração pelo cadastro como risco residual registrado, ou alterar a RF-002?
+- ~~**OPEN-204**~~ **resolvida em 2026-10-20:** o logout vira a RF-005a. Pergunta original: o logout não tem RF. Ele vem do ADR-004 e da tarefa T-11. Incluí-lo na spec como requisito?
+- ~~**OPEN-205**~~ **resolvida em 2026-10-20:** nome, e-mail, senha e perfil são obrigatórios; telefone, região e nome de exibição são opcionais (RF-001). Pergunta original: quais dados o cadastro exige além de e-mail, senha e perfil. `Usuario.nome` existe no modelo, e `PerfilCliente.telefone` também, mas RF-001 não exige nenhum dos dois.
+- ~~**OPEN-206**~~ **resolvida em 2026-10-20:** o admin nasce no procedimento de implantação (ADR-004), nunca pelo cadastro. Pergunta original: como nasce uma conta de admin. Nenhum RF trata disso, e o cadastro público só oferece cliente e prestador.
+- ~~**OPEN-207**~~ **resolvida em 2026-10-20:** reputação = P-08 da criação, gravada em `usuario.reputacao_inicial`, mais os eventos. O código recalculava com a P-08 atual e foi corrigido (T-CONTA-01l). Um evento de abertura foi descartado, porque sairia da janela P-20. Pergunta original: a reputação inicial P-08 não é um evento, mas o INV-08 diz que a reputação é **sempre igual à soma** dos eventos. Uma conta nova teria soma 0 e reputação 70. Decisão: a reputação passa a ser "P-08 + soma dos eventos", ou a conta nasce com um evento de abertura? Afeta principalmente SPEC-006.
+- ~~**OPEN-208**~~ **resolvida em 2026-10-20:** o e-mail é comparado sem espaços nas pontas e sem diferenciar maiúsculas, normalizado só no repositório. Corrigido o bug em que um e-mail repetido com espaços estourava `UNIQUE constraint failed` (T-CONTA-01j). Pergunta original: a normalização do e-mail (maiúsculas e minúsculas, espaços). Não está definido se `Ana@x.dev` e `ana@x.dev` são o mesmo e-mail para RF-002.
+- ~~**OPEN-209**~~ **resolvida em 2026-10-20:** risco residual aceito, registrado em `seguranca.md` A2; esconder exigiria confirmação por e-mail, que o MVP não tem. Pergunta original: a RF-002 manda dizer que o e-mail "não está disponível", o que revela que ele já existe. Já o modelo de ameaças (`seguranca.md` A2) só protege a descoberta de e-mail no login. Aceitar a enumeração pelo cadastro como risco residual registrado, ou alterar a RF-002?
 
 - ~~**OPEN-210**~~ **resolvida em 2026-10-08:** a conta sai autenticada do cadastro, e o prestador pendente pode preparar perfil, serviços e régua antes da aprovação; publicar segue bloqueado pela RN-08 (spec v0.1.6, UC-01; fluxo 5.1 passo 6; CA-12). A parte sobre os campos extras do formulário continua na OPEN-205. Texto original: o que acontece logo depois do cadastro. A spec não diz se a conta já sai autenticada. Divergência registrada: o código existente (`rotas/publicas.js`) autentica direto após o cadastro e leva o prestador pendente para a área dele, onde já pode cadastrar serviços e régua antes da aprovação. A spec (UC-01, passo 6) põe isso **depois** da aprovação. O cadastro do código também pede telefone, região e nome do negócio, campos que a RF-001 não exige (ver OPEN-205).
 

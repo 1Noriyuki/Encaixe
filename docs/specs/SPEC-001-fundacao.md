@@ -2,11 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
-| Data | 2026-10-01 |
-| Status | **Aprovada** pela equipe em 2026-10-01. As questões da seção 13 continuam abertas e precisam de decisão antes de declarar a Spec concluída (seção 14) |
+| Versão | 1.2.0 |
+| Data | 2026-10-22 |
+| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões de 2026-10-20 sobre as OPEN-05, 06, 08, 15, 20, 101 a 105 (spec v0.1.7, registro etapa 22). Nenhuma OPEN desta Spec segue aberta **Concluída** em 2026-10-22 (v1.2.0, registro etapa 28): código conferido, todos os CA, INV e RNF com teste; evidência na seção 12 |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 1 de 29 |
-| Baseline | `docs/spec.md` v0.1.3 · `docs/plan.md` v1.0.0 · ADR-001, ADR-002 |
+| Baseline | `docs/spec.md` v0.1.7 · `docs/plan.md` v1.0.0 · ADR-001, ADR-002 |
 
 ---
 
@@ -44,7 +44,7 @@
 2. **Leitura do valor vigente** de um parâmetro, para o escopo e o instante pedidos.
 3. **Validação** de um valor de parâmetro contra a faixa permitida.
 4. **Registro de alteração** de parâmetro com vigência (`vigente_desde`) e autor (`atualizado_por`), garantindo que a alteração não retroage.
-5. **Declaração das quatro máquinas de estado** e uma única operação de verificação que recusa qualquer transição não declarada.
+5. **Declaração das cinco máquinas de estado** (as quatro da spec §9.4 a §9.7 e a do `LancamentoComissao`, §9.7.1) e uma única operação de verificação que recusa qualquer transição não declarada.
 6. **Registro de auditoria** de toda transição de estado, na mesma unidade atômica da própria transição, com identificador de correlação.
 
 ### Fora do escopo
@@ -58,7 +58,6 @@
 | Notificar as partes de uma transição | SPEC-004 |
 | Auditoria de acesso negado | SPEC-003 |
 | Auditoria de ação administrativa e de interpretação do LLM, e a consulta da trilha | SPEC-029 |
-| Máquina de estados do `LancamentoComissao` (`EFETIVADO`/`RETIDO`/`ESTORNADO`) | não declarada na baseline (OPEN-105) |
 
 ## 4. Dependências
 
@@ -74,12 +73,11 @@
 
 - **Pré-condições:** o parâmetro está no catálogo (seção 7.1).
 - **Fluxo principal:**
-  1. O chamador pede o parâmetro pela chave, com o escopo (global, prestador ou serviço, conforme o parâmetro) e o instante de referência.
-  2. O sistema localiza o registro de maior `vigente_desde` que seja menor ou igual ao instante de referência, no escopo pedido.
+  1. O chamador pede o parâmetro pela chave, e o instante de referência. Os parâmetros de escopo `P` são lidos do perfil do prestador e o P-13 da categoria; esta operação cobre os de escopo `G`.
+  2. O sistema localiza o registro de maior `vigente_desde` que seja menor ou igual ao instante de referência.
   3. O sistema devolve o valor.
 - **Fluxos alternativos:**
-  - 2a. Não existe registro no escopo específico (prestador ou serviço): o sistema usa o valor global vigente (ver OPEN-103).
-  - 2b. Não existe registro algum: o sistema devolve o valor padrão da spec §6.1.
+  - 2a. Não existe registro algum: o sistema devolve o valor padrão da spec §6.1.
 - **Fluxo de exceção:**
   - 1a. A chave não está no catálogo: a operação é recusada como erro de programação, não como erro de regra, e nenhum valor padrão é inventado.
 - **Pós-condições:** nenhuma alteração de estado.
@@ -113,7 +111,7 @@
   1. Dentro da mesma unidade atômica que grava o novo estado, o sistema grava um `LogAuditoria` com ator, ação, tipo e identificador da entidade, estado anterior, estado novo, identificador de correlação e instante.
   2. A unidade atômica é confirmada: o estado novo e o registro passam a existir juntos.
 - **Fluxos alternativos:**
-  - 1a. A transição foi disparada por rotina temporal, sem ator humano: o registro identifica o sistema como ator (ver OPEN-104).
+  - 1a. A transição foi disparada por rotina temporal, sem ator humano: o registro tem `ator_id` nulo, que identifica o sistema; a rotina é nomeada em `acao` e cada execução tem sua própria correlação.
 - **Fluxo de exceção:**
   - 1b. A gravação da auditoria falha: a unidade atômica inteira é desfeita e o estado não muda (INV-003).
 - **Pós-condições:** para toda mudança persistida de `estado` existe exatamente um registro correspondente.
@@ -141,12 +139,12 @@
 |---|---|
 | `chave` | identifica o parâmetro do catálogo |
 | `valor` | valor vigente a partir de `vigente_desde` |
-| `escopo` | `GLOBAL`, `PRESTADOR` ou `SERVICO` |
-| `alvo_id` | prestador ou serviço, quando o escopo não é global |
+| `escopo` | `GLOBAL` (escopo `P` vive em `PerfilPrestador`; P-13 por categoria em `CategoriaServico`) |
+| `alvo_id` | sem uso enquanto só houver escopo global |
 | `vigente_desde` | instante a partir do qual o valor vale (RN-00) |
 | `atualizado_por` | autor da alteração |
 
-Catálogo exigido (spec §6.1, transcrito sem alteração):
+Catálogo exigido (spec §6.1 v0.1.7):
 
 | ID | Parâmetro | Escopo | Padrão | Faixa |
 |---|---|:--:|---|---|
@@ -161,19 +159,23 @@ Catálogo exigido (spec §6.1, transcrito sem alteração):
 | P-09 | Limiar de revisão administrativa | G | 40 | 20 a 60 |
 | P-10 | Limiar de restrição do cliente | G | 50 | 30 a 70 |
 | P-11 | Reservas simultâneas (normal / restrito) | G | 3 / 1 | 1 a 5 / 1 a 2 |
-| P-12 | Ocorrências negativas do prestador | G | 3 em 30 dias | 2 a 5 |
-| P-13 | Percentual de comissão | G / S | 12% | 8% a 15% |
+| P-12a | Ocorrências negativas do prestador | G | 3 | 2 a 5 |
+| P-12b | Janela de apuração das ocorrências | G | 30 dias | 7 a 90 dias |
+| P-13 | Percentual de comissão | G / C | 12% | 8% a 15% |
 | P-14 | Janela de avaliação | G | 7 dias | 3 a 15 dias |
 | P-15 | Prazo para abrir disputa | G | 48 h após o fim | 24 a 96 h |
-| P-16 | Janela para reportar no-show | G | +15 min do início até 24 h após o fim | — (OPEN-20) |
+| P-16a | Carência para reportar no-show | G | 15 min após o início | 5 a 60 min |
+| P-16b | Prazo final para reportar no-show | G | 24 h após o fim | 6 a 72 h |
 | P-17 | Prazo de conclusão automática | G | 24 h após o fim | 12 a 72 h |
 | P-18 | SLA de resolução de disputa | G | 72 h | 24 a 120 h |
 | P-19 | Confiança mínima do LLM | G | 0,60 | 0,40 a 0,90 |
 | P-20 | Janela móvel da reputação | G | 90 dias | 30 a 180 dias |
+| P-21 | Limite de interpretações por LLM | G | 20 por dia | 1 a 200 |
+| P-22 | Deltas de reputação | G | valores da RN-23 | metade ao dobro do padrão, mesmo sinal; prestador ≥ cliente na mesma faixa |
 
 Restrição: a alteração preserva o histórico. Um registro anterior não é sobrescrito.
 
-### 7.2 Máquinas de estado (transcrição das §9.4 a §9.7)
+### 7.2 Máquinas de estado (transcrição das §9.4 a §9.7.1)
 
 **`Agendamento`**: `PENDENTE_CONFIRMACAO → CONFIRMADO | RECUSADO | EXPIRADO | CANCELADO_CLIENTE` ·
 `CONFIRMADO → CANCELADO_CLIENTE | CANCELADO_PRESTADOR | NO_SHOW_CLIENTE | NO_SHOW_PRESTADOR | EM_DISPUTA | CONCLUIDO` ·
@@ -181,25 +183,25 @@ Restrição: a alteração preserva o histórico. Um registro anterior não é s
 `EM_DISPUTA → CONCLUIDO | NO_SHOW_CLIENTE | NO_SHOW_PRESTADOR | ARQUIVADO`.
 Terminais: `RECUSADO`, `EXPIRADO`, `CANCELADO_CLIENTE`, `CANCELADO_PRESTADOR`, `ARQUIVADO`, e `CONCLUIDO` depois de esgotado P-15.
 
-**`HorarioVago`**: `RASCUNHO → PUBLICADO` · `PUBLICADO → BLOQUEADO | CANCELADO | EXPIRADO` ·
+**`HorarioVago`**: estado inicial `PUBLICADO` · `PUBLICADO → BLOQUEADO | CANCELADO | EXPIRADO` ·
 `BLOQUEADO → OCUPADO | PUBLICADO | EXPIRADO` · `OCUPADO → ENCERRADO | CANCELADO | PUBLICADO | EXPIRADO`.
 Terminais: `CANCELADO`, `EXPIRADO`, `ENCERRADO`.
 
 **`Usuario`**: estado inicial `PENDENTE_APROVACAO` (prestador) ou `ATIVO` (cliente) ·
-`PENDENTE_APROVACAO → ATIVO | REPROVADO` · `ATIVO → RESTRITO | EM_REVISAO` · `RESTRITO → ATIVO | EM_REVISAO` ·
-`EM_REVISAO → ATIVO | SUSPENSO` · `SUSPENSO → ATIVO`. Terminal: `REPROVADO`.
+`PENDENTE_APROVACAO → ATIVO | REPROVADO | SUSPENSO` · `ATIVO → RESTRITO (só cliente) | EM_REVISAO | SUSPENSO` ·
+`RESTRITO → ATIVO | EM_REVISAO | SUSPENSO` · `EM_REVISAO → ATIVO | SUSPENSO` · `SUSPENSO → ATIVO`. Terminal: `REPROVADO`.
 
 **`Disputa`**: estado inicial `ABERTA` · `ABERTA → EM_ANALISE | RESOLVIDA` · `EM_ANALISE → RESOLVIDA`. Terminal: `RESOLVIDA`.
 
-> As lacunas já conhecidas nestas máquinas (OPEN-06, OPEN-08, OPEN-15) **não** foram corrigidas aqui.
-> Esta Spec declara as máquinas exatamente como a baseline as define. A correção, se aprovada, entra
-> primeiro na spec com registro no histórico de versões.
+**`LancamentoComissao`**: estado inicial `EFETIVADO` · `EFETIVADO → RETIDO` · `RETIDO → EFETIVADO | ESTORNADO`. Terminal: `ESTORNADO`.
+
+> As lacunas das OPEN-06, OPEN-08 e OPEN-15 foram corrigidas na spec v0.1.7 e transcritas acima.
 
 ### 7.3 `LogAuditoria` (spec §9.2)
 
 | Atributo | Papel nesta Spec |
 |---|---|
-| `ator_id` | quem causou a transição (ver OPEN-104 para o ator "sistema") |
+| `ator_id` | quem causou a transição; nulo quando foi o sistema (rotina temporal) |
 | `acao` | nome da operação que causou a transição |
 | `entidade_tipo`, `entidade_id` | qual registro mudou |
 | `estado_anterior`, `estado_novo` | a transição em si |
@@ -263,10 +265,10 @@ persistência física já tem decisão em ADR-002 e plan §6. Nenhuma rota HTTP 
 - **quando** o sistema lê P-03 com instante de referência anterior a t₁,
 - **então** obtém 60.
 
-**CA-05 — Escopo específico sobre o global**
-- **Dado** P-01 global de 15 minutos e P-01 de 30 minutos para o prestador X,
-- **quando** o sistema lê P-01 para X e para outro prestador Y,
-- **então** obtém 30 para X e 15 para Y.
+**CA-05 — Valor do perfil sobre o padrão global**
+- **Dado** P-01 com padrão global de 15 minutos e o prestador X com 30 minutos no próprio perfil,
+- **quando** o sistema lê a janela de X e de um prestador Y recém-cadastrado,
+- **então** obtém 30 para X e 15 para Y, e um valor fora de 5 a 60 minutos é recusado no perfil.
 
 **CA-06 — Transição declarada**
 - **Dado** um `Agendamento` em `PENDENTE_CONFIRMACAO`,
@@ -300,7 +302,7 @@ persistência física já tem decisão em ADR-002 e plan §6. Nenhuma rota HTTP 
 
 ## 12. Casos de teste derivados
 
-Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <comportamento>`). Os testes não são implementados nesta etapa.
+Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <comportamento>`).
 
 | Teste | Cobre |
 |---|---|
@@ -308,9 +310,9 @@ Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <compor
 | `T-PARAM-02 \| RN-00: alteracao dentro da faixa vale a partir de vigente_desde` | CA-02 |
 | `T-PARAM-03 \| RN-00: valor fora da faixa e recusado citando o parametro` (limites inferior e superior de cada parâmetro com faixa) | CA-03, INV-001 |
 | `T-PARAM-04 \| RN-00: alteracao nao retroage a leitura anterior` | CA-04, INV-002 |
-| `T-PARAM-05 \| RN-00: escopo de prestador prevalece sobre o global` | CA-05 |
+| `T-PARAM-05 \| RN-00: janela do perfil prevalece e perfil novo nasce com o padrao global` | CA-05 |
 | `T-PARAM-06 \| RNF-01: parametro alterado sobrevive a reabertura da base` | RNF-01 |
-| `T-ESTADO-01 \| INV-13: toda transicao declarada e aceita` (percorre as quatro máquinas) | CA-06 |
+| `T-ESTADO-01 \| INV-13: toda transicao declarada e aceita` (percorre as cinco máquinas) | CA-06 |
 | `T-ESTADO-02 \| INV-13: transicao nao declarada e recusada` (ao menos uma por máquina, incluindo origem terminal) | CA-07, INV-004 |
 | `T-AUDIT-01 \| RF-084: transicao persistida gera exatamente um registro` | CA-08, INV-003, INV-005 |
 | `T-AUDIT-02 \| RF-084: falha na auditoria desfaz a transicao` | CA-09, INV-003 |
@@ -319,23 +321,37 @@ Nomenclatura conforme a convenção do projeto (`T-<ÁREA>-NN | <regra>: <compor
 | `T-ESTADO-03 \| INV-13: banco rejeita estado inexistente` | CA-11, INV-007 |
 | `T-DOMINIO-01 \| plan §2: modulos de dominio nao importam I/O nem relogio real` | INV-006 |
 
+
+**Evidência (etapa 28, 2026-10-22).** Todos os testes acima existem e passam. Alguns critérios têm cobertura
+complementar em outro teste:
+
+| Critério | Onde está a cobertura completa |
+|---|---|
+| INV-001 (limite aceito e um passo além recusado, para **cada** parâmetro com faixa) | `T-PARAM-03b`, que percorre o catálogo inteiro; o `T-PARAM-03` cobre só a P-03 |
+| CA-05 (valor do perfil prevalece; fora de 5 a 60 é recusado) | `T-PARAM-05` (nasce com o padrão vigente, não retroage), `T-PERFIL-01` e `T-PERFIL-02` |
+| RNF-07 (requisições diferentes não compartilham correlação) | `T-AUDIT-03b` |
+| CA-11, INV-007 (gravação direta rejeitada pelo banco) | `T-ESTADO-03b` grava estado inexistente nas quatro entidades; o `T-ESTADO-03` só confere o `CHECK` no esquema |
+| INV-006 | `T-DOMINIO-01`: só imports do próprio domínio, e nenhum módulo além do relógio injetável (`tempo.js`) lê o agora |
+| RNF-10 (alterar não exige reinício) | `T-PARAM-02`: a leitura seguinte já devolve o novo valor |
+
 ## 13. Questões em aberto
 
 Herdadas do mapa e pertinentes a esta Spec:
 
 - ~~**OPEN-01**~~ **resolvida em 2026-10-08:** o código existente é verificado contra esta Spec e corrigido onde diverge.
 - ~~**OPEN-02**~~ **resolvida em 2026-10-08:** a numeração local `INV-001` convive com a global `INV-13`; fora desta Spec, cite "SPEC-001 INV-00Y".
-- **OPEN-05:** os deltas de reputação e a janela de 30 dias da RN-21 não estão no catálogo de parâmetros. Se forem parâmetros, o catálogo da seção 7.1 muda.
-- **OPEN-06, OPEN-08, OPEN-15:** lacunas nas máquinas de estado da seção 7.2, transcritas sem correção.
-- **OPEN-20:** P-16 não tem faixa na spec, e o código existente diverge da §6.1 em P-07, P-12, P-16 e no limite do RNF-13.
+- ~~**OPEN-05**~~ **resolvida em 2026-10-20:** os deltas viram P-22 e a janela de 30 dias da RN-21 vira P-12b.
+- ~~**OPEN-08, OPEN-15**~~ **resolvidas em 2026-10-20:** suspensão a partir de qualquer estado operante, `RESTRITO` só para cliente, `RASCUNHO` removido.
+- ~~**OPEN-06**~~ **resolvida em 2026-10-20:** o efeito de `MANTIDO`, `REVERTIDO`, `PARCIAL` e `ARQUIVADO` está na RN-27; na acusação mútua, o desfecho original é a primeira acusação.
+- ~~**OPEN-20**~~ **resolvida em 2026-10-20:** P-07 segue a spec (0,5 a 6 h, o código corrige); P-12 e P-16 são divididos como no código; o limite do RNF-13 vira P-21.
 
 Novas, surgidas na elaboração desta Spec:
 
-- **OPEN-101 — decisão necessária:** o que conta como "fato ocorrido" na RN-00 para processos em andamento. Exemplo: se P-17 muda enquanto um agendamento já está `CONFIRMADO`, o prazo da conclusão automática segue o valor antigo ou o novo?
-- **OPEN-102 — decisão necessária:** P-20 (janela da reputação) é retroativa por natureza. Alterá-la muda imediatamente a reputação de todas as contas, porque a reputação é recalculada sobre eventos passados. Isso contradiz a letra da RN-00?
-- **OPEN-103 — decisão necessária:** a precedência entre escopos. P-01 e P-02 aparecem ao mesmo tempo como atributos de `PerfilPrestador` (`janela_confirmacao_min`, `politica_expiracao`) e como `ParametroSistema` de escopo `PRESTADOR`. Qual dos dois é a fonte? P-13 tem escopo "G / S" (serviço), mas RN-15, RF-080 e `CategoriaServico` tratam o percentual por **categoria**.
-- **OPEN-104 — decisão necessária:** como identificar o ator de transições disparadas por rotina temporal (expiração, conclusão automática), já que `LogAuditoria.ator_id` pressupõe um usuário.
-- **OPEN-105 — decisão necessária:** `LancamentoComissao` tem estados (`EFETIVADO`, `RETIDO`, `ESTORNADO`) mas não tem máquina declarada, e RF-084 não o inclui na auditoria obrigatória. Ele deve ganhar máquina e auditoria?
+- ~~**OPEN-101**~~ **resolvida em 2026-10-20:** vale o parâmetro vigente quando nasce a obrigação, e o valor fica gravado no registro (RN-00). Pergunta original: o que conta como "fato ocorrido" na RN-00 para processos em andamento. Exemplo: se P-17 muda enquanto um agendamento já está `CONFIRMADO`, o prazo da conclusão automática segue o valor antigo ou o novo?
+- ~~**OPEN-102**~~ **resolvida em 2026-10-20:** exceção declarada na RN-00; nenhum evento é reescrito. Pergunta original: P-20 (janela da reputação) é retroativa por natureza. Alterá-la muda imediatamente a reputação de todas as contas, porque a reputação é recalculada sobre eventos passados. Isso contradiz a letra da RN-00?
+- ~~**OPEN-103**~~ **resolvida em 2026-10-20:** o perfil do prestador é a única fonte de P-01 e P-02, dentro da faixa global; P-13 é por categoria. Pergunta original: a precedência entre escopos. P-01 e P-02 aparecem ao mesmo tempo como atributos de `PerfilPrestador` (`janela_confirmacao_min`, `politica_expiracao`) e como `ParametroSistema` de escopo `PRESTADOR`. Qual dos dois é a fonte? P-13 tem escopo "G / S" (serviço), mas RN-15, RF-080 e `CategoriaServico` tratam o percentual por **categoria**.
+- ~~**OPEN-104**~~ **resolvida em 2026-10-20:** `ator_id` nulo é o sistema, com a rotina em `acao`. Pergunta original: como identificar o ator de transições disparadas por rotina temporal (expiração, conclusão automática), já que `LogAuditoria.ator_id` pressupõe um usuário.
+- ~~**OPEN-105**~~ **resolvida em 2026-10-20:** máquina na spec §9.7.1, com auditoria (RF-084). Pergunta original: `LancamentoComissao` tem estados (`EFETIVADO`, `RETIDO`, `ESTORNADO`) mas não tem máquina declarada, e RF-084 não o inclui na auditoria obrigatória. Ele deve ganhar máquina e auditoria?
 
 ## 14. Definition of Done
 
@@ -346,7 +362,7 @@ A SPEC-001 estará concluída quando:
 3. os testes derivados da seção 12 estiverem aprovados;
 4. os RNFs da seção 10 tiverem sido verificados como descrito;
 5. não houver divergência conhecida entre a implementação e esta Spec;
-6. toda divergência em relação à baseline tiver sido explicitamente analisada. Em particular, as divergências de faixa da OPEN-20 precisam ser corrigidas na implementação **ou** levadas à spec como proposta de alteração, com aprovação humana.
+6. toda divergência em relação à baseline tiver sido explicitamente analisada. Em particular, as correções que a OPEN-20 pede ao código (P-07 e a divisão de P-12 e P-16) precisam ser corrigidas na implementação **ou** levadas à spec como proposta de alteração, com aprovação humana.
 
 > **Regra fundamental:** se a implementação entrar em conflito com esta Spec ou com a baseline, o
 > comportamento não é alterado silenciosamente. A divergência é registrada com uma de duas ações:

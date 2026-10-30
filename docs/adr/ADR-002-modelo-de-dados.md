@@ -25,9 +25,20 @@ Três decisões de representação apareceram cedo e afetam tudo:
 
 ### Banco relacional SQLite, esquema explícito em SQL
 
-Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve as 20 tabelas (as 19 entidades da spec §9.2 e mais `sessao`, do ADR-004), derivado diretamente da
+Um único arquivo `.sql` (`src/infra/db/schema.sql`) descreve 21 tabelas físicas (as 19 entidades da spec §9.2, mais `sessao`, do ADR-004, e `parametro_historico`, da RN-00), derivadas da
 §9.2 da spec. Sem ORM: as consultas são SQL escrito à mão em `src/infra/repositorios/`, o que mantém
 o mapeamento entre spec e banco visível linha a linha.
+
+### Histórico versionado de parâmetros (RN-00 / SPEC-001)
+
+A tabela `parametro` permanece como snapshot do valor atual para preservar os leitores existentes.
+Cada alteração adiciona uma linha à `parametro_historico`, com chave, escopo, alvo, autor e vigência
+UTC. A atualização do snapshot e o registro da versão são atômicos; consultas por data recuperam
+a versão de maior vigência anterior ou igual à referência.
+
+A migração idempotente importa o último valor conhecido de bancos existentes, mas **não recupera**
+históricos antigos já sobrescritos. A origem dos P-01/P-02 (perfil vs. tabela de parâmetros)
+permanece pendente da OPEN-103; não se presume uma precedência nova nesta implementação.
 
 ### Dinheiro em centavos (INTEGER)
 
@@ -73,8 +84,16 @@ feitos (`RN-04`, `RN-05`).
 
 `usuario.reputacao` é **cache**. A verdade é a tabela `evento_reputacao`: cada delta com tipo, origem
 rastreável e marca de reversão. A reputação é recalculada somando os eventos não revertidos dentro da
-janela móvel. É isso que permite a disputa reverter uma penalidade sem inventar aritmética (`RN-27`),
+janela móvel, a partir de `usuario.reputacao_inicial`: a P-08 vigente quando a conta foi criada (OPEN-207,
+spec v0.1.8). É isso que permite a disputa reverter uma penalidade sem inventar aritmética (`RN-27`),
 e é isso que `INV-08` testa.
+
+### Estado inicial da conta no banco
+
+O `CHECK` de `usuario.estado_conta` só garante os valores possíveis. Que o cliente nasça `ATIVO` e o
+prestador `PENDENTE_APROVACAO` (SPEC-002 INV-004) é garantido pelo gatilho
+`usuario_nasce_no_estado_inicial`, que olha só o `INSERT`; as transições seguintes ficam com a máquina de
+estados.
 
 ## Consequências
 

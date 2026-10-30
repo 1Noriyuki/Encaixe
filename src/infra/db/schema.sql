@@ -20,6 +20,32 @@ CREATE TABLE IF NOT EXISTS parametro (
   PRIMARY KEY (chave, escopo, alvo_id)
 );
 
+-- RN-00 / SPEC-001 CA-04: versões anteriores nunca são sobrescritas.
+-- A tabela parametro continua sendo o snapshot atual, para manter compatibilidade
+-- com leituras existentes; o histórico armazena cada atualização com vigência.
+CREATE TABLE IF NOT EXISTS parametro_historico (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  chave           TEXT NOT NULL,
+  escopo          TEXT NOT NULL CHECK (escopo IN ('GLOBAL','PRESTADOR','SERVICO')),
+  alvo_id         INTEGER NOT NULL DEFAULT 0,
+  valor           TEXT NOT NULL,
+  vigente_desde   TEXT NOT NULL,
+  atualizado_por  INTEGER
+);
+CREATE INDEX IF NOT EXISTS ix_parametro_historico_vigencia
+  ON parametro_historico (chave, escopo, alvo_id, vigente_desde DESC, id DESC);
+
+-- Migração idempotente: conserva o último estado conhecido dos bancos antigos.
+-- Mudanças anteriores a esta migração já foram sobrescritas e não são recuperáveis.
+INSERT INTO parametro_historico
+  (chave, escopo, alvo_id, valor, vigente_desde, atualizado_por)
+SELECT p.chave, p.escopo, p.alvo_id, p.valor, p.vigente_desde, p.atualizado_por
+  FROM parametro p
+ WHERE NOT EXISTS (
+   SELECT 1 FROM parametro_historico h
+    WHERE h.chave = p.chave AND h.escopo = p.escopo AND h.alvo_id = p.alvo_id
+ );
+
 CREATE TABLE IF NOT EXISTS regiao (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
   cidade  TEXT NOT NULL,
@@ -37,8 +63,23 @@ CREATE TABLE IF NOT EXISTS usuario (
   estado_conta  TEXT NOT NULL CHECK (estado_conta IN
                   ('PENDENTE_APROVACAO','ATIVO','RESTRITO','EM_REVISAO','SUSPENSO','REPROVADO')),
   reputacao     INTEGER NOT NULL DEFAULT 70 CHECK (reputacao BETWEEN 0 AND 100),
-  criado_em     TEXT NOT NULL
+  criado_em     TEXT NOT NULL,
+  -- RN-00/RN-23: a P-08 vigente na criacao fica travada na conta; mudar a P-08
+  -- depois nao mexe na reputacao de quem ja existe. Bancos antigos ganham a
+  -- coluna em migrar().
+  reputacao_inicial INTEGER CHECK (reputacao_inicial BETWEEN 0 AND 100)
 );
+
+-- SPEC-002 INV-004 tambem no banco (C-VI): um CHECK nao serve, porque o estado
+-- muda depois da criacao. O gatilho olha so o INSERT, entao aprovar, suspender
+-- ou restringir continua livre.
+CREATE TRIGGER IF NOT EXISTS usuario_nasce_no_estado_inicial
+BEFORE INSERT ON usuario
+WHEN (NEW.perfil = 'CLIENTE' AND NEW.estado_conta <> 'ATIVO')
+  OR (NEW.perfil = 'PRESTADOR' AND NEW.estado_conta <> 'PENDENTE_APROVACAO')
+BEGIN
+  SELECT RAISE(ABORT, 'INV-004: cliente nasce ATIVO e prestador nasce PENDENTE_APROVACAO');
+END;
 
 CREATE TABLE IF NOT EXISTS perfil_prestador (
   usuario_id             INTEGER PRIMARY KEY REFERENCES usuario(id) ON DELETE CASCADE,
@@ -73,6 +114,26 @@ CREATE TABLE IF NOT EXISTS categoria_servico (
   percentual_comissao  INTEGER NOT NULL CHECK (percentual_comissao BETWEEN 8 AND 15),
   vigente_desde        TEXT NOT NULL
 );
+
+-- SPEC-026 / RF-080: histórico de percentuais com proveniência. Bancos antigos
+-- guardam apenas o último snapshot: não reconstruir versões desconhecidas.
+CREATE TABLE IF NOT EXISTS historico_comissao_categoria (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  categoria_id     INTEGER NOT NULL REFERENCES categoria_servico(id),
+  percentual       INTEGER NOT NULL CHECK (percentual BETWEEN 8 AND 15),
+  vigente_desde    TEXT NOT NULL,
+  autor_id         INTEGER REFERENCES usuario(id),
+  origem           TEXT NOT NULL CHECK (origem IN ('CRIACAO','ALTERACAO','SNAPSHOT_LEGADO'))
+);
+CREATE INDEX IF NOT EXISTS ix_comissao_categoria_vigencia
+  ON historico_comissao_categoria (categoria_id, vigente_desde, id);
+
+INSERT INTO historico_comissao_categoria (categoria_id, percentual, vigente_desde, autor_id, origem)
+SELECT c.id, c.percentual_comissao, c.vigente_desde, NULL, 'SNAPSHOT_LEGADO'
+  FROM categoria_servico c
+ WHERE NOT EXISTS (
+   SELECT 1 FROM historico_comissao_categoria h WHERE h.categoria_id = c.id
+ );
 
 CREATE TABLE IF NOT EXISTS servico (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -111,11 +172,27 @@ CREATE TABLE IF NOT EXISTS horario_vago (
   preco_base_snapshot INTEGER NOT NULL CHECK (preco_base_snapshot > 0),
   preco_minimo_snapshot INTEGER NOT NULL DEFAULT 0,
   estado              TEXT NOT NULL CHECK (estado IN
-                        ('RASCUNHO','PUBLICADO','BLOQUEADO','OCUPADO','ENCERRADO','CANCELADO','EXPIRADO')),
+                        ('PUBLICADO','BLOQUEADO','OCUPADO','ENCERRADO','CANCELADO','EXPIRADO')),
   criado_em           TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_horario_busca   ON horario_vago (estado, inicio);
 CREATE INDEX IF NOT EXISTS ix_horario_agenda  ON horario_vago (prestador_id, inicio);
+
+-- SPEC-001 INV-13: bancos anteriores podem manter RASCUNHO no CHECK legado.
+-- Os gatilhos impedem novas insercoes ou transicoes a esse estado sem reconstruir
+-- uma tabela com referencias historicas. Dados existentes sao preservados.
+CREATE TRIGGER IF NOT EXISTS horario_sem_rascunho_insert
+BEFORE INSERT ON horario_vago
+WHEN NEW.estado = 'RASCUNHO'
+BEGIN
+  SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
+END;
+CREATE TRIGGER IF NOT EXISTS horario_sem_rascunho_update
+BEFORE UPDATE OF estado ON horario_vago
+WHEN NEW.estado = 'RASCUNHO'
+BEGIN
+  SELECT RAISE(ABORT, 'Estado RASCUNHO nao permitido');
+END;
 
 -- ----------------------------------------------------------- transacao
 CREATE TABLE IF NOT EXISTS agendamento (
@@ -132,6 +209,7 @@ CREATE TABLE IF NOT EXISTS agendamento (
   prazo_confirmacao_em        TEXT NOT NULL,
   criado_em                   TEXT NOT NULL,
   confirmado_em               TEXT,
+  autoconclusao_prazo_em       TEXT,
   encerrado_em                TEXT,
   estado_cobranca             TEXT NOT NULL DEFAULT 'PENDENTE'
                                 CHECK (estado_cobranca IN ('PENDENTE','PAGO_PRESENCIAL','NAO_PAGO')),

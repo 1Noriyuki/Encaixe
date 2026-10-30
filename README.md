@@ -15,28 +15,6 @@ efetivamente concluído**.
 
 ---
 
-## Como executar
-
-**Requisito único: Node.js 24 ou superior.** Não há `npm install` obrigatório — o projeto não tem
-dependências de runtime ([ADR-001](docs/adr/ADR-001-stack-tecnica.md)).
-
-```bash
-node --version      # precisa ser >= v24
-npm run db:seed     # cria o banco e popula dados de demonstração
-npm start           # http://localhost:3000
-```
-
-Para recomeçar do zero a qualquer momento:
-
-```bash
-npm run db:reset
-```
-
-Para rodar a suíte de testes:
-
-```bash
-npm test
-```
 
 ### Contas de demonstração
 
@@ -44,7 +22,7 @@ Senha de todas: `senha1234`
 
 | E-mail | Perfil | Serve para demonstrar |
 |---|---|---|
-| `admin@encaixe.dev` | Admin | Aprovação de prestador, fila de disputas, métricas, parâmetros |
+| `admin@encaixe.dev` | Admin | Aprovação de prestador, fila de disputas, métricas, parâmetros. O admin só nasce pelo seed, nunca pelo cadastro (ADR-004) |
 | `renata@salao.dev` | Prestador | Política `LIBERAR`: reserva não confirmada volta para a busca |
 | `marcos@barbearia.dev` | Prestador | Política `AUTOCONFIRMAR`: reserva não confirmada é aceita sozinha |
 | `clinica@estetica.dev` | Prestador | Conta aguardando aprovação (fila do admin) |
@@ -152,6 +130,7 @@ injetável, e "faltam 90 minutos para o horário" vira um dado do teste.
 | `LLM_TIMEOUT_MS` | `15000` | Timeout da interpretação |
 | `ANTHROPIC_API_KEY` | — | Necessária apenas com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | Intervalo do agendador de rotinas temporais |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | E-mail mostrado à conta suspensa (RF-004) |
 
 Para usar o provedor real de LLM:
 
@@ -167,5 +146,5 @@ Sem isso, o sistema roda completo com o provedor simulado — inclusive a busca 
 
 ## Estado do projeto
 
-MVP funcional. Suíte de testes: **158 testes automatizados**, todos verdes
+MVP funcional. Suíte de testes: **208 testes automatizados**, todos verdes
 (`npm test`). Cobertura por regra e evidências em [`docs/testes.md`](docs/testes.md).

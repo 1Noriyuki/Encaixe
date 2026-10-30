@@ -3,10 +3,10 @@
  * Um unico ponto de leitura, para que nenhum servico invente valor proprio.
  */
 
-import { carregarGlobais, salvarGlobal, listarGlobais } from '../infra/repositorios/parametros.js';
+import { carregarGlobais, salvarGlobal, listarGlobais, lerGlobalEm } from '../infra/repositorios/parametros.js';
 
 export function params() {
   return carregarGlobais();
 }
 
-export { salvarGlobal, listarGlobais };
+export { salvarGlobal, listarGlobais, lerGlobalEm };

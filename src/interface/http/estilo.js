@@ -418,6 +418,9 @@ img { max-width: 100%; }
   transition: transform var(--medio), box-shadow var(--medio), border-color var(--medio);
 }
 .cartao + .cartao { margin-top: var(--e3); }
+/* Na grade o espaco vem do gap; a margem acima empurrava o 2o e o 3o cartao da
+   linha 12 px para baixo do primeiro. */
+.grade > .cartao + .cartao { margin-top: 0; }
 .cartao > :first-child { margin-top: 0; }
 .cartao > :last-child { margin-bottom: 0; }
 .cartao-vivo:hover {
@@ -522,6 +525,9 @@ img { max-width: 100%; }
 }
 .campo .ajuda { font-size: var(--txt-mini); color: var(--texto-fraco); margin-top: 5px; }
 .campo-fim { display: flex; align-items: flex-end; }
+/* Grade de campos lado a lado: o espaco entre linhas ja vem do gap. Com a
+   margem do .campo, o ultimo (sem margem) descia 16 px abaixo dos outros. */
+.grade-campos > .campo { margin-bottom: 0; }
 
 input, select, textarea {
   width: 100%; padding: 10px 12px;
@@ -616,9 +622,15 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 
 /* Regua de desconto: como o preco caminha ate o horario. Todos os degraus
    vem do dominio (projetarRegua) - o navegador so desenha (INV-14). */
-.regua { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+/* As colunas moram na lista e cada degrau herda por subgrid: o rotulo ocupa a
+   largura do mais longo e as barras comecam todas no mesmo x. Coluna fixa
+   cortava "a partir de 4 h antes" por cima da barra. */
+.regua {
+  list-style: none; padding: 0; margin: 0; display: grid; gap: 2px;
+  grid-template-columns: max-content minmax(48px, 1fr) auto;
+}
 .regua-degrau {
-  display: grid; grid-template-columns: 96px 1fr auto; align-items: center;
+  display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center;
   gap: var(--e3); padding: 10px 12px; border-radius: var(--raio-p);
   font-size: var(--txt-peq);
 }
@@ -677,6 +689,9 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
   text-align: right;
 }
 .vaga-lado form { width: 100%; }
+/* .preco e flex: text-align nao o move. Sem desconto a linha tem so o valor e
+   ficava encostada a esquerda, fora da simetria dos cartoes com desconto. */
+.vaga-lado .preco { justify-content: flex-end; }
 
 /* ==============================================================
    13. AGENDA DO PRESTADOR
@@ -810,8 +825,10 @@ a.chip-neutro:hover { background: var(--superficie-3); color: var(--texto); }
   font-family: var(--fonte-mono); font-size: var(--txt-peq); font-weight: 700;
   color: var(--primaria); letter-spacing: .08em;
 }
+/* O traco fica sobre a borda de cima e comeca depois da curva do canto: em
+   top/left 0 ele nascia dentro do arredondamento e escapava do contorno. */
 .passo::after {
-  content: ''; position: absolute; top: 0; left: 0; height: 2px; width: 36px;
+  content: ''; position: absolute; top: -1px; left: var(--raio); height: 2px; width: 36px;
   background: linear-gradient(90deg, var(--primaria), transparent); border-radius: 2px;
 }
 .passo h3 { margin: 0 0 6px; font-size: var(--txt-md); }
@@ -1059,6 +1076,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
     padding-top: var(--e3); border-top: 1px solid var(--borda);
   }
   .vaga-lado > * { flex: 1 1 auto; }
+  .vaga-lado .preco { justify-content: flex-start; }
   .vaga-lado form, .vaga-lado > .botao { max-width: 210px; }
 
   .heroi-numeros { gap: var(--e4) var(--e5); }
@@ -1068,7 +1086,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
   .cartao-flutuante { position: static; margin-top: var(--e4); animation: none; }
   .cartao-flutuante-alto { display: none; }
 
-  .regua-degrau { grid-template-columns: 74px 1fr auto; gap: var(--e2); padding: 9px 10px; }
+  .regua-degrau { gap: var(--e2); padding: 9px 10px; }
 
   /* Alvo de toque confortavel. */
   .botao { padding: 11px 18px; }
@@ -1083,7 +1101,7 @@ a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); colo
   .heroi h1 { font-size: 2.05rem; }
   .busca-principal { flex-direction: column; }
   .busca-principal .botao { width: 100%; }
-  .regua-degrau { grid-template-columns: 1fr auto; }
+  .regua { grid-template-columns: 1fr auto; }
   .regua-degrau .regua-barra { display: none; }
 }
 
