@@ -888,3 +888,10 @@
 - **Divergência corrigida (RN-30, RF-035, RF-036):** com confiança baixa ou categoria fora do catálogo, `/buscar` avisava "confira os filtros", mas executava a busca e listava os horários; com a categoria desconhecida, listava todas as categorias. Os testes de aplicação (`T-LLM-02/03`) só conferiam a flag. Agora a tela mostra o entendido e não lista nada até o cliente buscar com os filtros ("Buscar com estes filtros") ou escolher a categoria no formulário, que sai sem o texto para não reinterpretar.
 - **Divergência corrigida (RN-32):** `registrarConfirmacao()` existia sem nenhum chamador; o desfecho ficava o palpite da criação. A busca seguinte à confirmação compara os filtros usados com os propostos e grava `ACEITA` ou `CORRIGIDA`, e só para o dono da interpretação.
 - **Evidência:** `T-LLM-07` a `10` pela tela, conferido no navegador a 375 px. Questões: desfecho de quem abandona a confirmação, e a reinterpretação a cada filtro.
+
+### Etapa 60 — Rascunho e conferência da SPEC-029 · 2026-10-30
+
+- **SPEC-029:** [`SPEC-029-trilha-de-auditoria-consultavel.md`](SPEC-029-trilha-de-auditoria-consultavel.md), RF-084 (consulta) e RF-085.
+- **Divergências corrigidas:** (1) a varredura do INV-13 (etapa 42) não espiava o lançamento de comissão, que o RF-084 lista; incluída, e passou sem correção de código. (2) As interpretações na tela da auditoria não mostravam região nem janela, que são o que permite refazer a busca que o cliente viu (RF-085); as colunas entraram.
+- **Evidência:** `T-AUDIT-09` (todas as oito ações do admin, com ele como ator) e `T-AUDIT-10`. Questões: paginação e retenção da trilha.
+- **Fim da série das etapas 46 a 60:** 15 Specs escritas como rascunho e conferidas; nenhuma aprovada; todas as issues com `Refs`.

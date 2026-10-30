@@ -793,7 +793,7 @@ function telaAuditoria(ctx) {
           <thead>
             <tr>
               <th scope="col">Quando</th><th scope="col">Texto original</th>
-              <th scope="col">Categoria</th><th scope="col">Confiança</th>
+              <th scope="col">Categoria</th><th scope="col">Região e janela</th><th scope="col">Confiança</th>
               <th scope="col">Status</th><th scope="col">Desfecho</th><th scope="col">Modelo</th>
             </tr>
           </thead>
@@ -803,6 +803,9 @@ function telaAuditoria(ctx) {
                 <td class="mini">${formatarDataHora(i.criada_em)}</td>
                 <td class="pequeno">${i.texto_original}</td>
                 <td class="mini">${i.categoria_nome ?? i.categoria_sugerida ?? '—'}</td>
+                <td class="mini">${i.regiao_bairro ?? 'qualquer região'}${i.janela_inicio
+    ? html`<div>${formatarDataHora(i.janela_inicio)} a ${i.janela_fim ? formatarDataHora(i.janela_fim) : '—'}</div>`
+    : html`<div class="fraco">janela padrão</div>`}</td>
                 <td class="mini num">${i.confianca != null ? `${Math.round(i.confianca * 100)}%` : '—'}</td>
                 <td><span class="selo selo-${i.status === 'SUCESSO' ? 'ok' : (i.status === 'FALHA' ? 'perigo' : 'aviso')}">
                   ${i.status}</span></td>

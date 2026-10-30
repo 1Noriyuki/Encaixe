@@ -2,7 +2,7 @@
  * T-67 - INV-13: toda transicao de estado tem registro em LogAuditoria.
  *
  * Em vez de conferir fluxo por fluxo, gatilhos SQLite gravam TODA mudanca de
- * estado das quatro entidades do RF-084 numa tabela espia. Depois de percorrer
+ * estado das cinco entidades do RF-084 numa tabela espia. Depois de percorrer
  * os fluxos, cada mudanca espiada precisa de um registro de auditoria com a
  * mesma entidade, id e estados. Transicao feita em silencio aparece aqui.
  */
@@ -32,6 +32,8 @@ const ESPIADAS = [
   ['horario_vago', 'estado', 'horario'],
   ['usuario', 'estado_conta', 'conta'],
   ['disputa', 'estado', 'disputa'],
+  // RF-084 inclui o lancamento de comissao (SPEC-029).
+  ['lancamento_comissao', 'estado', 'comissao'],
 ];
 
 function espiarTransicoes() {
