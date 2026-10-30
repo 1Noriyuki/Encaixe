@@ -895,3 +895,10 @@
 - **Divergências corrigidas:** (1) a varredura do INV-13 (etapa 42) não espiava o lançamento de comissão, que o RF-084 lista; incluída, e passou sem correção de código. (2) As interpretações na tela da auditoria não mostravam região nem janela, que são o que permite refazer a busca que o cliente viu (RF-085); as colunas entraram.
 - **Evidência:** `T-AUDIT-09` (todas as oito ações do admin, com ele como ator) e `T-AUDIT-10`. Questões: paginação e retenção da trilha.
 - **Fim da série das etapas 46 a 60:** 15 Specs escritas como rascunho e conferidas; nenhuma aprovada; todas as issues com `Refs`.
+
+### Etapa 61 — Aprovação das Specs das Trilhas B e C e fechamento das issues · 2026-10-30
+
+- **Decisão humana:** o 2dart5 informou que a equipe aprovou, em 2026-10-30, as 15 Specs escritas nas etapas 46 a 60 (SPEC-010, 012 a 019, 022, 023, 025, 027 a 029) e a conclusão das SPEC-003 a 005 conferidas nas etapas 43 a 45, e pediu o fechamento das issues.
+- **Aplicado:** as 15 sobem de rascunho v0.1.0 para **v1.0.0, aprovadas e concluídas**; as SPEC-003 a 005 sobem para v1.2.0, concluídas. A evidência de cada uma é a tabela da §12, com os testes passando (440/440).
+- **O que a aprovação não decide:** as questões abertas na §13 de cada Spec (entre elas OPEN-07, 09, 17, 18, 19, o corte de 200 da busca, P-17 × P-16b e o desfecho pendente da interpretação) seguem registradas para decisão posterior. Nenhuma foi resolvida em silêncio.
+- **Issues fechadas:** #82, #83, #84, #89, #91 a #98, #101, #102, #104, #106, #107 e #108, com comentário apontando o PR #147. O código delas entra na `main` com o merge desse PR.
