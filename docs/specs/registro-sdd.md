@@ -699,3 +699,10 @@
   - **SPEC-026:** uma categoria inexistente em `ajustarComissao` lançava `Error` genérico, que vira resposta 500. Agora lança `NaoEncontrado`.
 - **Pendente:** a DoD da SPEC-006 exige revisão do PR por outro integrante, então o merge espera essa revisão. A tela do extrato não oferece filtro de período, embora o repositório o suporte. Isso é interface e fica fora destas Specs.
 - **Verificação:** `npm test` passou com 336/336 em duas rodadas.
+
+### Etapa 34 — Busca por categoria, região e janela (T-28) · 2026-10-29
+
+- **Pedido:** concluir a T-28 e verificar os filtros RF-028 a RF-030.
+- **Produzido:** a busca limita a consulta ao primeiro horário que já atende P-04, preservando a janela solicitada quando ela começa depois; os filtros de estado `PUBLICADO` e conta `ATIVO` permanecem no repositório.
+- **Evidência:** `T-BUSCA-03` cobre categoria, região, janela e elegibilidade; `T-BUSCA-03b` cobre P-04, o limite inclusivo e as exclusões de horário cancelado e prestador inativo.
+- **Spec:** sem alteração; o comportamento implementa os RF-028 a RF-030 já aprovados em `docs/spec.md`.

@@ -84,7 +84,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Filtros, elegibilidade e janela; `T-BUSCA-03` | 🔄 |
+| T-28 | Busca por categoria, região e janela | RF-028 a RF-030 | Filtros, elegibilidade e janela; `T-BUSCA-03/03b` | ✅ |
 | T-29 | Ordenação com desempate determinístico | RF-031 | Desempate por ID estável; `T-BUSCA-04` | 🔄 |
 | T-30 | Reserva com preço travado e bloqueio do horário | RF-039, RF-040, RN-04 | Valor travado não muda depois | ✅ |
 | T-31 | Exclusividade sob concorrência | RF-041, INV-01 | Segunda reserva simultânea é recusada | ✅ |

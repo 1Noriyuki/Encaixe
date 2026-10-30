@@ -14,7 +14,9 @@ import * as interpretacoesRepo from '../infra/repositorios/interpretacoes.js';
 import * as auditoria from '../infra/auditoria.js';
 import { provedor, STATUS } from '../infra/llm/index.js';
 import { ErroDeRegra } from '../dominio/erros.js';
-import { agoraIso, adicionarHoras, adicionarDias } from '../dominio/tempo.js';
+import {
+  agoraIso, adicionarMinutos, adicionarHoras, adicionarDias, antesDe,
+} from '../dominio/tempo.js';
 import { params } from './parametros.js';
 import { precificarLista } from './precos.js';
 
@@ -34,7 +36,10 @@ export function buscarPorFiltros({ categoriaId = null, regiaoId = null, de = nul
   const agora = agoraIso();
 
   // RF-029 - horario so aparece se ainda houver antecedencia minima para reservar.
-  const inicioJanela = de ?? agora;
+  const inicioReservavel = adicionarMinutos(agora, p.antecedencia_min_reserva_min);
+  const inicioJanela = de && antesDe(de, inicioReservavel)
+    ? inicioReservavel
+    : (de ?? inicioReservavel);
   const fimJanela = ate ?? adicionarHoras(agora, 72);
 
   const brutos = horariosRepo.buscar({

@@ -18,6 +18,7 @@ import * as horarios from '../../src/aplicacao/horarios.js';
 import * as catalogoRepo from '../../src/infra/repositorios/catalogo.js';
 import * as horariosRepo from '../../src/infra/repositorios/horarios.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
+import * as parametrosRepo from '../../src/infra/repositorios/parametros.js';
 import { adicionarHoras, partesLocais } from '../../src/dominio/tempo.js';
 
 test.beforeEach(prepararBanco);
@@ -142,6 +143,41 @@ test('T-BUSCA-03 | RF-028 a RF-030: filtros de categoria, regiao e janela e ofer
   usuariosRepo.atualizarEstadoConta(outraOferta.prestador.id, 'REPROVADO');
   horariosRepo.atualizarEstado(c.horario.id, 'CANCELADO');
   assert.deepEqual(busca.buscarPorFiltros().map(({ id }) => id), []);
+});
+
+test('T-BUSCA-03b | RF-029/RF-030: busca respeita P-04 e exclui prestador inativo', () => {
+  const c = cenarioBasico();
+  parametrosRepo.salvarGlobal('antecedencia_min_reserva_min', 90, c.adminId);
+
+  const antesDoLimite = criarPrestadorComHorario(c, {
+    sufixo: 'busca-antes-p04',
+    instante: adicionarHoras(agoraDoTeste(), 1),
+  });
+  const noLimite = criarPrestadorComHorario(c, {
+    sufixo: 'busca-no-p04',
+    instante: adicionarHoras(agoraDoTeste(), 1.5),
+  });
+  const cancelado = criarPrestadorComHorario(c, {
+    sufixo: 'busca-cancelado',
+    instante: adicionarHoras(agoraDoTeste(), 3),
+  });
+  horariosRepo.atualizarEstado(cancelado.horario.id, 'CANCELADO');
+
+  const resultados = busca.buscarPorFiltros({
+    de: adicionarHoras(agoraDoTeste(), 0.5),
+    ate: adicionarHoras(agoraDoTeste(), 3),
+  });
+  assert.deepEqual(resultados.map(({ id }) => id), [noLimite.horario.id]);
+  assert.ok(!resultados.some(({ id }) => id === antesDoLimite.horario.id));
+
+  usuariosRepo.atualizarEstadoConta(noLimite.prestador.id, 'REPROVADO');
+  assert.deepEqual(
+    busca.buscarPorFiltros({
+      de: adicionarHoras(agoraDoTeste(), 0.5),
+      ate: adicionarHoras(agoraDoTeste(), 3),
+    }).map(({ id }) => id),
+    [],
+  );
 });
 
 test('T-BUSCA-04 | RF-031: empate na ordenacao por proximidade usa id estavel', () => {
