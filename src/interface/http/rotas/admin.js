@@ -740,7 +740,8 @@ function salvarComissao(ctx) {
 // ------------------------------------------------------------- auditoria
 
 function telaAuditoria(ctx) {
-  const dados = adminApp.rastreabilidade({ limite: 120 });
+  const correlacao = String(ctx.query.correlacao ?? '').trim() || null;
+  const dados = adminApp.rastreabilidade({ limite: 120, correlacao });
 
   return ctx.render(html`
     <div class="cabecalho-pagina">
@@ -783,12 +784,16 @@ function telaAuditoria(ctx) {
       + 'modelo: o que está registrado aqui são os filtros propostos, não os resultados escolhidos.')}`}
 
     <h2>Trilha de auditoria</h2>
+    ${correlacao ? html`
+      <p>Só os registros da correlação <code>${correlacao}</code>, na ordem em que foram gravados.
+        <a href="/admin/auditoria">Ver a trilha inteira</a></p>` : cru('')}
     <div class="cartao tabela-rolagem">
       <table>
         <thead>
           <tr>
             <th scope="col">Quando</th><th scope="col">Ação</th><th scope="col">Entidade</th>
             <th scope="col">De</th><th scope="col">Para</th><th scope="col">Ator</th>
+            <th scope="col">Correlação</th>
           </tr>
         </thead>
         <tbody>
@@ -800,9 +805,14 @@ function telaAuditoria(ctx) {
               <td class="mini">${l.estado_anterior ?? '—'}</td>
               <td class="mini">${l.estado_novo ?? '—'}</td>
               <td class="mini">${l.ator_nome ?? 'sistema'}</td>
+              <td class="mini mono">${l.correlacao_id
+    ? html`<a href="/admin/auditoria?correlacao=${l.correlacao_id}" title="${l.correlacao_id}">${l.correlacao_id.slice(0, 8)}</a>`
+    : '—'}</td>
             </tr>`))}
         </tbody>
       </table>
     </div>
+    ${notaDeRegra('RNF-07', 'Cada requisição grava uma correlação: abri-la mostra tudo o que aquela '
+    + 'operação mudou, em todas as entidades.')}
   `, { titulo: 'Auditoria' });
 }

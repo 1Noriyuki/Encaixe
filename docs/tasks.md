@@ -133,7 +133,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-64 | Persistência e telemetria das interpretações | RF-034, RN-32 | Painel mostra taxa de sucesso e de correção | ✅ |
 | T-65 | ADR-003 (uso de LLM) | QA-03 | Registrado com fronteira e limites | ✅ |
 | T-66 | Notificações por evento e central do usuário | RF-082, RF-083 | As 9 categorias do RF-082 com aviso; central ordenada, isolada, com CSRF e escape; `T-NOTIF-MATRIZ-01/02/03`, `T-NOTIF-03/04/05/07` | ✅ |
-| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Toda transição registrada com ator e correlação | 🔄 |
+| T-67 | Trilha de auditoria e tela do admin | RF-084, RF-085, INV-13 | Varredura do INV-13 por gatilho em todos os fluxos; tela com ator e correlação; `T-AUDIT-05/06/07/08` | ✅ |
 
 ## Marco M4 — Fechamento
 

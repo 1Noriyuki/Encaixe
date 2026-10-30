@@ -200,6 +200,29 @@ test('T-PARAM-TELA-02 | RN-00: valor fora da faixa pela tela e recusado com a re
   assert.match(tela, /15 a 120/);
 });
 
+test('T-AUDIT-08 | RF-084/RNF-07: a tela da auditoria mostra ator e correlacao e filtra por ela', async () => {
+  const c = cenarioBasico();
+  const correlacao = 'c0ffee00-0000-4000-8000-000000000001';
+  const ag = await auditoria.comCorrelacao(correlacao, () => agendamentos.reservar({
+    clienteId: c.cliente.id, horarioId: c.horario.id,
+  }));
+  const daReserva = auditoria.daCorrelacao(correlacao);
+  assert.ok(daReserva.length >= 2, 'a reserva grava agendamento e horario');
+  assert.ok(daReserva.every((l) => l.ator_id === c.cliente.id));
+
+  const cookie = await entrar('admin@teste.dev');
+  const trilha = await pagina('/admin/auditoria', cookie);
+  assert.match(trilha, /<th scope="col">Correlação<\/th>/);
+  assert.ok(trilha.includes(`href="/admin/auditoria?correlacao=${correlacao}"`));
+
+  const filtrada = await pagina(`/admin/auditoria?correlacao=${correlacao}`, cookie);
+  for (const l of daReserva) assert.ok(filtrada.includes(l.acao), l.acao);
+  assert.ok(filtrada.includes(`agendamento #${ag.id}`));
+  assert.ok(filtrada.includes('Cliente Teste'), 'o ator aparece pelo nome');
+  assert.ok(!filtrada.includes('CADASTRO_APROVADO') && !filtrada.includes('PRESTADOR_APROVADO'),
+    'registros de outra operacao ficam de fora');
+});
+
 test('T-PARAM-09 | RN-00: falha na auditoria desfaz a alteracao do parametro', () => {
   const c = cenarioBasico();
   executar(

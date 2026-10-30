@@ -107,10 +107,13 @@ export function parametrosAtuais() {
   return { valores: params(), historico: listarGlobais() };
 }
 
-/** RF-085 - rastreabilidade: auditoria recente e qualidade da extracao por LLM. */
-export function rastreabilidade({ limite = 100 } = {}) {
+/**
+ * RF-085 - rastreabilidade: auditoria recente e qualidade da extracao por LLM.
+ * Com `correlacao`, a trilha se restringe ao que uma mesma requisicao gravou.
+ */
+export function rastreabilidade({ limite = 100, correlacao = null } = {}) {
   return {
-    auditoria: auditoria.recentes(limite),
+    auditoria: correlacao ? auditoria.daCorrelacao(correlacao) : auditoria.recentes(limite),
     interpretacoes: interpretacoesRepo.recentes(30),
     estatisticasLlm: interpretacoesRepo.estatisticas(),
   };

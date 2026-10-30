@@ -7,7 +7,9 @@
  */
 
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { registrarAuditoria, auditoriaDaEntidade, auditoriaRecente } from './repositorios/moderacao.js';
+import {
+  registrarAuditoria, auditoriaDaEntidade, auditoriaRecente, auditoriaDaCorrelacao,
+} from './repositorios/moderacao.js';
 import { agoraIso } from '../dominio/tempo.js';
 
 /**
@@ -57,4 +59,8 @@ export function historicoDe(entidade, id) {
 
 export function recentes(limite = 100) {
   return auditoriaRecente(limite);
+}
+
+export function daCorrelacao(correlacaoId) {
+  return auditoriaDaCorrelacao(correlacaoId);
 }

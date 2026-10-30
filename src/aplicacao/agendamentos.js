@@ -168,8 +168,7 @@ function aplicarConfirmacao(ag, agora, atorId, acao) {
     autoconclusao_prazo_em: prazoCongelado,
   });
 
-  assegurarTransicao('horario', ag.horario_estado, 'OCUPADO');
-  horariosRepo.atualizarEstado(ag.horario_id, 'OCUPADO');
+  moverHorario({ id: ag.horario_id, estado: ag.horario_estado }, 'OCUPADO', atorId, 'HORARIO_OCUPADO');
 
   auditoria.registrar({
     atorId, acao, entidade: 'agendamento', entidadeId: ag.id,
@@ -255,6 +254,19 @@ function liberarHorario(ag, agora, p, atorId) {
   });
 
   return destino;
+}
+
+/**
+ * INV-13 - o horario muda junto com o agendamento, e a mudanca dele tambem
+ * entra na trilha: sem isso, a confirmacao e a conclusao mexiam no horario em
+ * silencio.
+ */
+function moverHorario(horario, destino, atorId, acao) {
+  assegurarTransicao('horario', horario.estado, destino);
+  horariosRepo.atualizarEstado(horario.id, destino);
+  auditoria.registrar({
+    atorId, acao, entidade: 'horario', entidadeId: horario.id, de: horario.estado, para: destino,
+  });
 }
 
 // =====================================================================
@@ -437,10 +449,7 @@ export function registrarNoShow({ usuarioId, agendamentoId, relato = '' }) {
     });
 
     const horario = horariosRepo.porId(ag.horario_id);
-    if (horario.estado === 'OCUPADO') {
-      assegurarTransicao('horario', horario.estado, 'ENCERRADO');
-      horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
-    }
+    if (horario.estado === 'OCUPADO') moverHorario(horario, 'ENCERRADO', usuarioId, 'HORARIO_ENCERRADO');
 
     const deltaNoShow = p.delta_reputacao_noshow ?? DELTA_NO_SHOW;
     reputacao.aplicarEvento({
@@ -577,10 +586,7 @@ function aplicarConclusao(ag, agora, atorId, observacao, estadoCobranca) {
   });
 
   const horario = horariosRepo.porId(ag.horario_id);
-  if (horario.estado === 'OCUPADO') {
-    assegurarTransicao('horario', horario.estado, 'ENCERRADO');
-    horariosRepo.atualizarEstado(horario.id, 'ENCERRADO');
-  }
+  if (horario.estado === 'OCUPADO') moverHorario(horario, 'ENCERRADO', atorId, 'HORARIO_ENCERRADO');
 
   const lancamento = apurarComissao(ag, agora, atorId);
 

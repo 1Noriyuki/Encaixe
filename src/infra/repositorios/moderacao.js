@@ -115,6 +115,18 @@ export function auditoriaDaEntidade(tipo, id) {
   );
 }
 
+/** RNF-07 - tudo o que uma mesma requisicao ou rotina gravou, na ordem em que gravou. */
+export function auditoriaDaCorrelacao(correlacaoId) {
+  return varios(
+    `SELECT l.*, u.nome AS ator_nome
+       FROM log_auditoria l
+       LEFT JOIN usuario u ON u.id = l.ator_id
+      WHERE l.correlacao_id = ?
+      ORDER BY l.id`,
+    correlacaoId,
+  );
+}
+
 export function auditoriaRecente(limite = 100) {
   return varios(
     `SELECT l.*, u.nome AS ator_nome

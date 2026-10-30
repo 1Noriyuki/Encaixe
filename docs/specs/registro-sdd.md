@@ -766,3 +766,11 @@
 
 - **Premissa do agente, a confirmar:** o desempate da central, aberto na SPEC-004 §13, passa a ser `id DESC` (a gravada por último primeiro), como o RF-031 faz na busca. Antes a ordem de dois avisos no mesmo instante ficava a critério do SQLite.
 - **Verificação:** `npm test`, 358/358.
+
+### Etapa 42 — Trilha de auditoria e tela do admin (T-67) · 2026-10-30
+
+- **Método:** em vez de conferir fluxo por fluxo, `tests/integracao/auditoria-inv13.test.js` cria gatilhos temporários que espiam **toda** mudança de estado de agendamento, horário, conta e disputa (as quatro entidades do RF-084) e exige, para cada uma, registro em `log_auditoria` com a mesma entidade, id e estados.
+- **Violações do INV-13 encontradas e corrigidas:** (1) a confirmação movia o horário `BLOQUEADO → OCUPADO` sem registro; (2) a conclusão (manual e automática) e o no-show moviam o horário `OCUPADO → ENCERRADO` sem registro; (3) abrir disputa movia o agendamento para `EM_DISPUTA` e a resolução o movia para o estado final, mas só a disputa era auditada. As três passam por `moverHorario()` em `agendamentos.js` e por registros `AGENDAMENTO_EM_DISPUTA` / `AGENDAMENTO_DECIDIDO_EM_DISPUTA` em `disputas.js`, com o ator real (cliente, prestador, admin ou `null` na rotina).
+- **Tela:** a correlação (RNF-07) era gravada e nunca exibida, o que impedia reconstruir uma operação inteira (RF-085). `/admin/auditoria` ganhou a coluna "Correlação" e o filtro `?correlacao=`, que mostra tudo o que uma requisição gravou, na ordem.
+- **Evidência:** `T-AUDIT-05` (reserva a disputa resolvida), `T-AUDIT-06` (recusa, cancelamento, cancelamento de horário livre, expiração, no-show, autoconclusão e expiração de horário pelas rotinas), `T-AUDIT-07` (cadastro, reputação, suspensão) e `T-AUDIT-08` (tela com ator, correlação e filtro).
+- **Verificação:** `npm test`, 362/362.
