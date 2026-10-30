@@ -954,3 +954,15 @@
 - **Premissa do agente:** a chave `ocorrencias_consecutivas_max` não foi renomeada, embora a regra seja de ocorrências acumuladas, porque é a chave gravada na tabela `parametro`. Mudaram o rótulo e a ajuda que o admin lê.
 - **Estado:** as doze Specs têm agora a DoD completa, e as 29 Specs estão concluídas. As issues já estavam fechadas desde a etapa 61.
 - **Verificação:** `npm test`: 450/450.
+
+### Etapa 64 — Documento de passagem e alinhamento dos documentos · 2026-10-30
+
+- **Pedido (Enzo):** atualizar `docs/proximos-passos.docx` e o contexto do projeto, para poder recomeçar a conversa do zero.
+- **`docs/proximos-passos.docx`:** reescrito para o estado de 2026-10-30. Mantém as oito seções da versão de 2026-10-22, agora com: as 29 Specs concluídas, a lista do que falta (seção 4), o que mudou nas etapas 29 a 63 e a ordem de leitura. Foi gerado com a lib `docx` numa pasta temporária (ADR-001) e conferido pelo Word: exportado para PDF e com as páginas renderizadas; nenhum título ficou separado do texto.
+- **Lacunas encontradas, que entram como próximos passos e não foram corrigidas (decisão de mérito):**
+  - **RN-05:** editar a régua do prestador muda as faixas de um horário já reservado, e a regra diz que a régua desse horário não pode mudar. O preço da reserva não muda, porque a RN-04 o trava; muda a projeção mostrada. Uma sonda reproduziu o caso. A issue T-68 (#70) foi fechada em 23/10 com o comentário de que a lacuna continuava.
+  - **RN-17:** nenhum teste leva a regra no nome, embora `T-DISPUTA-01` e `T-SPEC024-03` cubram a retenção da comissão em disputa.
+- **Documentos alinhados:**
+  - `docs/tasks.md`: 10 das 11 tarefas marcadas 🔄 viraram ✅, apontando a §12 da Spec que as prova. A T-68 continua 🔄, com a lacuna descrita.
+  - `README.md`: dizia 208 testes; agora diz 450.
+- **Verificação:** `npm test`: 450/450.

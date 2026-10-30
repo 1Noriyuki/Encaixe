@@ -55,21 +55,21 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-11 | Login, sessão em cookie e logout | RF-004, RF-005, RN-28, RNF-02 | `SUSPENSO` recebe mensagem própria; `REPROVADO` autentica; 2 h sem uso e teto de 12 h; `T-SESSAO-03/04a/04b/04c/07` | ✅ |
 | T-12 | Autorização por perfil nas rotas + auditoria de acesso negado | RF-006, RF-007 | 403 e registro `ACESSO_NEGADO`; testes HTTP em `tests/integracao/http.test.js` | ✅ |
 | T-13 | Proteção CSRF em todo POST autenticado | RNF-03 | Token por sessão; POST sem token → 403 | ✅ |
-| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado; SPEC-005 aguarda aprovação e evidência dos critérios | 🔄 |
-| T-15 | Perfil do prestador com janela e política de expiração | RF-010, RN-10 | Janela entre 5 e 60 min; política `LIBERAR`/`AUTOCONFIRMAR` | 🔄 |
-| T-16 | Barreira "pode publicar" com lista do que falta | RF-011, RN-08 | Perfil incompleto lista pendências | 🔄 |
+| T-14 | Aprovação e reprovação de prestador pelo admin | RF-008, RF-009 | Reprovação exige justificativa; titular notificado; evidência na SPEC-005 §12 | ✅ |
+| T-15 | Perfil do prestador com janela e política de expiração | RF-010, RN-10 | Janela entre 5 e 60 min; política `LIBERAR`/`AUTOCONFIRMAR`; evidência na SPEC-009 §12 | ✅ |
+| T-16 | Barreira "pode publicar" com lista do que falta | RF-011, RN-08 | Perfil incompleto lista pendências; evidência na SPEC-009 §12 | ✅ |
 
 ### Catálogo e agenda
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-17 | CRUD de serviços com validação | RF-012, RF-013 | Duração múltiplo de 5; piso ≤ preço-base | 🔄 |
+| T-17 | CRUD de serviços com validação | RF-012, RF-013 | Duração múltiplo de 5; piso ≤ preço-base; evidência na SPEC-007 §12 | ✅ |
 | T-18 | Régua de desconto com validação de monotonicidade | RF-018 a RF-020, RN-02 | Régua não monotônica é recusada com mensagem clara | ✅ |
 | T-19 | Publicação de horário com antecedência mínima | RF-014, RF-015, RN-07 | Abaixo de P-03 é recusado | ✅ |
 | T-20 | Bloqueio de sobreposição na agenda | RF-016, RN-06 | Conflito recusado apontando o horário conflitante | ✅ |
 | T-21 | Snapshots de preço no horário | RN-05, ADR-002 | Editar o serviço não altera horário publicado | ✅ |
-| T-22 | Publicação em lote | RF-023 | Falha parcial item a item; `T-HORARIO-LOTE-01` | 🔄 |
-| T-23 | Cancelar horário ainda livre | RF-022 | Recusa horário reservado e permite cancelar livre; `T-HORARIO-CANCEL-01/02` | 🔄 |
+| T-22 | Publicação em lote | RF-023 | Falha parcial item a item; `T-HORARIO-LOTE-01`; evidência na SPEC-012 §12 | ✅ |
+| T-23 | Cancelar horário ainda livre | RF-022 | Recusa horário reservado e permite cancelar livre; `T-HORARIO-CANCEL-01/02`; evidência na SPEC-012 §12 | ✅ |
 
 ### Preço dinâmico
 
@@ -108,7 +108,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-44 | Conclusão do atendimento com estado de cobrança | RF-058, RN-33 | Só após o fim do horário | ✅ |
 | T-45 | Apuração de comissão sobre o valor final | RF-059, RN-14, RN-15 | `bruto = comissão + líquido`; base é o valor travado | ✅ |
 | T-46 | Conclusão automática após o prazo | RF-060 | Sem contestação em P-17 → conclui e apura | ✅ |
-| T-47 | Extrato do prestador com retidos separados | RF-061, RF-062 | Itens `RETIDO` fora do total | 🔄 |
+| T-47 | Extrato do prestador com retidos separados | RF-061, RF-062 | Itens `RETIDO` fora do total; evidência na SPEC-024 §12 | ✅ |
 | T-48 | Avaliação bilateral com janela e unicidade | RF-065 a RF-067, RN-24 | Uma avaliação por parte, dentro de P-14 | ✅ |
 | T-49 | Revelação cega das avaliações | RF-068, RN-25 | Notas só aparecem com ambas ou com a janela encerrada | ✅ |
 | T-50 | ADR-005 (escopo financeiro) | QA-05 | Registrado com limites conhecidos | ✅ |
@@ -122,8 +122,8 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 | T-53 | Fila de disputas ordenada por SLA | RF-074, RF-075 | Ordenação por SLA e valor, destaque fora do SLA na tela; `T-DISPUTA-07/07b/07c` | ✅ |
 | T-54 | Resolução com os quatro desfechos | RF-076, RF-077, RN-27 | `MANTIDO`/`REVERTIDO`/`PARCIAL`/`ARQUIVADO` com efeitos distintos | ✅ |
 | T-55 | Fila de revisão de contas e decisão do admin | RF-078, RF-079 | Fila com motivo, reputação e ocorrências; decisão com justificativa e aviso; `T-CONTA-REVISAO-01/01b/02` | ✅ |
-| T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show | 🔄 |
-| T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras | 🔄 |
+| T-56 | Painel de métricas com recorte | RF-063, RF-064 | Comissão, ticket médio, taxas de cancelamento e no-show; evidência na SPEC-026 §12 | ✅ |
+| T-57 | Configuração de comissão por categoria | RF-080, RF-081 | Vale só para conclusões futuras; evidência na SPEC-026 §12 | ✅ |
 | T-58 | Tela de parâmetros do domínio | RN-00 | Alteração pela tela vale na hora, fora da faixa é recusada, auditoria atômica; `T-PARAM-TELA-01/02`, `T-PARAM-12` | ✅ |
 | T-59 | Contrato do provedor de LLM + validação de saída | RN-29, RNF-12 | Saída fora do formato vira `FALHA`, não exceção | ✅ |
 | T-60 | Provedor simulado determinístico | ADR-003 | Sistema funciona sem chave e sem rede | ✅ |
@@ -139,7 +139,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra | 🔄 |
+| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra. **Issue fechada, lacuna aberta:** a RN-05 tem um teste só e não barra a edição da régua de horário reservado; a RN-17 não aparece no nome de nenhum teste (etapa 64) | 🔄 |
 | T-69 | Testes de integração dos fluxos completos | AC-03 a AC-12 | UC-03 → UC-12 ponta a ponta | ✅ |
 | T-70 | Testes da camada HTTP | AC-01, RF-006, RF-007 | Autorização, CSRF e escape de saída | ✅ |
 | T-71 | `plan.md` e `tasks.md` | §7 enunciado | Derivados da spec, com rastreabilidade | ✅ |
