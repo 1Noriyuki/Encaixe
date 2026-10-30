@@ -732,3 +732,9 @@
 - **Correção (código, não spec):** `admin.filaDeRevisao()` compõe, na aplicação, o motivo a partir da última transição auditada para o estado atual (RN-22 por reputação, RN-21 por ocorrências, RF-079 por suspensão do admin) e a contagem de eventos negativos não revertidos. A tela `/admin/contas` ganhou as colunas "Motivo do sinalizador" e "Ocorrências"; o dossiê, a seção "Histórico da conta".
 - **Evidência:** `T-CONTA-REVISAO-01` (RN-22, aplicação e tela), `T-CONTA-REVISAO-01b` (RN-21 com três cancelamentos, contagem e histórico no dossiê) e `T-CONTA-REVISAO-02` (decisão pela tela recusada sem justificativa, aceita com ela, auditada e notificada).
 - **Verificação:** `npm test`, 345/345.
+
+### Etapa 39 — Tela de parâmetros do domínio (T-58) · 2026-10-30
+
+- **Conferência:** a faixa e a vigência já tinham evidência na aplicação (`T-PARAM-01` a `08`, SPEC-001). Faltava provar pela tela, e a conferência achou uma divergência: `admin.ajustarParametro()` gravava o valor e só depois registrava a auditoria, fora de transação. Se a auditoria falhasse, o parâmetro mudava sem rastro, ao contrário de `ajustarComissao()` e da ordem de `aplicacao/` (grava em transação → audita).
+- **Correção:** `ajustarParametro()` passa a envolver gravação e auditoria na mesma `transacao()`.
+- **Evidência:** `T-PARAM-TELA-01` altera P-04 pelo formulário, sem reinício, e a busca deixa de mostrar o horário que ficou abaixo da antecedência nova, com auditoria do admin; `T-PARAM-TELA-02` envia valor fora da faixa e a tela mostra RN-00 e P-04 sem nada mudar; `T-PARAM-09` derruba a auditoria por gatilho e exige o valor anterior.

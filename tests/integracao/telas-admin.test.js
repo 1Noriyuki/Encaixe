@@ -14,6 +14,9 @@ import * as agendamentos from '../../src/aplicacao/agendamentos.js';
 import * as disputas from '../../src/aplicacao/disputas.js';
 import * as adminApp from '../../src/aplicacao/admin.js';
 import * as reputacao from '../../src/aplicacao/reputacao.js';
+import * as busca from '../../src/aplicacao/busca.js';
+import { params } from '../../src/aplicacao/parametros.js';
+import { executar } from '../../src/infra/db/conexao.js';
 import * as auditoria from '../../src/infra/auditoria.js';
 import * as notificacoes from '../../src/infra/notificacoes.js';
 import * as usuariosRepo from '../../src/infra/repositorios/usuarios.js';
@@ -55,8 +58,9 @@ async function pagina(caminho, cookie) {
   return r.text();
 }
 
-async function enviar(caminho, cookie, campos) {
-  const corpo = await pagina(caminho.replace(/\/[a-z]+$/, ''), cookie);
+/** POST com o token CSRF da tela do formulario (por padrao, a rota sem a acao). */
+async function enviar(caminho, cookie, campos, origem = caminho.replace(/\/[a-z]+$/, '')) {
+  const corpo = await pagina(origem, cookie);
   const csrf = corpo.match(/name="_csrf" value="([a-f0-9]+)"/)?.[1];
   return fetch(`${base}${caminho}`, {
     method: 'POST',
@@ -163,4 +167,50 @@ test('T-CONTA-REVISAO-02 | RF-079: decisao pela tela exige justificativa, aplica
   const registro = auditoria.historicoDe('conta', c.cliente.id).find((l) => l.acao === 'CONTA_REATIVADA');
   assert.equal(registro.ator_id, c.adminId);
   assert.equal(registro.detalhe.justificativa, texto);
+});
+
+test('T-PARAM-TELA-01 | RN-00: o admin altera P-04 pela tela e a busca usa o valor novo sem reinicio', async () => {
+  const c = cenarioBasico({ horasAteHorario: 100 / 60 });
+  assert.ok(busca.buscarPorFiltros().some(({ id }) => id === c.horario.id), 'com P-04 = 30 min o horario aparece');
+
+  const cookie = await entrar('admin@teste.dev');
+  const r = await enviar('/admin/parametros', cookie, { chave: 'antecedencia_min_reserva_min', valor: '110' }, '/admin/parametros');
+  assert.equal(r.status, 302);
+
+  assert.equal(params().antecedencia_min_reserva_min, 110);
+  assert.ok(!busca.buscarPorFiltros().some(({ id }) => id === c.horario.id), 'faltam 100 min, abaixo do P-04 novo');
+  const registro = auditoria.recentes(5).find((l) => l.acao === 'PARAMETRO_ALTERADO');
+  assert.equal(registro.ator_id, c.adminId);
+  assert.equal(registro.estado_anterior, '30');
+  assert.equal(registro.estado_novo, '110');
+  assert.match(await pagina('/admin/parametros', cookie), /Parâmetro atualizado para 110/);
+});
+
+test('T-PARAM-TELA-02 | RN-00: valor fora da faixa pela tela e recusado com a regra e nada muda', async () => {
+  cenarioBasico();
+  const cookie = await entrar('admin@teste.dev');
+
+  await enviar('/admin/parametros', cookie, { chave: 'antecedencia_min_reserva_min', valor: '121' }, '/admin/parametros');
+
+  assert.equal(params().antecedencia_min_reserva_min, 30);
+  assert.ok(!auditoria.recentes(5).some((l) => l.acao === 'PARAMETRO_ALTERADO'));
+  const tela = await pagina('/admin/parametros', cookie);
+  assert.match(tela, /RN-00/);
+  assert.match(tela, /P-04/);
+  assert.match(tela, /15 a 120/);
+});
+
+test('T-PARAM-09 | RN-00: falha na auditoria desfaz a alteracao do parametro', () => {
+  const c = cenarioBasico();
+  executar(
+    `CREATE TRIGGER falha_auditoria_parametro BEFORE INSERT ON log_auditoria
+      WHEN NEW.acao = 'PARAMETRO_ALTERADO'
+      BEGIN SELECT RAISE(FAIL, 'auditoria indisponivel'); END`,
+  );
+
+  assert.throws(
+    () => adminApp.ajustarParametro({ adminId: c.adminId, chave: 'antecedencia_min_reserva_min', valor: 90 }),
+    /auditoria indisponivel/,
+  );
+  assert.equal(params().antecedencia_min_reserva_min, 30);
 });

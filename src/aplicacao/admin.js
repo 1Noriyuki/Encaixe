@@ -83,20 +83,24 @@ export function ajustarComissao({ adminId, categoriaId, percentual }) {
 
 /** RN-00 - alteracao de parametro global. */
 export function ajustarParametro({ adminId, chave, valor }) {
-  const anterior = params()[chave];
-  const novo = salvarGlobal(chave, valor, adminId);
+  // Parametro alterado sem rastro e pior que alteracao recusada: a auditoria
+  // falhando desfaz o valor novo.
+  return transacao(() => {
+    const anterior = params()[chave];
+    const novo = salvarGlobal(chave, valor, adminId);
 
-  auditoria.registrar({
-    atorId: adminId,
-    acao: 'PARAMETRO_ALTERADO',
-    entidade: 'parametro',
-    entidadeId: null,
-    de: String(anterior),
-    para: String(novo),
-    detalhe: { chave, regra: 'RN-00' },
+    auditoria.registrar({
+      atorId: adminId,
+      acao: 'PARAMETRO_ALTERADO',
+      entidade: 'parametro',
+      entidadeId: null,
+      de: String(anterior),
+      para: String(novo),
+      detalhe: { chave, regra: 'RN-00' },
+    });
+
+    return novo;
   });
-
-  return novo;
 }
 
 export function parametrosAtuais() {
