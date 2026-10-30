@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Versão | 1.0.0 |
-| Data | 2026-10-20 |
-| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. Seguem abertas as questões da §13: auditoria das tentativas sobre recurso alheio e OPEN-03 |
+| Versão | 1.1.0 |
+| Data | 2026-10-30 |
+| Status | **Aprovada** por Enzo em 2026-10-20 (registro, etapa 21), sem alteração do rascunho v0.1.0 do 2dart5. **Código conferido** em 2026-10-30 (v1.1.0, etapa 43): todos os CA e INV com teste, evidência na §12. **Não concluída:** a DoD 1 depende das questões da §13 (auditoria das tentativas sobre recurso alheio, duas linhas da matriz sem caminho no código, OPEN-03) |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 3 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.6 · ADR-004 · constituição |
 
@@ -196,11 +196,28 @@ Os casos abaixo são propostas para a implementação/conferência após aprova�
 | `T-TITULAR-03 \| RF-006: titular autorizado consulta o proprio recurso` | CA-06 |
 | `T-AUTORIZ-05 \| RF-007: recusa nao executa handler nem altera estado` | CA-03, INV-002 |
 
+**Evidência (registro etapa 43, 2026-10-30).** Todos os testes acima existem em
+`tests/integracao/spec-003-autorizacao.test.js` e passam. Código conferido sem alteração: a rota resolve
+o perfil pela sessão e recusa antes do CSRF e do handler (`servidor.js`); a titularidade é conferida em
+`carregarComoParte`, `carregarDoPrestador` e `papelDe` (`aplicacao/agendamentos.js`).
+
+| Critério | Evidência |
+|---|---|
+| CA-01, INV-006 | `T-AUTORIZ-01`: as 38 rotas protegidas redirecionam o visitante ao login; a reserva anônima não cria agendamento; as 6 públicas respondem sem sessão |
+| CA-02, DoD 2 | `T-AUTORIZ-02`: tabela com **todas** as rotas, cada uma ligada à ação da §4.5, testada com os três perfis |
+| CA-03, CA-07, INV-004 | `T-AUTORIZ-03`: 403 com RF-007 na tela; registro `ACESSO_NEGADO` com ator, caminho, perfil, perfil exigido, correlação e instante UTC |
+| CA-04, INV-001 | `T-AUTORIZ-04`: `perfil=ADMIN` no formulário e na query, com CSRF válido, não muda a decisão nem o parâmetro |
+| INV-002 | `T-AUTORIZ-05`: prestador com CSRF válido tenta reservar; nada é gravado |
+| CA-05, INV-003, INV-005 | `T-TITULAR-01` (leitura alheia: 403 sem observação, telefone nem nome; inexistente: 404) e `T-TITULAR-02` (cancelar, confirmar e cancelar horário alheios não mudam estado nem geram transição) |
+| CA-06 | `T-TITULAR-03` |
+| RNF-08 | `T-AUTORIZ-03` (instante UTC do registro) |
+
 ## 13. Questões em aberto
 
 - **OPEN-03:** a interpretação de drivers arquiteturais do mapa usa spec §1.5 e a constituição; a equipe ainda não formalizou uma lista separada.
 - **Cobertura de auditoria da titularidade:** RF-007 explicita auditoria para operação não permitida ao perfil; confirmar se toda tentativa sobre recurso alheio deve receber o mesmo registro, além da resposta de negação.
 - A matriz da spec §4.5 é transcrita como fonte, sem alterar permissões nesta proposta. Qualquer ampliação ou exceção precisa de decisão da equipe.
+- **Divergências da matriz encontradas na conferência (etapa 43), não corrigidas:** (1) "Cancelar agendamento — Admin: Sim (qualquer, com justificativa)" não tem caminho no código: `cancelar()` só aceita as partes. A linha não diz que penalidade ou estado o cancelamento pelo admin produz, então implementá-lo é decisão da SPEC-017. (2) "Ver extrato próprio de comissão — Admin: Sim": `/prestador/extrato` é só do prestador; o admin vê métricas consolidadas, não o extrato de um prestador (SPEC-024).
 
 ## 14. Definition of Done
 

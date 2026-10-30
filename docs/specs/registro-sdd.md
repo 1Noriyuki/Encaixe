@@ -774,3 +774,10 @@
 - **Tela:** a correlação (RNF-07) era gravada e nunca exibida, o que impedia reconstruir uma operação inteira (RF-085). `/admin/auditoria` ganhou a coluna "Correlação" e o filtro `?correlacao=`, que mostra tudo o que uma requisição gravou, na ordem.
 - **Evidência:** `T-AUDIT-05` (reserva a disputa resolvida), `T-AUDIT-06` (recusa, cancelamento, cancelamento de horário livre, expiração, no-show, autoconclusão e expiração de horário pelas rotinas), `T-AUDIT-07` (cadastro, reputação, suspensão) e `T-AUDIT-08` (tela com ator, correlação e filtro).
 - **Verificação:** `npm test`, 362/362.
+
+### Etapa 43 — Conferência do código contra a SPEC-003 · 2026-10-30
+
+- **Pedido:** conferir o código contra a SPEC-003 (aprovada na etapa 21), pendência do 2dart5 desde a etapa 28.
+- **Resultado:** o código atende CA-01 a CA-07 e INV-001 a INV-006 sem alteração. Os oito testes da §12 foram escritos em `tests/integracao/spec-003-autorizacao.test.js`; o `T-AUTORIZ-02` percorre todas as rotas com os três perfis, o que liga cada linha da matriz §4.5 a uma rota (DoD 2). Spec sobe para v1.1.0 com a tabela de evidência na §12.
+- **Divergências registradas na §13, sem correção:** a matriz admite o admin cancelar qualquer agendamento com justificativa, e não há esse caminho no código (decisão de regra da SPEC-017); e admite o admin ver o extrato de comissão, que hoje é só do prestador (SPEC-024).
+- **Por que a issue #82 não fecha:** a DoD 1 exige resolver as questões da §13 que alteram comportamento. A auditoria das tentativas sobre recurso alheio e as duas linhas da matriz são decisão da equipe.
