@@ -966,3 +966,11 @@
   - `docs/tasks.md`: 10 das 11 tarefas marcadas 🔄 viraram ✅, apontando a §12 da Spec que as prova. A T-68 continua 🔄, com a lacuna descrita.
   - `README.md`: dizia 208 testes; agora diz 450.
 - **Verificação:** `npm test`: 450/450.
+
+### Etapa 65 — Consistência dos documentos das Specs · 2026-10-31
+
+- **Pedido:** revisão geral do projeto. Código, testes (450/450), CI, seed e issues estão em ordem; sobraram duas inconsistências de documentação, corrigidas aqui.
+- **SPEC-004 §12:** a tabela citava `T-NOTIF-02`, `06` e `08`, que nunca existiram (os casos foram absorvidos pelos testes de matriz na etapa 41), e mostrava os títulos propostos de `T-NOTIF-01` e `04` em vez dos reais. A tabela passa a listar os dez testes pelo título real, conferível por `grep`.
+- **Status das Specs concluídas:** SPEC-006 a 009, 011, 020, 021, 024 e 026 ainda diziam "Falta a revisão do PR por outro integrante", mas o PR #145 foi mergeado em 2026-10-29 e as issues estão fechadas; a SPEC-002 não registrava a conclusão no status. As dez passam a dizer **Concluída**, com o PR ou a issue que provam.
+- **Verificação:** todo ID citado numa §12 existe como teste; as 29 Specs registram conclusão no status.
+- **Mantido para a equipe:** a lacuna da RN-05 (régua editável em horário reservado) e o nome `docs/requisitos_funionais.md`, que não foi renomeado.

@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 1.4.0 |
 | Data | 2026-10-20 |
-| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões das OPEN-12, 202 e 203; v1.2.0, as das OPEN-01, 02 e 210 (2026-10-08); v1.3.0, as das OPEN-201 e 204 a 209 e o INV-004 no banco (2026-10-20, registro etapa 24); v1.4.0, o canal de contato da conta suspensa (spec v0.1.9, etapa 25). Nenhuma OPEN segue aberta |
+| Status | **Aprovada** pela equipe em 2026-10-01. v1.1.0 incorpora as decisões das OPEN-12, 202 e 203; v1.2.0, as das OPEN-01, 02 e 210 (2026-10-08); v1.3.0, as das OPEN-201 e 204 a 209 e o INV-004 no banco (2026-10-20, registro etapa 24); v1.4.0, o canal de contato da conta suspensa (spec v0.1.9, etapa 25). Nenhuma OPEN segue aberta. **Concluída:** código conferido e corrigido (etapa 15), issue #81 fechada em 2026-10-09 |
 | Layout | [canvas com 8 telas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) · fontes em [`layouts/SPEC-002/`](layouts/SPEC-002/) · **aprovado** por Enzo em 2026-10-20 (registro, etapa 23). O `[CANAL DE CONTATO]` virou o e-mail de suporte na etapa 25 |
 
 > **v0.1.1:** acrescentados o layout das telas (seção 8.1) e a OPEN-210. Nenhum critério, invariante ou

@@ -186,21 +186,23 @@ Limite de paginação e desempate quando duas notificações têm o mesmo `criad
 
 ## 12. Casos de teste derivados
 
-Casos propostos para execução após aprovação da Spec.
+Testes que existem e passam, pelo título real (etapa 65).
 
 | Teste | Cobre |
 |---|---|
-| `T-NOTIF-01 \| RF-082: transicao gera aviso persistido para a parte afetada` | CA-01, INV-001 |
-| `T-NOTIF-02 \| RF-082: transicao bilateral gera um aviso para cada parte` | CA-02 |
+| `T-NOTIF-MATRIZ-01 \| RF-082: reserva, confirmacao, conclusao e disputa avisam as partes envolvidas` | CA-01, CA-02 |
+| `T-NOTIF-MATRIZ-02 \| RF-082: recusa, expiracao, cancelamento e no-show avisam quem foi afetado` | CA-01, CA-02, RNF-08 |
+| `T-NOTIF-MATRIZ-03 \| RF-082: decisoes administrativas avisam o titular, sem agendamento` | CA-06, INV-005 |
+| `T-NOTIF-01 \| RF-082: aviso so existe para usuario existente e nao nasce orfao` | CA-01, INV-001 |
 | `T-NOTIF-03 \| RF-083: central lista avisos proprios em ordem decrescente` | CA-03, INV-002, INV-003 |
-| `T-NOTIF-04 \| RF-083: marcar lidas altera apenas avisos proprios nao lidos` | CA-04, INV-004 |
+| `T-NOTIF-04 \| RF-083: marcar lidas exige CSRF e altera apenas avisos proprios nao lidos` | CA-04, INV-004, RNF-08 |
 | `T-NOTIF-05 \| RF-083: central vazia responde com estado vazio` | CA-05 |
-| `T-NOTIF-06 \| RF-082: aviso de moderacao nao exige agendamento` | CA-06, INV-005 |
 | `T-NOTIF-07 \| C-VIII: conteudo da notificacao e escapado na tela` | CA-07, INV-006 |
-| `T-NOTIF-08 \| RNF-08: instantes de criacao e leitura estao em UTC` | RNF-08 |
+| `T-NOTIF-09 \| RNF-01: avisos e leitura sobrevivem a reabertura da base` | RNF-01 |
+| `T-NOTIF-10 \| RF-082: aviso e transicao estao na mesma transacao` | §13 atomicidade |
 
 **Evidência (registro etapas 41 e 44, 2026-10-30).** Testes em `tests/integracao/notificacoes.test.js`, todos
-passando. Os casos 02, 06 e 08 da tabela acima foram absorvidos pelos testes de matriz, que cobrem as nove
+passando. Os casos propostos 02, 06 e 08 foram absorvidos pelos testes de matriz, que cobrem as nove
 categorias do RF-082 de uma vez; nenhum ID foi reaproveitado com outro sentido.
 
 | Critério | Evidência |

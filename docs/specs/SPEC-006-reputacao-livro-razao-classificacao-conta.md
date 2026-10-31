@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. **Concluída** com o merge do PR #145 em 2026-10-29; issue #85 fechada |
 | Mapa de origem | [`mapa-de-specs.md`](mapa-de-specs.md), posição 6 de 29 |
 | Baseline | [`docs/spec.md`](../spec.md) v0.1.9, RN-00, RN-22, RN-23, RF-057, RF-069; ADR-002 |
 | Responsável pela preparação | gostislavs — Trilha A |
