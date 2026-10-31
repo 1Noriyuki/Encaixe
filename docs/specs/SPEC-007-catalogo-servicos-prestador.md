@@ -4,7 +4,7 @@
 |---|---|
 | Versão | 0.2.0 |
 | Data | 2026-10-29 |
-| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. Falta a revisão do PR por outro integrante |
+| Status | **Aprovada** em 2026-10-29 (etapa 32). Evidência completa na etapa 33: todos os critérios da §11 têm teste e passam. **Concluída** com o merge do PR #145 em 2026-10-29; issue #86 fechada |
 | Origem | `docs/specs/mapa-de-specs.md` SPEC-007; `docs/spec.md` v0.1.8 |
 | Trilha | A — gostislavs |
 | Dependências | SPEC-005 |
