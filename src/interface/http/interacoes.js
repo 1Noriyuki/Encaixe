@@ -15,7 +15,9 @@ export const JS = `
   // Avisa o layout de que o script rodou (desarma a rede de seguranca do <head>).
   document.documentElement.dataset.animado = '1';
 
-  var pouparMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // RF-093: a escolha feita no site vale tanto quanto a do sistema operacional.
+  var pouparMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || document.documentElement.dataset.movimento === 'reduzido';
 
   // ------------------------------------------------- revelar ao rolar
   var alvos = document.querySelectorAll('[data-revelar]');
@@ -26,8 +28,11 @@ export const JS = `
     var observador = new IntersectionObserver(function (entradas) {
       entradas.forEach(function (entrada) {
         if (!entrada.isIntersecting) return;
-        entrada.target.classList.add('visivel');
-        observador.unobserve(entrada.target);
+        var alvo = entrada.target;
+        alvo.classList.add('visivel');
+        observador.unobserve(alvo);
+        // Passada a entrada, o atraso da cascata nao pode atrasar o hover.
+        setTimeout(function () { alvo.style.setProperty('--atraso', '0ms'); }, 1000);
       });
     }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
 
@@ -53,8 +58,8 @@ export const JS = `
 
     if (progresso) {
       var total = document.documentElement.scrollHeight - window.innerHeight;
-      var pct = total > 0 ? Math.min(100, (y / total) * 100) : 0;
-      progresso.style.setProperty('--avanco', pct.toFixed(2) + '%');
+      var fracao = total > 0 ? Math.min(1, y / total) : 0;
+      progresso.style.setProperty('--avanco', fracao.toFixed(4));
     }
   }
 

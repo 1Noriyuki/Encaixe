@@ -58,7 +58,21 @@ export function migrar() {
   acrescentarReputacaoInicial();
   acrescentarPrazoAutoconclusao();
   acrescentarPrazoAvaliacao();
+  acrescentarFotoDePerfil();
   return bd();
+}
+
+/**
+ * RF-088 (SPEC-030): bancos anteriores a spec v0.1.12 nao tem `usuario.foto`.
+ * Nao ha o que preencher: conta antiga simplesmente nao tem foto e mostra as
+ * iniciais.
+ */
+function acrescentarFotoDePerfil() {
+  const banco = bd();
+  const colunas = banco.prepare('PRAGMA table_info(usuario)').all().map((c) => c.name);
+  if (colunas.includes('foto')) return;
+  banco.exec(`ALTER TABLE usuario ADD COLUMN foto TEXT CHECK (foto IS NULL OR (substr(foto, 1, 32) NOT GLOB '*[^0-9a-f]*'
+    AND length(foto) IN (36, 37) AND substr(foto, 33) IN ('.jpg', '.png', '.webp')))`);
 }
 
 /**

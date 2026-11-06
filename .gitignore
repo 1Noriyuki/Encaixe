@@ -3,7 +3,11 @@ dados/*.db
 dados/*.db-journal
 dados/*.db-wal
 dados/*.db-shm
+# Fotos de perfil enviadas pelos usuarios (ADR-007): dado pessoal, fora do git
+dados/fotos/
 .env
 .env.local
 *.log
 .DS_Store
+# Playwright CLI output (may contain credentials)
+.playwright-cli/

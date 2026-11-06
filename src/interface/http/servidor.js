@@ -26,6 +26,8 @@ import * as auditoria from '../../infra/auditoria.js';
 import { naoLidas as contarNaoLidas } from '../../infra/notificacoes.js';
 import * as rotinas from '../../aplicacao/rotinas.js';
 import { registrarRotas } from './rotas/index.js';
+import { lerAparencia } from './aparencia.js';
+import * as fotos from '../../infra/fotos.js';
 
 const TAMANHO_MAX_CORPO = 128 * 1024;
 let ultimaRotina = 0;
@@ -65,6 +67,23 @@ async function atender(req, res, roteador) {
   if (url.pathname.startsWith('/estatico/')) {
     if (await servirArquivo(url.pathname.slice('/estatico/'.length), res)) return;
   }
+  // RF-088 (SPEC-030): foto de perfil. O nome so e aceito se for um que o
+  // sistema gerou, e os cabecalhos impedem o navegador de tratar o arquivo como
+  // outra coisa que nao imagem, mesmo que alguem consiga gravar um poliglota.
+  if (req.method === 'GET' && url.pathname.startsWith('/fotos/')) {
+    const foto = fotos.ler(url.pathname.slice('/fotos/'.length));
+    if (foto) {
+      res.writeHead(200, {
+        'Content-Type': foto.tipo,
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': "default-src 'none'; sandbox",
+        'Content-Disposition': 'inline',
+        'Cache-Control': 'public, max-age=86400',
+      });
+      res.end(foto.conteudo);
+      return;
+    }
+  }
   if (url.pathname === '/saude') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
@@ -76,7 +95,7 @@ async function atender(req, res, roteador) {
     const dica = roteador.existeEmOutroMetodo(req.method, url.pathname)
       ? 'Este endereço existe, mas não aceita este método.'
       : 'Confira o endereço, ou volte para a busca de horários.';
-    responder(res, 404, paginaDeErro(404, 'Página não encontrada', dica));
+    responder(res, 404, paginaDeErro(404, 'Página não encontrada', dica, null, null, lerAparencia(req)));
     return;
   }
 
@@ -85,9 +104,10 @@ async function atender(req, res, roteador) {
 
   const sessao = carregarSessao(req);
   const usuario = sessao?.usuario ?? null;
-  const corpo = req.method === 'POST' ? await lerCorpo(req) : {};
+  const corpo = req.method === 'POST' ? await lerCorpo(req, rota.opcoes) : {};
+  const aparencia = lerAparencia(req);
 
-  const ctx = criarContexto({ req, res, url, rota, sessao, usuario, corpo });
+  const ctx = criarContexto({ req, res, url, rota, sessao, usuario, corpo, aparencia });
 
   // ------------------------------------------------------ autorizacao
   const exigido = rota.opcoes?.perfil;
@@ -111,7 +131,7 @@ async function atender(req, res, roteador) {
         403, 'Acesso negado',
         `Esta área é do perfil ${perfis.join(' ou ').toLowerCase()}. Você está autenticado como `
         + `${usuario.perfil.toLowerCase()}. A tentativa foi registrada na trilha de auditoria.`,
-        usuario, 'RF-007',
+        usuario, 'RF-007', aparencia,
       ));
       return;
     }
@@ -128,7 +148,7 @@ async function atender(req, res, roteador) {
       });
       responder(res, 403, paginaDeErro(
         403, 'Sessão expirada',
-        'Seu formulário expirou por segurança. Entre de novo e repita a ação.', usuario, 'RNF-03',
+        'Seu formulário expirou por segurança. Entre de novo e repita a ação.', usuario, 'RNF-03', aparencia,
       ));
       return;
     }
@@ -180,7 +200,7 @@ async function servirArquivo(nomeRelativo, res) {
   }
 }
 
-function criarContexto({ req, res, url, rota, sessao, usuario, corpo }) {
+function criarContexto({ req, res, url, rota, sessao, usuario, corpo, aparencia }) {
   const avisosPendentes = consumirAvisos(sessao?.id);
 
   const ctx = {
@@ -194,6 +214,7 @@ function criarContexto({ req, res, url, rota, sessao, usuario, corpo }) {
     usuario,
     csrf: sessao?.csrf ?? '',
     avisos: avisosPendentes,
+    aparencia,
 
     /** Renderiza uma pagina completa. */
     render(corpoHtml, {
@@ -211,6 +232,7 @@ function criarContexto({ req, res, url, rota, sessao, usuario, corpo }) {
         descricao,
         // Absoluta: os scrapers de link (og:image) nao resolvem caminho relativo.
         origem: url.origin,
+        aparencia,
       }));
     },
 
@@ -307,10 +329,11 @@ function tituloDoErro(erro) {
   }
 }
 
-function paginaDeErro(status, titulo, texto, usuario = null, regra = null) {
+function paginaDeErro(status, titulo, texto, usuario = null, regra = null, aparencia = null) {
   return pagina({
     titulo,
     usuario,
+    aparencia,
     caminho: '/',
     estreita: true,
     corpo: html`
@@ -337,8 +360,89 @@ function responder(res, status, corpo) {
   res.end(paraTexto(corpo));
 }
 
+/**
+ * Corpo de formulario. So rota que declara `arquivo` (o teto em bytes) aceita
+ * multipart; nas outras, o teto pequeno de sempre continua valendo.
+ */
+function lerCorpo(req, opcoes = {}) {
+  const tipo = req.headers['content-type'] ?? '';
+  if (opcoes?.arquivo && tipo.startsWith('multipart/form-data')) {
+    return lerMultipart(req, tipo, opcoes.arquivo);
+  }
+  return lerFormulario(req);
+}
+
+/**
+ * multipart/form-data sem dependencia (ADR-001, ADR-007). Passado o teto, o
+ * resto do envio e lido e descartado: o caso de uso recebe `_excedeuLimite` e
+ * responde com a regra (RF-089), em vez de a conexao cair no meio.
+ * Os campos de texto vem antes do arquivo no formulario, entao o token CSRF
+ * chega inteiro mesmo quando o arquivo e cortado.
+ */
+function lerMultipart(req, tipo, limiteArquivo) {
+  const fronteira = /boundary=(?:"([^"]+)"|([^;]+))/i.exec(tipo);
+  const teto = limiteArquivo + 64 * 1024;
+
+  return new Promise((resolve, reject) => {
+    const pedacos = [];
+    let tamanho = 0;
+    let excedeu = false;
+
+    req.on('data', (pedaco) => {
+      if (excedeu) return;
+      if (tamanho + pedaco.length > teto) {
+        pedacos.push(pedaco.subarray(0, teto - tamanho));
+        tamanho = teto;
+        excedeu = true;
+        return;
+      }
+      pedacos.push(pedaco);
+      tamanho += pedaco.length;
+    });
+
+    req.on('end', () => {
+      if (!fronteira) {
+        resolve({});
+        return;
+      }
+      const corpo = separarPartes(Buffer.concat(pedacos), fronteira[1] ?? fronteira[2].trim());
+      if (excedeu) corpo._excedeuLimite = true;
+      resolve(corpo);
+    });
+
+    req.on('error', reject);
+  });
+}
+
+function separarPartes(bruto, fronteira) {
+  const corpo = {};
+  const marca = Buffer.from(`--${fronteira}`);
+  let inicio = bruto.indexOf(marca);
+
+  while (inicio !== -1) {
+    const comeco = inicio + marca.length;
+    // "--" logo apos a fronteira encerra o envio.
+    if (bruto[comeco] === 0x2d && bruto[comeco + 1] === 0x2d) break;
+    const proxima = bruto.indexOf(marca, comeco);
+    // Parte sem fronteira de fechamento foi cortada pelo teto: fica de fora.
+    if (proxima === -1) break;
+
+    const parte = bruto.subarray(comeco + 2, proxima - 2); // tira os \r\n das pontas
+    const fimCabecalho = parte.indexOf('\r\n\r\n');
+    if (fimCabecalho !== -1) {
+      const cabecalho = parte.subarray(0, fimCabecalho).toString('utf8');
+      const conteudo = parte.subarray(fimCabecalho + 4);
+      const nome = /name="([^"]*)"/i.exec(cabecalho)?.[1];
+      const ehArquivo = /filename="([^"]*)"/i.test(cabecalho);
+      if (nome) corpo[nome] = ehArquivo ? conteudo : conteudo.toString('utf8');
+    }
+    inicio = proxima;
+  }
+  return corpo;
+}
+
 /** Corpo de formulario (application/x-www-form-urlencoded). */
-function lerCorpo(req) {
+function lerFormulario(req) {
   return new Promise((resolve, reject) => {
     let bruto = '';
     let tamanho = 0;

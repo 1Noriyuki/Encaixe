@@ -51,22 +51,32 @@ function painel(ctx) {
   const publicados = horariosApp.agendaDoPrestador(ctx.usuario.id, { estados: ['PUBLICADO'] });
 
   const pendencia = aguardando.length + aConcluir.length;
+  // Os proximos da vitrine, ja com o preco deste instante (calculado na aplicacao).
+  const naVitrine = publicados.filter((h) => h.inicio > agoraIso()).slice(0, 4);
 
   return ctx.render(html`
-    <div class="cabecalho-pagina">
-      <h1>Olá, ${prestador.nome_exibicao}</h1>
-      <p>
-        ${prestador.bairro ? `${prestador.bairro} — ${prestador.cidade}` : 'Região não definida'}
-        · janela de confirmação de ${prestador.janela_confirmacao_min} min
-        · ao expirar, ${prestador.politica_expiracao === 'AUTOCONFIRMAR' ? 'confirma sozinho' : 'libera o horário'}
-      </p>
+    <div class="painel-topo">
+      <div class="cabecalho-pagina sem-fundo">
+        <span class="olho">Painel do prestador</span>
+        <h1>Olá, ${prestador.nome_exibicao}</h1>
+        <p>
+          ${prestador.bairro ? `${prestador.bairro} — ${prestador.cidade}` : 'Região não definida'}
+          · janela de confirmação de ${prestador.janela_confirmacao_min} min
+          · ao expirar, ${prestador.politica_expiracao === 'AUTOCONFIRMAR' ? 'confirma sozinho' : 'libera o horário'}
+        </p>
+      </div>
+      <div class="linha">
+        <a class="botao" href="/prestador/horarios">Publicar horário <span class="seta">→</span></a>
+        <a class="botao botao-secundario" href="/prestador/catalogo">Serviços e régua</a>
+      </div>
     </div>
 
     ${avisoDeEstado(ctx.usuario, pendencias)}
 
     <div class="grade grade-4">
       ${metrica('Aguardando sua resposta', aguardando.length,
-    aguardando.length ? 'o relógio está correndo' : 'nada pendente agora')}
+    aguardando.length ? 'o relógio está correndo' : 'nada pendente agora',
+    { destaque: aguardando.length > 0 })}
       ${metrica('Confirmados', confirmados.length, 'já são compromisso')}
       ${metrica('Horários na vitrine', publicados.length, 'visíveis para clientes')}
       ${metrica('Recebido (líquido)', formatarBRL(totais.liquido),
@@ -147,20 +157,66 @@ function painel(ctx) {
     + 'o sistema conclui sozinho e apura a comissão.')}
       ` : cru('')}
 
+    ${naVitrine.length ? html`
+      <div class="secao-titulo">
+        <div>
+          <span class="olho">Na vitrine agora</span>
+          <h2>O que o cliente está vendo</h2>
+          <p>Preço deste instante. Ele cai sozinho pela régua conforme o horário chega.</p>
+        </div>
+        <a class="botao botao-secundario botao-pequeno" href="/prestador/horarios">
+          Agenda completa <span class="seta">→</span>
+        </a>
+      </div>
+      <ul class="lista-cartoes grade grade-vitrine">
+        ${juntar(naVitrine.map((h) => html`
+          <li class="cartao cartao-vivo item-clicavel vitrine-item">
+            <div class="vitrine-hora">
+              <span class="hora num">${formatarHora(h.inicio)}</span>
+              <span class="mini fraco">em ${humanizarMinutos(h.preco.antecedenciaMin)}</span>
+            </div>
+            <div class="crescer">
+              <a class="link-estendido forte" href="/horarios/${h.id}">${h.servico_nome}</a>
+              <div class="mini fraco">${h.categoria_nome} · ${h.duracao_min} min</div>
+            </div>
+            <div class="direita">
+              <div class="forte num">${formatarBRL(h.preco.precoVigente)}</div>
+              ${h.preco.percentualEfetivo > 0
+    ? html`<span class="selo selo-desconto">−${h.preco.percentualEfetivo}%</span>`
+    : html`<span class="mini fraco">preço cheio</span>`}
+            </div>
+          </li>`))}
+      </ul>` : cru('')}
+
     <div class="secao-titulo">
       <div>
         <span class="olho">Sua conta</span>
-        <h2>Reputação</h2>
+        <h2>Reputação e política</h2>
       </div>
-      <a class="botao botao-secundario botao-pequeno" href="/prestador/perfil">
-        Ajustar minha política <span class="seta">→</span>
-      </a>
     </div>
-    <div class="cartao">
-      ${reputacao(ctx.usuario.reputacao, { rotuloTexto: 'Reputação atual' })}
-      ${notaDeRegra('RN-21', `Cancelamento com penalidade e ausência contam como ocorrência negativa. `
+    <div class="grade grade-2">
+      <div class="cartao">
+        ${reputacao(ctx.usuario.reputacao, { rotuloTexto: 'Reputação atual' })}
+        ${notaDeRegra('RN-21', `Cancelamento com penalidade e ausência contam como ocorrência negativa. `
     + `${p.ocorrencias_consecutivas_max} delas em ${p.janela_ocorrencias_dias} dias levam a conta à `
     + 'revisão do administrador, e a publicação de novos horários fica suspensa até a decisão.')}
+      </div>
+      <div class="cartao">
+        <table class="ficha">
+          <tbody>
+            <tr><th scope="row">Janela de confirmação</th><td>${prestador.janela_confirmacao_min} min</td></tr>
+            <tr><th scope="row">Reserva sem resposta</th>
+              <td>${prestador.politica_expiracao === 'AUTOCONFIRMAR' ? 'Confirma sozinha' : 'Volta para a busca'}</td></tr>
+            <tr><th scope="row">Comissão já apurada</th><td>${formatarBRL(totais.comissao)}</td></tr>
+          </tbody>
+        </table>
+        <div class="linha acima-4">
+          <a class="botao botao-secundario botao-pequeno" href="/prestador/perfil">
+            Ajustar minha política <span class="seta">→</span>
+          </a>
+          <a class="botao botao-fantasma botao-pequeno" href="/prestador/extrato">Ver extrato</a>
+        </div>
+      </div>
     </div>
   `, { titulo: 'Painel do prestador' });
 }
