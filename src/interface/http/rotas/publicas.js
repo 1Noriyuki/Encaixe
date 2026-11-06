@@ -10,7 +10,7 @@ import * as horariosApp from '../../../aplicacao/horarios.js';
 import { criarSessao, cookieDeSessao, cookieDeSaida, encerrarSessao } from '../sessao.js';
 import {
   html, cru, juntar, campoCsrf, cartaoDeVaga, vazio, notaDeRegra, reputacao, selo,
-  blocoDePreco, reguaDeDesconto, estrelas, chip, plural, seloReputacao,
+  blocoDePreco, reguaDeDesconto, estrelas, chip, plural, seloReputacao, avatar,
 } from '../views/layout.js';
 import {
   formatarDataHora, formatarHora, formatarDiaSemana, humanizarMinutos,
@@ -41,7 +41,16 @@ function home(ctx) {
   const p = params();
   const abertos = busca.buscarPorFiltros({ ordenar: 'desconto' });
   const destaques = abertos.slice(0, 3);
-  const categorias = catalogo.listarCategorias();
+  // Atalho do hero so para categoria com horario aberto, a mais cheia
+  // primeiro: sugestao que leva a uma busca vazia e um beco.
+  const abertasPorCategoria = new Map();
+  for (const v of abertos) {
+    abertasPorCategoria.set(v.categoria_id, (abertasPorCategoria.get(v.categoria_id) ?? 0) + 1);
+  }
+  const categorias = catalogo.listarCategorias()
+    .filter((c) => abertasPorCategoria.has(c.id))
+    .map((c) => ({ ...c, abertos: abertasPorCategoria.get(c.id) }))
+    .sort((a, b) => b.abertos - a.abertos);
 
   // Os numeros do hero saem do banco, nao de texto fixo: a home mostra o
   // estado real da plataforma no instante da visita.
@@ -292,8 +301,8 @@ function heroDaHome({ abertos, maiorDesconto, economiaTotal, vitrine, p, categor
         ${categorias.length ? html`
           <div class="heroi-atalhos">
             <span class="rotulo-atalhos">ou vá direto:</span>
-            ${juntar(categorias.slice(0, 4).map((c) => chip(c.nome, {
-    href: `/buscar?categoriaId=${c.id}`, neutro: true,
+            ${juntar(categorias.slice(0, 6).map((c) => chip(`${c.nome} · ${c.abertos}`, {
+    href: `/buscar?categoriaId=${c.id}`, neutro: true, remover: false,
   })))}
           </div>` : cru('')}
 
@@ -925,9 +934,12 @@ function perfilPublico(ctx) {
 
   return ctx.render(html`
     <div class="trilha"><a href="${voltar.href}">&larr; ${voltar.texto}</a></div>
-    <div class="cabecalho-pagina">
-      <h1>${perfil.nome_exibicao ?? perfil.nome}</h1>
-      <p>${perfil.bairro ? `${perfil.bairro} — ${perfil.cidade}` : 'Região não informada'}</p>
+    <div class="cabecalho-pagina perfil-topo">
+      ${perfil.foto && perfil.perfil === 'PRESTADOR' ? avatar(perfil, { tamanho: 'g' }) : cru('')}
+      <div>
+        <h1>${perfil.nome_exibicao ?? perfil.nome}</h1>
+        <p>${perfil.bairro ? `${perfil.bairro} — ${perfil.cidade}` : 'Região não informada'}</p>
+      </div>
     </div>
 
     <div class="cartao">

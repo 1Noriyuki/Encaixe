@@ -67,7 +67,12 @@ CREATE TABLE IF NOT EXISTS usuario (
   -- RN-00/RN-23: a P-08 vigente na criacao fica travada na conta; mudar a P-08
   -- depois nao mexe na reputacao de quem ja existe. Bancos antigos ganham a
   -- coluna em migrar().
-  reputacao_inicial INTEGER CHECK (reputacao_inicial BETWEEN 0 AND 100)
+  reputacao_inicial INTEGER CHECK (reputacao_inicial BETWEEN 0 AND 100),
+  -- RF-088 (SPEC-030): nome do arquivo da foto em dados/fotos, gerado pelo
+  -- sistema. O formato fica preso aqui tambem, nao so no codigo: um nome que
+  -- escape da pasta nem chega a ser gravado. Bancos antigos ganham em migrar().
+  foto TEXT CHECK (foto IS NULL OR (substr(foto, 1, 32) NOT GLOB '*[^0-9a-f]*'
+    AND length(foto) IN (36, 37) AND substr(foto, 33) IN ('.jpg', '.png', '.webp')))
 );
 
 -- SPEC-002 INV-004 tambem no banco (C-VI): um CHECK nao serve, porque o estado

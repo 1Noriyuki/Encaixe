@@ -974,3 +974,35 @@
 - **Status das Specs concluídas:** SPEC-006 a 009, 011, 020, 021, 024 e 026 ainda diziam "Falta a revisão do PR por outro integrante", mas o PR #145 foi mergeado em 2026-10-29 e as issues estão fechadas; a SPEC-002 não registrava a conclusão no status. As dez passam a dizer **Concluída**, com o PR ou a issue que provam.
 - **Verificação:** todo ID citado numa §12 existe como teste; as 29 Specs registram conclusão no status.
 - **Mantido para a equipe:** a lacuna da RN-05 (régua editável em horário reservado) e o nome `docs/requisitos_funionais.md`, que não foi renomeado.
+
+### Etapa 66 — Correções do front-end e configurações da conta (SPEC-030, fase 1) · 2026-11-06
+
+- **Numeração (decisão do Enzo):** esta etapa reúne as correções de front-end e a SPEC-030. O redesign
+  do visual, antes previsto como 66, passa a ser a **etapa 67**.
+- **Correções pedidas pelo Enzo (anotações antigas, conferidas antes de mexer):**
+  - **Hero travando em PC fraco:** as manchas de luz tinham `filter: blur(90px)` animado, o grão usava
+    `mix-blend-mode` sobre o hero inteiro e o cabeçalho tinha `backdrop-filter`. Ficaram parados, sem
+    mistura e com fundo sólido; a barra de progresso passou de `width` para `transform`.
+  - **Hover "liga e desliga":** `[data-revelar]` redefinia o `transition` do cartão só com opacidade e
+    posição, então sombra, borda e fundo trocavam de uma vez. A transição passou a listar as cinco
+    propriedades (token `--suave`, 0,45 s), o atraso da cascata zera depois da entrada e o hover só vale
+    em aparelho com mouse.
+  - **Buscas sugeridas sem horário:** o seed tinha 9 horários de cabelo e 1 de estética. Ganhou um
+    prestador por categoria restante (`carla@studio.dev`, `julia@respira.dev`, `toninho@oficina.dev`,
+    `rafael@conserta.dev`) e 20 horários; os atalhos da home mostram só categoria com horário aberto,
+    com a contagem e sem o "×" de remover filtro.
+  - **Mobile:** entre 391 e 680 px o cartão de horário ficava em duas colunas com o bloco da hora
+    esticado; virou uma coluna, botão de ponta a ponta e desconto à direita. Entre 681 e 980 px o cartão
+    "Política ao expirar" herdava `left` e `bottom` e cobria a foto do hero; no celular, os cartões
+    voltaram para cima da foto, como no desktop. Os três números do hero ficaram numa linha.
+  - **Painel do prestador:** ações principais no topo, métrica em destaque quando há reserva esperando,
+    seção "O que o cliente está vendo" com o preço deste instante e reputação ao lado da política.
+- **SPEC-030 (configurações da conta):** proposta pelo agente, decisões D1 a D5 aprovadas pelo Enzo
+  ("aceite todas as suas recomendações"). Spec v0.1.12 com a §7.10 (RF-087 a RF-096), §4.5, RNF-04 e
+  §9.2 ajustadas; ADR-007 (foto em disco, aparência em cookie); OPEN-301 registra a fase 2 (exclusão).
+- **Premissas do agente:** a foto é pública só para o prestador, no perfil público; o seed de cada
+  prestador novo usa a mesma régua moderada; o teto de 2 MB é limite técnico e não parâmetro (RN-00);
+  a rota que grava a aparência dispensa CSRF (ADR-007).
+- **Verificação:** `npm test`: 467/467 (17 testes novos `T-SPEC030-*`). Telas conferidas no navegador
+  em 1366, 800, 412, 390 e 320 px e nos temas branco, azul-escuro e preto; o envio de foto foi testado
+  pelo navegador com uma imagem real.

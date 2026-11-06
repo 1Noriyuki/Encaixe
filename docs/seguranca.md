@@ -12,6 +12,7 @@
 |---|---|---|
 | Credenciais | Acesso à conta e ao histórico de outra pessoa | `usuario.senha_hash` |
 | Dados de contato | E-mail e telefone das partes (LGPD) | `usuario`, `perfil_cliente` |
+| Fotos de perfil | Imagem enviada pelo próprio usuário (SPEC-030) | `dados/fotos/`, nome em `usuario.foto` |
 | Integridade do agendamento | Confirmar, cancelar ou concluir agendamento alheio muda dinheiro e reputação | `agendamento` |
 | Reputação | Define permissões (limite de reservas, direito de publicar) | `evento_reputacao` |
 | Lançamentos de comissão | Receita da plataforma | `lancamento_comissao` |
@@ -37,8 +38,11 @@
 | A11 | Negar que agiu | Repudiation | Toda transição gravada com ator, estados, instante e correlação de requisição | `infra/auditoria.js` |
 | A12 | Expor contato antes da hora | Information disclosure | Contato só após `CONFIRMADO`; perfil público mostra apenas dados agregados (`RNF-04`) | `rotas/agendamentos.js` |
 | A13 | Estourar custo do provedor de LLM | Denial of service | Limite por usuário/dia (`RNF-13`) + timeout + degradação segura | `aplicacao/busca.js` |
-| A14 | Corpo de requisição gigante | Denial of service | Limite de 128 KB no parser de formulário | `servidor.js` |
+| A14 | Corpo de requisição gigante | Denial of service | Limite de 128 KB no parser de formulário; multipart só em rota que declara teto (foto: 2 MB, o excedente é descartado) | `servidor.js` |
 | A15 | Saída do LLM maliciosa ou fora do formato | Tampering | Validação de esquema antes de qualquer uso; a saída vira *filtro*, nunca decisão | `infra/llm/contrato.js` |
+| A16 | Foto que é HTML ou script disfarçado | Tampering | Formato pela assinatura dos bytes (só JPEG, PNG, WebP; SVG recusado); servida com `nosniff` e CSP `sandbox` (ADR-007) | `infra/fotos.js`, `servidor.js` |
+| A17 | Ler arquivo do servidor pelo nome da foto | Information disclosure | Nome gerado pelo sistema; rota e `CHECK` do banco só aceitam 32 hex + extensão | `infra/fotos.js`, `schema.sql` |
+| A18 | Sessão esquecida aberta toma a conta | Spoofing | Trocar senha exige a senha atual e derruba as outras sessões; "sair dos outros aparelhos" (RF-091, RF-092) | `aplicacao/conta.js` |
 
 ---
 
@@ -89,6 +93,7 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 | P6 | Sem `Content-Security-Policy` | XSS residual | Não há JavaScript inline nem script de terceiros; o escape é a defesa primária | Adicionar CSP restritiva |
 | P7 | Banco sem criptografia em repouso | Acesso físico ao arquivo | Ambiente local, dados fictícios | Cifrar volume em produção |
 | P8 | `estado_cobranca` é declaratório | Prestador pode marcar "pago" indevidamente | Consequência direta do [ADR-005](adr/ADR-005-escopo-financeiro.md) | Pagamento intermediado |
+| P10 | Foto guardada com metadados (EXIF) | Localização embutida na foto de celular | Sem dependência não há como reprocessar a imagem (ADR-001, ADR-007) | Remover metadados ao receber, com biblioteca ou recompressão |
 | P9 | Sem retenção da trilha de auditoria nem das interpretações | O texto livre que o cliente digitou na busca fica guardado sem prazo | Decisão da SPEC-029 §13 (etapa 63): dados fictícios e ambiente local; a trilha completa é o que permite reconstruir decisões (RF-085) | Prazo de retenção e anonimização do `texto_original` antes de publicar |
 
 ---
@@ -130,5 +135,8 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 | Segurança | Senha só como hash; nenhum dado pessoal em log de aplicação |
 | Retenção | Janela móvel de reputação (P-20) limita o peso do histórico antigo. A trilha e as interpretações não têm prazo de retenção (pendência P9) |
 
-**Não implementado:** exclusão de conta a pedido do titular e exportação de dados pessoais. Ambos
-seriam obrigatórios em produção.
+**Implementado na SPEC-030 (etapa 66):** cópia dos dados pessoais em JSON (acesso e portabilidade, RF-094),
+correção pelo próprio titular (RF-087) e política de privacidade pública (RF-096).
+
+**Não implementado:** exclusão de conta pelo próprio titular (fase 2 da SPEC-030, OPEN-301). Até lá, a
+página de privacidade indica o e-mail de suporte para o pedido. Seria obrigatória em produção.

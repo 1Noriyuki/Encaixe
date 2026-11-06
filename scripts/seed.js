@@ -105,12 +105,45 @@ contas.salvarPerfilPrestador({
   politicaExpiracao: 'AUTOCONFIRMAR',
 });
 
+// Um prestador por categoria restante: sem eles, os atalhos da home levavam a
+// buscas vazias (so "Cabelo e Barba" tinha horario).
+const OUTROS = [
+  {
+    nome: 'Carla Nunes', email: 'carla@studio.dev', nomeExibicao: 'Studio Movimento', bairro: 'Perdizes',
+    descricao: 'Estúdio de treino funcional com dois personais. Aula individual e avaliação física.',
+  },
+  {
+    nome: 'Júlia Prado', email: 'julia@respira.dev', nomeExibicao: 'Espaço Respira', bairro: 'Itaim Bibi',
+    descricao: 'Massoterapia e relaxamento em sala silenciosa, a duas quadras do metrô.',
+  },
+  {
+    nome: 'Antônio Lima', email: 'toninho@oficina.dev', nomeExibicao: 'Oficina do Toninho', bairro: 'Butantã',
+    descricao: 'Oficina mecânica de família. Troca de óleo, revisão rápida e lavagem completa.',
+  },
+  {
+    nome: 'Rafael Costa', email: 'rafael@conserta.dev', nomeExibicao: 'Conserta Já', bairro: 'Pinheiros',
+    descricao: 'Assistência técnica de celular e notebook com orçamento na hora.',
+  },
+];
+const [carla, julia, toninho, rafael] = OUTROS.map((o) => {
+  const conta = contas.cadastrar({
+    nome: o.nome, email: o.email, senha: SENHA, perfil: 'PRESTADOR',
+    nomeExibicao: o.nomeExibicao, regiaoId: regiao(o.bairro),
+  });
+  contas.aprovarPrestador({ adminId, prestadorId: conta.id });
+  contas.salvarPerfilPrestador({
+    prestadorId: conta.id, nomeExibicao: o.nomeExibicao, descricao: o.descricao,
+    regiaoId: regiao(o.bairro), janelaConfirmacaoMin: 15, politicaExpiracao: 'LIBERAR',
+  });
+  return conta;
+});
+
 // Fica pendente de proposito: alimenta a fila de aprovacao do admin (UC-01).
 contas.cadastrar({
   nome: 'Clínica Bem Estar', email: 'clinica@estetica.dev', senha: SENHA, perfil: 'PRESTADOR',
   nomeExibicao: 'Clínica Bem Estar', regiaoId: regiao('Perdizes'),
 });
-console.log('  3 prestadores (2 aprovados, 1 aguardando aprovação)');
+console.log('  7 prestadores (6 aprovados, 1 aguardando aprovação)');
 
 // ---------------------------------------------------------------- clientes
 const diego = contas.cadastrar({
@@ -161,6 +194,38 @@ const servicos = {
     prestadorId: marcos.id, nome: 'Corte + barba', categoriaId: categoria('Cabelo e Barba'),
     duracaoMin: 45, precoBase: '75,00', precoMinimo: '48,00',
   }),
+  personal: catalogo.salvarServico({
+    prestadorId: carla.id, nome: 'Aula com personal', categoriaId: categoria('Treino e Esporte'),
+    duracaoMin: 60, precoBase: '90,00', precoMinimo: '55,00',
+  }),
+  avaliacao: catalogo.salvarServico({
+    prestadorId: carla.id, nome: 'Avaliação física', categoriaId: categoria('Treino e Esporte'),
+    duracaoMin: 45, precoBase: '70,00', precoMinimo: '42,00',
+  }),
+  massagem: catalogo.salvarServico({
+    prestadorId: julia.id, nome: 'Massagem relaxante', categoriaId: categoria('Saúde e Bem-estar'),
+    duracaoMin: 60, precoBase: '140,00', precoMinimo: '85,00',
+  }),
+  quick: catalogo.salvarServico({
+    prestadorId: julia.id, nome: 'Quick massage', categoriaId: categoria('Saúde e Bem-estar'),
+    duracaoMin: 30, precoBase: '60,00', precoMinimo: '38,00',
+  }),
+  oleo: catalogo.salvarServico({
+    prestadorId: toninho.id, nome: 'Troca de óleo e filtro', categoriaId: categoria('Automotivo'),
+    duracaoMin: 45, precoBase: '160,00', precoMinimo: '110,00',
+  }),
+  lavagem: catalogo.salvarServico({
+    prestadorId: toninho.id, nome: 'Lavagem completa', categoriaId: categoria('Automotivo'),
+    duracaoMin: 60, precoBase: '90,00', precoMinimo: '55,00',
+  }),
+  tela: catalogo.salvarServico({
+    prestadorId: rafael.id, nome: 'Troca de tela de celular', categoriaId: categoria('Assistência Técnica'),
+    duracaoMin: 60, precoBase: '280,00', precoMinimo: '190,00',
+  }),
+  notebook: catalogo.salvarServico({
+    prestadorId: rafael.id, nome: 'Limpeza e formatação de notebook', categoriaId: categoria('Assistência Técnica'),
+    duracaoMin: 90, precoBase: '150,00', precoMinimo: '95,00',
+  }),
 };
 
 // ------------------------------------------------------------------ reguas
@@ -181,7 +246,21 @@ const reguaMarcos = catalogo.salvarRegua({
     { antecedencia_min: 60, percentual_desconto: 40 },
   ],
 });
-console.log('  5 serviços e 2 réguas de desconto');
+// Os quatro prestadores novos usam a mesma regua moderada: o que varia entre
+// eles e o servico, nao a demonstracao do preco dinamico.
+const reguaPadrao = Object.fromEntries([carla, julia, toninho, rafael].map((conta) => [
+  conta.id,
+  catalogo.salvarRegua({
+    prestadorId: conta.id,
+    nome: 'Encaixe do dia',
+    faixas: [
+      { antecedencia_min: 360, percentual_desconto: 10 },
+      { antecedencia_min: 120, percentual_desconto: 20 },
+      { antecedencia_min: 60, percentual_desconto: 30 },
+    ],
+  }).id,
+]));
+console.log(`  ${Object.keys(servicos).length} serviços e 6 réguas de desconto`);
 
 // ----------------------------------------------------------------- horarios
 const agora = agoraIso();
@@ -189,16 +268,27 @@ const publicados = [];
 
 const plano = [
   // [prestador, servico, regua, horas a frente]
+  // Toda categoria tem horario dentro das 24 h que a home mostra.
   [renata.id, servicos.corteFeminino.id, reguaRenata.id, 2],
   [renata.id, servicos.escova.id, reguaRenata.id, 4],
   [renata.id, servicos.limpeza.id, reguaRenata.id, 7],
+  [renata.id, servicos.limpeza.id, reguaRenata.id, 22],
   [renata.id, servicos.corteFeminino.id, reguaRenata.id, 26],
-  [renata.id, servicos.escova.id, reguaRenata.id, 28],
   [marcos.id, servicos.corteMasculino.id, reguaMarcos.id, 1.5],
   [marcos.id, servicos.corteBarba.id, reguaMarcos.id, 3],
-  [marcos.id, servicos.corteMasculino.id, reguaMarcos.id, 5],
   [marcos.id, servicos.corteMasculino.id, reguaMarcos.id, 27],
-  [marcos.id, servicos.corteBarba.id, reguaMarcos.id, 30],
+  [carla.id, servicos.personal.id, reguaPadrao[carla.id], 2.5],
+  [carla.id, servicos.avaliacao.id, reguaPadrao[carla.id], 6],
+  [carla.id, servicos.personal.id, reguaPadrao[carla.id], 25],
+  [julia.id, servicos.massagem.id, reguaPadrao[julia.id], 3.5],
+  [julia.id, servicos.quick.id, reguaPadrao[julia.id], 5.5],
+  [julia.id, servicos.massagem.id, reguaPadrao[julia.id], 29],
+  [toninho.id, servicos.oleo.id, reguaPadrao[toninho.id], 4.5],
+  [toninho.id, servicos.lavagem.id, reguaPadrao[toninho.id], 8],
+  [toninho.id, servicos.lavagem.id, reguaPadrao[toninho.id], 28],
+  [rafael.id, servicos.tela.id, reguaPadrao[rafael.id], 5],
+  [rafael.id, servicos.notebook.id, reguaPadrao[rafael.id], 9],
+  [rafael.id, servicos.tela.id, reguaPadrao[rafael.id], 30],
 ];
 
 for (const [prestadorId, servicoId, reguaId, horas] of plano) {
@@ -226,6 +316,8 @@ Pronto. Contas de demonstração (senha: ${SENHA})
   ADMIN      admin@encaixe.dev
   PRESTADOR  renata@salao.dev        (política LIBERAR, janela 15 min)
   PRESTADOR  marcos@barbearia.dev    (política AUTOCONFIRMAR, janela 10 min)
+  PRESTADOR  carla@studio.dev, julia@respira.dev, toninho@oficina.dev, rafael@conserta.dev
+             (treino, bem-estar, automotivo e assistência técnica)
   PRESTADOR  clinica@estetica.dev    (aguardando aprovação do admin)
   CLIENTE    diego@cliente.dev       (reputação normal)
   CLIENTE    bruna@cliente.dev       (reputação baixa: conta restrita)

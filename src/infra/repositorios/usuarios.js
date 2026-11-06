@@ -24,6 +24,15 @@ export function criar({ nome, email, senha_hash, perfil, estado_conta, reputacao
   );
 }
 
+/** RF-091 / RF-092 (SPEC-030) - todas as sessoes da conta menos a de quem pediu. */
+export function encerrarOutrasSessoes(usuarioId, sessaoAtualId) {
+  executar('DELETE FROM sessao WHERE usuario_id = ? AND id <> ?', usuarioId, sessaoAtualId);
+}
+
+export function contarSessoes(usuarioId) {
+  return contar('SELECT COUNT(*) AS total FROM sessao WHERE usuario_id = ?', usuarioId);
+}
+
 /** RN-28 - usada na suspensao: nenhuma sessao da conta continua valendo. */
 export function encerrarSessoes(usuarioId) {
   executar('DELETE FROM sessao WHERE usuario_id = ?', usuarioId);
@@ -47,6 +56,16 @@ export function atualizarEstadoConta(id, estado) {
 
 export function atualizarReputacao(id, reputacao) {
   executar('UPDATE usuario SET reputacao = ? WHERE id = ?', reputacao, id);
+}
+
+/** RF-087 (SPEC-030) - o nome da conta; o e-mail nao e editavel no MVP. */
+export function atualizarNome(id, nome) {
+  executar('UPDATE usuario SET nome = ? WHERE id = ?', nome, id);
+}
+
+/** RF-088 / RF-090 (SPEC-030) - `null` volta as iniciais. */
+export function atualizarFoto(id, foto) {
+  executar('UPDATE usuario SET foto = ? WHERE id = ?', foto, id);
 }
 
 export function atualizarSenha(id, senhaHash) {
@@ -164,7 +183,7 @@ export function listarPorPerfil(perfil) {
 /** RF-070 - dados publicos: reputacao, volume e taxa de no-show. Sem contato. */
 export function resumoPublico(usuarioId) {
   const base = um(
-    `SELECT u.id, u.nome, u.perfil, u.reputacao, u.estado_conta, u.criado_em,
+    `SELECT u.id, u.nome, u.perfil, u.reputacao, u.estado_conta, u.criado_em, u.foto,
             p.nome_exibicao, p.descricao, r.cidade, r.bairro
        FROM usuario u
        LEFT JOIN perfil_prestador p ON p.usuario_id = u.id
@@ -206,5 +225,16 @@ export function avaliacoesRecebidas(usuarioId, limite = 10) {
       ORDER BY a.criada_em DESC
       LIMIT ?`,
     usuarioId, limite,
+  );
+}
+
+/** RF-094 (SPEC-030) - avaliacoes que o titular escreveu, visiveis ou nao. */
+export function avaliacoesFeitas(usuarioId) {
+  return varios(
+    `SELECT a.agendamento_id, a.nota, a.comentario, a.criada_em, a.visivel
+       FROM avaliacao a
+      WHERE a.autor_id = ?
+      ORDER BY a.criada_em DESC`,
+    usuarioId,
   );
 }

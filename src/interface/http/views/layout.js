@@ -49,10 +49,15 @@ const FAVICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' vi
  */
 export function pagina({
   titulo, usuario, avisos = [], naoLidas = 0, caminho = '/', corpo, estreita = false, hero = null,
-  origem = '', descricao = DESCRICAO_PADRAO,
+  origem = '', descricao = DESCRICAO_PADRAO, aparencia = null,
 }) {
+  // RF-093: so preferencia diferente do padrao vira atributo; sem ele, o CSS
+  // segue o tema do sistema operacional, como antes da SPEC-030.
+  const tema = aparencia?.tema && aparencia.tema !== 'sistema'
+    ? ` data-tema="${paraTexto(aparencia.tema)}"` : '';
+  const movimento = aparencia?.movimento === 'reduzido' ? ' data-movimento="reduzido"' : '';
   return cru(`<!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR"${tema}${movimento}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -142,7 +147,9 @@ function topo(usuario, naoLidas, caminho) {
           ${naoLidas > 0 ? html`<span class="sino-contador" aria-hidden="true">${naoLidas}</span>` : cru('')}
         </a>
         <span class="nav-perfil">
-          <span class="quem">${usuario.nome}</span>
+          <a class="quem" href="/conta" aria-label="Minha conta: ${usuario.nome}">
+            ${avatar(usuario)}<span class="quem-nome">${usuario.nome}</span>
+          </a>
           <a href="/sair">sair</a>
         </span>
       </div>`
@@ -194,6 +201,15 @@ function rodape() {
         <li><a href="/#regras">Regras e confiança</a></li>
       </ul>
     </div>
+    <div>
+      <h2>Ajuda e conta</h2>
+      <ul>
+        <li><a href="/ajuda">Perguntas frequentes</a></li>
+        <li><a href="/privacidade">Privacidade e LGPD</a></li>
+        <li><a href="/sobre">Sobre o Encaixe</a></li>
+        <li><a href="/conta/aparencia">Aparência</a></li>
+      </ul>
+    </div>
   </div>
   <div class="rodape-fim">
     Projeto acadêmico de Modelagem de Software (2026-2, turma 04I).
@@ -205,6 +221,20 @@ function rodape() {
 }
 
 // ------------------------------------------------------------ componentes
+
+/**
+ * RF-088 / RF-090 - foto de perfil, ou as iniciais quando nao ha foto.
+ * Decorativa ao lado do nome (alt vazio): o nome ja esta escrito do lado.
+ */
+export function avatar(usuario, { tamanho = 'p' } = {}) {
+  const classe = `avatar avatar-${tamanho}`;
+  if (usuario?.foto) {
+    return html`<img class="${classe}" src="/fotos/${usuario.foto}" alt="" width="64" height="64" decoding="async">`;
+  }
+  const partes = String(usuario?.nome ?? '').trim().split(/\s+/).filter(Boolean);
+  const iniciais = ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes.at(-1)[0] : '')).toUpperCase();
+  return html`<span class="${classe}" aria-hidden="true">${iniciais || '?'}</span>`;
+}
 
 const ICONES_AVISO = {
   'aviso-sucesso': '<path d="M20 6 9 17l-5-5"/>',
@@ -424,9 +454,9 @@ export function vazio(texto, { titulo = null, acoes = [] } = {}) {
   </div>`;
 }
 
-export function metrica(rotuloTexto, valor, detalhe = null) {
+export function metrica(rotuloTexto, valor, detalhe = null, { destaque = false } = {}) {
   return html`
-  <div class="metrica">
+  <div class="metrica${destaque ? ' metrica-destaque' : ''}">
     <div class="valor num">${valor}</div>
     <div class="rotulo">${rotuloTexto}</div>
     ${detalhe ? html`<div class="detalhe">${detalhe}</div>` : cru('')}
@@ -434,9 +464,11 @@ export function metrica(rotuloTexto, valor, detalhe = null) {
 }
 
 /** Filtro aplicado, com link para removê-lo. */
-export function chip(texto, { href = null, neutro = false } = {}) {
+export function chip(texto, { href = null, neutro = false, remover = true } = {}) {
   const classe = `chip${neutro ? ' chip-neutro' : ''}`;
   if (!href) return html`<span class="${classe}">${texto}</span>`;
+  // Chip de sugestao leva a uma busca; so o de filtro ativo ganha o "x".
+  if (!remover) return html`<a class="${classe} chip-ir" href="${href}">${texto}</a>`;
   return html`<a class="${classe}" href="${href}">${texto}<span
     class="so-leitor">: remover filtro</span><span class="x" aria-hidden="true">×</span></a>`;
 }

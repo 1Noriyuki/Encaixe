@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 450 testes, ~10 s
+npm test             # suíte completa (node --test), 467 testes, ~15 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 22 tabelas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -39,7 +39,9 @@ de dependências é uma decisão registrada — proponha, não assuma.
 
 Contas de demonstração (senha `senha1234`): `admin@encaixe.dev`, `renata@salao.dev` (prestadora,
 política LIBERAR), `marcos@barbearia.dev` (prestador, AUTOCONFIRMAR), `diego@cliente.dev`,
-`bruna@cliente.dev` (restrita, demonstra RN-12).
+`bruna@cliente.dev` (restrita, demonstra RN-12). Um prestador por categoria restante, para nenhum atalho da home
+levar a busca vazia: `carla@studio.dev` (treino), `julia@respira.dev` (bem-estar),
+`toninho@oficina.dev` (automotivo) e `rafael@conserta.dev` (assistência técnica).
 
 ## A regra que governa tudo
 
@@ -67,13 +69,20 @@ Consequências práticas disso no dia a dia:
 O projeto seguiu o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
 Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
-- **Estado em 2026-10-30 (etapa 64):** spec v0.1.11. As 29 Specs estão aprovadas e **concluídas**
-  (evidência na §12, questões da §13 decididas); as 107 issues estão fechadas. O que falta está na
-  seção 4 de `docs/proximos-passos.docx`: validar a QA-01 com o professor, a lacuna da RN-05, a RN-17
-  sem teste nomeado e as pendências P1 a P9 de `docs/seguranca.md`.
+- **Estado em 2026-11-06 (etapa 66):** spec v0.1.12. As 29 Specs originais estão **concluídas**
+  (evidência na §12 conferida por `grep`); as 107 issues estão fechadas. A **SPEC-030** (configurações
+  da conta, `/conta`) teve a fase 1 concluída na etapa 66; a fase 2, exclusão de conta, é a OPEN-301. O
+  que mais falta está na seção 4 de `docs/proximos-passos.docx`: validar a QA-01 com o professor, a
+  lacuna da RN-05, a RN-17 sem teste nomeado e as pendências P1 a P10 de `docs/seguranca.md`.
+- **Redesign do front-end em aberto (será a etapa 67).** O professor reprovou o visual por "parecer
+  template genérico". A primeira tentativa (direção "A tabela da parede", serifada, foto fixa numa
+  metade da página) foi reprovada pelo Enzo, revertida e apagada. Lições: **nada de foto de acervo aberto** (Wikimedia
+  "parece filme de terror"); imagens só **geradas por IA**, que o Enzo gera a partir dos prompts que
+  receber; mostrar o site rodando no navegador cedo, porque ele julga por ali, não por captura. As
+  capturas "antes" da Fase 0 estão em `docs/review/redesign/antes/` (fora do git).
 - **Mudança nova segue o mesmo rito:** regra que muda altera a `spec.md` primeiro, com linha no
   histórico de versões; bug corrigido vira teste de regressão; a etapa vai para
-  `docs/specs/registro-sdd.md` (a próxima é a 65), inclusive as premissas do agente.
+  `docs/specs/registro-sdd.md` (a próxima é a 67), inclusive as premissas do agente.
 - **Regra fundamental:** conflito entre código, Spec e modelagem nunca é resolvido em silêncio.
   Registra-se e escolhe-se: corrigir o código ou propor mudança na spec. A equipe autorizou atualizar
   a baseline (spec, ADRs, README, este arquivo) a cada ação; **decisões de mérito** exigem aprovação
@@ -140,6 +149,13 @@ o intervalo falhar.
   Por isso a navegação no celular é uma trilha de abas rolável, e não um menu que precisa abrir.
 - **O visual é um sistema de tokens**, no topo de `estilo.js`: cor, escala tipográfica, ritmo de
   espaçamento, raio e sombra. Tela que precisa de um valor novo ganha um token, não um número solto.
+- **Tema e animações são cookie, não banco** (`interface/http/aparencia.js`, ADR-007). O `<html>` recebe
+  `data-tema` (`claro`, `azul`, `preto`) e `data-movimento="reduzido"`; sem eles, vale o sistema
+  operacional. Os tokens escuros vivem em `TOKENS_AZUL` e `TOKENS_PRETO`, no topo de `estilo.js`:
+  cor nova de tema escuro entra ali, não em `@media`.
+- **Formulário com arquivo** só funciona em rota que declara `{ arquivo: <teto em bytes> }`; as outras
+  continuam só com `application/x-www-form-urlencoded` e teto de 128 KB. O campo `_csrf` vem antes do
+  arquivo no formulário, para chegar inteiro mesmo quando o arquivo passa do teto.
 - **Marca:** `MARCA_SVG` (o "E de agenda"), `PALAVRA_SVG` (a palavra já em curvas) e `FAVICON` vivem
   em `views/layout.js`. A fonte do site inteiro é a Bricolage Grotesque, servida de
   `public/bricolage-grotesque.woff2` (ADR-006); nada vem de rede externa. Guia em
@@ -163,6 +179,13 @@ o intervalo falhar.
 - **`vazio(texto)` escapa o que recebe.** Passar uma string com `<a>` renderiza a tag como texto na
   tela; use `vazio(html\`...\`)`. A assinatura completa é
   `vazio(texto, { titulo, acoes: [[href, rótulo]] })` — estado vazio sem ação é um beco.
+- **Capturas de tela pelo Playwright:** não há Playwright no projeto (ADR-001). Use o que vem com o
+  `playwright-cli` global, importando
+  `%APPDATA%/npm/node_modules/@playwright/cli/node_modules/playwright-core/index.mjs` num script
+  Node fora do projeto, com `chromium.launch({ channel: 'chrome' })` (o Chromium próprio não está
+  baixado). O `playwright-cli run-code` roda numa VM sem `import`. Rode com
+  `reducedMotion: 'reduce'`, senão o `[data-revelar]` sai em branco no print de página inteira, que
+  também não mostra elemento `sticky` como ele fica ao rolar.
 - **`grade-2/3/4` usam `minmax(min(Xpx, 100%), 1fr)`.** O `min()` não é enfeite: sem ele a coluna
   fica mais larga que a viewport em 320 px e a página inteira rola para o lado.
 - **Dentro de `.grade`, o espaço vem do `gap`.** Margem de irmão desalinha a linha: `.cartao + .cartao`
@@ -222,10 +245,10 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.11): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.12): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
-| `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca |
-| `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (29 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
+| `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca, foto e aparência |
+| `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (30 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
 | `docs/proximos-passos.docx` | passagem para a equipe: estado, ciclo das Specs, divisão das issues |
 | `docs/identidade-visual/` | guia de marca, SVGs da logo e licença OFL da fonte |
 | `docs/plan.md`, `docs/tasks.md` | arquitetura e tarefas; no `tasks.md`, 🔄 = implementado antes das Specs e ainda sem evidência |
@@ -245,4 +268,5 @@ efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste
 | `LLM_TIMEOUT_MS` | `15000` | teto da espera pela interpretação (RNF-05) |
 | `ANTHROPIC_API_KEY` | — | só com `LLM_PROVIDER=anthropic` |
 | `ROTINAS_INTERVALO_MS` | `60000` | intervalo das rotinas temporais |
-| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | e-mail mostrado à conta suspensa (RF-004) |
+| `CONTATO_SUPORTE` | `suporte@encaixe.dev` | e-mail mostrado à conta suspensa (RF-004) e na privacidade |
+| `FOTOS_DIR` | `fotos/` ao lado do `DB_PATH` | onde ficam as fotos de perfil (ADR-007) |

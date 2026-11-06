@@ -7,8 +7,8 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.11 |
-| Data | 2026-10-30 |
+| Versão da spec | 0.1.12 |
+| Data | 2026-11-06 |
 | Status | Em validação com o grupo e com o professor |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
@@ -16,6 +16,7 @@
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.12 | 2026-11-06 | Equipe | Configurações da conta, fase 1 (SPEC-030, etapa 66; decisões D1 a D5 aprovadas por Enzo). **§7.10 nova:** RF-087 a RF-096 (dados pessoais, foto de perfil, troca de senha, sair dos outros aparelhos, aparência, cópia dos dados pela LGPD, histórico de reputação e páginas de ajuda). **§4.5:** linhas para editar e baixar os próprios dados. **RNF-04:** a foto do prestador, quando enviada, passa a ser pública no perfil dele. **§9.2:** `Usuario` ganha `foto`. **§5.1:** E1 inclui as configurações da conta. **§11:** nota de que os RF da §7.10 não têm caso de uso próprio. A exclusão de conta (fase 2) fica registrada como OPEN-301 no mapa de Specs e não muda a §9.6 nesta versão. Técnica no ADR-007 |
 | 0.1.11 | 2026-10-30 | Equipe | Decisões da §13 das Specs das Trilhas B e C (etapa 63). **§4.5:** o admin não cancela agendamento no MVP (OPEN-09) e não tem extrato próprio. **RN-18:** converter cancelamento em no-show fica fora do MVP (OPEN-18). **RN-19 e RN-21:** só as faixas parcial e total são ocorrência; a contagem é acumulada na janela e recomeça na reativação pelo admin. **§6.1:** P-11 vira P-11a/P-11b e P-12a passa a dizer "acumuladas". **RN-28:** a suspensão expira na hora as reservas pendentes, sem penalizar o cliente, e o admin não suspende a própria conta. **RF-006:** a negação por titularidade também é auditada. **RF-060:** a conclusão automática espera o maior entre P-17 e P-16b. **RN-32:** a interpretação que exige confirmação nasce descartada. **RNF-13:** refinar a mesma busca não gasta interpretação. **RF-086:** edição de parâmetros pelo admin (OPEN-09). **QA-09** resolvida: evidência em texto ou link |
 | 0.1.10 | 2026-10-29 | Equipe | Decisões da aprovação das Specs da Trilha A (etapa 32). **§9.2 e QA-07:** a régua é do prestador e cada horário escolhe uma ao ser publicado (OPEN-10). **RF-010 e RF-011:** as categorias atendidas derivam dos serviços ativos e "perfil completo" é a lista da RN-08 (OPEN-16). **§9.2 `Regiao` e `CategoriaServico`:** no MVP são listas carregadas pela implantação (OPEN-11). **RN-03:** o teto P-05 vale no cálculo de horário ainda não reservado; a reserva trava o preço (RN-04). **RN-00 e §9.2 `Agendamento`:** a conclusão trava o prazo de avaliação (P-14), em `avaliacao_prazo_em`; `autoconclusao_prazo_em` (P-17) passa a constar da tabela |
 | 0.1.9 | 2026-10-20 | Equipe | Canal de contato da conta suspensa (SPEC-002, layout). **RF-004:** a recusa da conta `SUSPENSO` informa o canal de contato com a administração, um e-mail definido na configuração de implantação; não é parâmetro de regra, porque não é número de regra nem é editado pelo admin |
@@ -187,6 +188,8 @@ e **cobra comissão percentual sobre cada agendamento efetivamente concluído**.
 | Aprovar / suspender conta | Não | Não | Sim |
 | Configurar percentual de comissão | Não | Não | Sim |
 | Ver métricas consolidadas da plataforma | Não | Não | Sim |
+| Editar os próprios dados, foto e senha (RF-087 a RF-092) | Sim (próprio) | Sim (próprio) | Sim (próprio) |
+| Baixar os próprios dados (RF-094) | Sim (próprio) | Sim (próprio) | Sim (próprio) |
 | Ver extrato próprio de comissão | Não | Sim (próprio) | Não se aplica: vê as métricas consolidadas e o dossiê da conta |
 ---
 
@@ -200,7 +203,7 @@ Cada história vira uma issue no GitHub; as tarefas atômicas correspondentes fi
 
 | Épico | Nome | Objetivo | Prioridade |
 |---|---|---|:--:|
-| **E1** | Contas e acesso | Cadastro, login, perfis e permissões | M |
+| **E1** | Contas e acesso | Cadastro, login, perfis, permissões e configurações da própria conta | M |
 | **E2** | Catálogo e agenda do prestador | Serviços, horários vagos e régua de desconto | M |
 | **E3** | Preço dinâmico | Cálculo do preço vigente por antecedência | M |
 | **E4** | Busca e descoberta | Busca por filtros e por linguagem natural (LLM) | M / S |
@@ -726,6 +729,22 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-085** *(Ubíquo)* — O sistema DEVE registrar em trilha de auditoria toda ação administrativa e toda interpretação de busca por LLM, permitindo reconstruir por que um resultado foi apresentado ou uma decisão foi tomada. ↳ *RN-32, US-45, RNF-07*
 - **RF-086** *(Evento)* — **QUANDO** o admin alterar um parâmetro global dentro da faixa da seção 6.1, o sistema DEVE aplicá-lo aos fatos ocorridos a partir dali, recusar valor fora da faixa citando o parâmetro e registrar valor anterior, valor novo e autor na trilha de auditoria, na mesma transação da alteração. ↳ *RN-00, RNF-10*
 
+### 7.10 Configurações da conta e privacidade
+
+> Acrescentada na v0.1.12 (SPEC-030, fase 1). Todos valem para a conta da sessão: nenhum recebe o id de
+> outro usuário (RF-006).
+
+- **RF-087** *(Evento)* — **QUANDO** um usuário autenticado salvar seus dados pessoais, o sistema DEVE persistir o nome e, se for cliente, o telefone e a região preferida. O e-mail não é editável, porque trocá-lo com segurança exigiria confirmar o endereço novo e o sistema não envia e-mail; registros já gravados com o nome antigo não mudam. ↳ *US-01, RNF-04*
+- **RF-088** *(Evento)* — **QUANDO** um usuário autenticado enviar uma foto de perfil JPEG, PNG ou WebP dentro do limite do ADR-007, o sistema DEVE guardá-la com nome gerado pelo próprio sistema, substituir a anterior e servi-la apenas como imagem. ↳ *RNF-04, ADR-007*
+- **RF-089** *(Indesejado)* — **SE** o arquivo enviado como foto não for JPEG, PNG ou WebP pelo seu conteúdo, ou passar do limite, **ENTÃO** o sistema DEVE recusá-lo informando o motivo e manter a foto anterior. ↳ *RF-088*
+- **RF-090** *(Evento)* — **QUANDO** o usuário remover a foto, o sistema DEVE apagar o arquivo e voltar a identificá-lo pelas iniciais do nome. ↳ *RF-088*
+- **RF-091** *(Evento)* — **QUANDO** um usuário autenticado pedir a troca de senha informando a senha atual correta e uma nova senha que siga a política do RF-001, o sistema DEVE gravar a nova senha e encerrar todas as outras sessões da conta, mantendo a atual. **SE** a senha atual não conferir, **ENTÃO** o sistema DEVE recusar sem alterar nada. ↳ *RNF-02*
+- **RF-092** *(Evento)* — **QUANDO** um usuário autenticado pedir para sair dos outros aparelhos, o sistema DEVE encerrar todas as sessões da conta exceto a atual. ↳ *RNF-02, RF-005a*
+- **RF-093** *(Opcional)* — **ONDE** o usuário escolher uma aparência, o sistema DEVE aplicar o tema (seguir o sistema, branco, azul-escuro ou preto) e a opção de reduzir animações em todas as páginas daquele navegador, com ou sem conta, sem depender de JavaScript. ↳ *RNF-11, ADR-007*
+- **RF-094** *(Evento)* — **QUANDO** um usuário autenticado pedir uma cópia dos seus dados, o sistema DEVE entregar um arquivo estruturado (JSON) com sua conta, seu perfil, seus agendamentos, as avaliações que fez e recebeu, seus eventos de reputação e suas notificações, sem o hash da senha e sem dados de contato de outras pessoas, e registrar o pedido na trilha de auditoria. ↳ *RNF-04, RNF-07, LGPD art. 18*
+- **RF-095** *(Ubíquo)* — O sistema DEVE mostrar a cada cliente e prestador os eventos que formaram a sua reputação, com tipo, efeito, data e a indicação dos eventos desfeitos. ↳ *RN-23*
+- **RF-096** *(Ubíquo)* — O sistema DEVE publicar, sem exigir conta, páginas de ajuda, sobre e política de privacidade; a política descreve o que é coletado, para quê, quem vê e como o titular exerce seus direitos. ↳ *RNF-04*
+
 ---
 
 ## 8. Requisitos não funcionais
@@ -733,7 +752,7 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RNF-01 — Persistência.** O sistema DEVE armazenar todo o estado de negócio em banco de dados, com continuidade entre sessões e integridade referencial entre agendamento, horário, conta e lançamento financeiro. *(Restrição 6.2 do enunciado.)*
 - **RNF-02 — Autenticação e sessão.** O sistema DEVE autenticar usuários e manter sessões com expiração por inatividade e com duração máxima absoluta, cujos valores ficam no ADR-004; senhas DEVEM ser armazenadas apenas como hash com algoritmo de derivação lenta e sal por usuário.
 - **RNF-03 — Autorização e separação de perfis.** Toda rota e toda operação de serviço DEVEM verificar perfil e titularidade no servidor; controle apenas na interface não é aceito como implementação de RF-006.
-- **RNF-04 — Privacidade e dados pessoais.** O sistema DEVE expor publicamente apenas nome de exibição, região, reputação e histórico agregado; dados de contato só ficam visíveis entre as partes de um agendamento `CONFIRMADO`.
+- **RNF-04 — Privacidade e dados pessoais.** O sistema DEVE expor publicamente apenas nome de exibição, região, reputação, histórico agregado e, no caso do prestador, a foto de perfil que ele mesmo enviou (RF-088); dados de contato só ficam visíveis entre as partes de um agendamento `CONFIRMADO`.
 - **RNF-05 — Desempenho.** A busca de horários DEVE responder em até 2 segundos para o volume esperado do MVP; a chamada ao LLM DEVE ter tempo limite configurável (padrão 15 s, `LLM_TIMEOUT_MS`), sem bloquear a busca por filtros. *O limite de 5 s da v0.1.0 foi revisto na implementação: modelos com raciocínio adaptativo excedem 5 s com frequência, e o timeout curto transformava a degradação segura (RN-31) em comportamento padrão em vez de exceção.*
 - **RNF-06 — Testes automatizados desde o início.** Toda regra de negócio da seção 6 DEVE ter teste automatizado correspondente, escrito junto com a implementação; nenhuma tarefa é considerada concluída sem teste. A suíte roda em integração contínua a cada pull request.
 - **RNF-07 — Observabilidade e auditoria.** O sistema DEVE registrar eventos de negócio e erros com identificador de correlação, permitindo reconstruir o histórico de um agendamento ponta a ponta.
@@ -767,7 +786,7 @@ negócio se materializam, e é o seu estado que o sistema protege.
 
 | Entidade | Atributos | Observações |
 |---|---|---|
-| `Usuario` | `id`, `nome`, `email` (único), `senha_hash`, `perfil` (`CLIENTE`\|`PRESTADOR`\|`ADMIN`), `estado_conta`, `reputacao` (0–100), `reputacao_inicial` (P-08 na criação), `criado_em` | Reputação é **derivada** de `EventoReputacao`, nunca editada à mão (`RN-23`) |
+| `Usuario` | `id`, `nome`, `email` (único), `senha_hash`, `perfil` (`CLIENTE`\|`PRESTADOR`\|`ADMIN`), `estado_conta`, `reputacao` (0–100), `reputacao_inicial` (P-08 na criação), `criado_em`, `foto` (opcional, nome gerado pelo sistema; RF-088) | Reputação é **derivada** de `EventoReputacao`, nunca editada à mão (`RN-23`) |
 | `PerfilPrestador` | `usuario_id`, `nome_exibicao`, `descricao`, `regiao_id`, `plano` (`BASICO`\|`PREMIUM`), `janela_confirmacao_min` (P-01), `politica_expiracao` (P-02), `aprovado_em`, `aprovado_por` | Extensão 1–1 de `Usuario` quando o perfil é Prestador |
 | `PerfilCliente` | `usuario_id`, `telefone`, `regiao_preferida_id` | Extensão 1–1 de `Usuario` quando o perfil é Cliente |
 | `Regiao` | `id`, `cidade`, `bairro` | Lista controlada; substitui geolocalização no MVP. Carregada pela implantação; manutenção pelo admin fica fora do MVP (OPEN-11) |
@@ -1380,6 +1399,7 @@ que será criado em `docs/tasks.md` e implementado conforme RNF-06.
 **Cobertura reversa:** todo requisito RF-001 a RF-085 pertence a pelo menos uma história (seção 5.2) e a pelo
 menos um caso de uso (seção 10); todo `INV` da seção 9.8 tem teste dedicado. Um requisito sem regra associada
 é sinal de escopo não justificado e deve ser removido ou justificado na próxima revisão da spec.
+Os RF-087 a RF-096 (§7.10) não têm caso de uso nem regra de negócio própria: são cuidado da conta e direitos do titular (LGPD), justificados pela RNF-04 e rastreados pela SPEC-030 até os testes `T-SPEC030-*`.
 
 ---
 
