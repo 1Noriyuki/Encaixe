@@ -10,10 +10,10 @@ import * as horariosApp from '../../../aplicacao/horarios.js';
 import { criarSessao, cookieDeSessao, cookieDeSaida, encerrarSessao } from '../sessao.js';
 import {
   html, cru, juntar, campoCsrf, cartaoDeVaga, vazio, notaDeRegra, reputacao, selo,
-  blocoDePreco, reguaDeDesconto, estrelas, chip, plural, seloReputacao, avatar,
+  blocoDePreco, reguaDeDesconto, estrelas, chip, plural, avatar, icone,
 } from '../views/layout.js';
 import {
-  formatarDataHora, formatarHora, formatarDiaSemana, humanizarMinutos,
+  formatarDataHora, formatarHora, formatarDiaSemana, formatarDiaLongo, humanizarMinutos,
 } from '../../../dominio/tempo.js';
 import { formatarBRL } from '../../../dominio/dinheiro.js';
 import { existsSync } from 'node:fs';
@@ -34,320 +34,388 @@ export function registrar(r) {
 
 // ---------------------------------------------------------------- home
 
+/**
+ * Fotos de categoria (geradas por IA a partir do briefing em
+ * docs/imagem-hero.md). Ilustram o tipo de atendimento, nunca um prestador
+ * real: a legenda e o nome da categoria, nao o de um negocio. A chave casa
+ * com o nome da categoria sem acento; categoria sem foto vai para a lista.
+ */
+const FOTOS_DE_CATEGORIA = [
+  { chave: 'cabelo', arquivo: 'foto-salao.jpg', alt: 'Cabeleireira secando o cabelo de uma cliente num salão claro' },
+  { chave: 'treino', arquivo: 'foto-treino.jpg', alt: 'Personal acompanhando uma aluna num agachamento com kettlebell' },
+  { chave: 'automotivo', arquivo: 'foto-oficina.jpg', alt: 'Mecânica mostrando ao cliente o motor de um carro na oficina' },
+];
+
+const semAcento = (texto) => texto.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+
+function existeEmPublic(arquivo) {
+  return existsSync(fileURLToPath(new URL(`../../../../public/${arquivo}`, import.meta.url)));
+}
+
 function home(ctx) {
   if (ctx.usuario?.perfil === 'PRESTADOR') return ctx.redirecionar('/prestador');
   if (ctx.usuario?.perfil === 'ADMIN') return ctx.redirecionar('/admin');
 
   const p = params();
-  const abertos = busca.buscarPorFiltros({ ordenar: 'desconto' });
-  const destaques = abertos.slice(0, 3);
-  // Atalho do hero so para categoria com horario aberto, a mais cheia
-  // primeiro: sugestao que leva a uma busca vazia e um beco.
-  const abertasPorCategoria = new Map();
-  for (const v of abertos) {
-    abertasPorCategoria.set(v.categoria_id, (abertasPorCategoria.get(v.categoria_id) ?? 0) + 1);
+  // A home inteira sai do banco: horarios, contagens e a regua de exemplo sao
+  // os do instante da visita. Nenhum numero de vitrine e texto fixo.
+  const proximos = busca.buscarPorFiltros({ ordenar: 'proximidade' });
+  const porDesconto = busca.buscarPorFiltros({ ordenar: 'desconto' });
+
+  const abertosPorCategoria = new Map();
+  for (const v of proximos) {
+    abertosPorCategoria.set(v.categoria_id, (abertosPorCategoria.get(v.categoria_id) ?? 0) + 1);
   }
   const categorias = catalogo.listarCategorias()
-    .filter((c) => abertasPorCategoria.has(c.id))
-    .map((c) => ({ ...c, abertos: abertasPorCategoria.get(c.id) }))
-    .sort((a, b) => b.abertos - a.abertos);
-
-  // Os numeros do hero saem do banco, nao de texto fixo: a home mostra o
-  // estado real da plataforma no instante da visita.
-  const maiorDesconto = destaques[0]?.preco.percentualEfetivo ?? 0;
-  const economiaTotal = abertos.reduce((soma, v) => soma + v.preco.economia, 0);
-  const vitrine = destaques[0] ?? null;
+    .map((c) => ({ ...c, abertos: abertosPorCategoria.get(c.id) ?? 0 }));
 
   return ctx.render(html`
-    ${destaques.length ? html`
-      <section class="secao-titulo" data-revelar>
+    ${secaoDeCategorias(categorias)}
+    ${porDesconto[0] ? secaoDoPreco(porDesconto[0], p) : cru('')}
+    ${secaoComoFunciona(p)}
+    ${secaoDoPrestador(p)}
+    ${secaoDeRegras()}
+    ${secaoDePerguntas()}
+
+    <section class="secao campo-marca" aria-label="Por onde começar" data-revelar>
+      <div class="chamada-final">
         <div>
-          <span class="olho">Abertos agora</span>
-          <h2>Horários com o maior desconto vigente</h2>
-          <p>Preço já calculado para este instante. Ele muda sozinho conforme o horário chega.</p>
+          <h2>Procurando horário?</h2>
+          <p>Buscar não pede conta. Você só entra na hora de reservar.</p>
+          <a class="botao botao-grande" href="/buscar">Encontrar horários <span class="seta">→</span></a>
         </div>
-        <a class="botao botao-secundario botao-pequeno" href="/buscar">
-          Ver todos os ${abertos.length} <span class="seta">→</span>
-        </a>
-      </section>
-
-      <div class="lista-cartoes">
-        ${juntar(destaques.map((v) => cartaoDeVaga(v, {
-    href: `/horarios/${v.id}`,
-    acao: html`<a class="botao botao-pequeno botao-largo" href="/horarios/${v.id}">
-      Ver horário <span class="seta">→</span></a>`,
-  })))}
-      </div>
-    ` : html`
-      <section class="secao-titulo" data-revelar>
         <div>
-          <span class="olho">Abertos agora</span>
-          <h2>Nenhum horário publicado neste momento</h2>
+          <h2>Tem horário vago?</h2>
+          <p>Cadastre o negócio, monte sua régua de desconto e publique assim que a conta for aprovada.</p>
+          <a class="botao botao-grande botao-secundario" href="/cadastrar?perfil=PRESTADOR">Cadastrar meu negócio</a>
         </div>
-      </section>
-      ${vazio(
-    html`Assim que um prestador publicar um buraco na agenda, ele aparece aqui já com o preço vigente.`,
-    { titulo: 'A vitrine está vazia', acoes: [['/cadastrar?perfil=PRESTADOR', 'Publicar meus horários']] },
-  )}
-    `}
-
-    <section class="secao-titulo" id="como-funciona" data-revelar>
-      <div>
-        <span class="olho">Como funciona</span>
-        <h2>Três passos, sem intermediário escondido</h2>
-      </div>
-    </section>
-
-    <div class="grade grade-3">
-      <div class="cartao cartao-vivo passo" data-passo="01" data-revelar>
-        <h3>O prestador publica</h3>
-        <p class="pequeno fraco">Escolhe o serviço, o horário vago e a régua de desconto por
-        antecedência. Publicar exige ao menos ${p.antecedencia_min_publicacao_min} min de
-        antecedência — horário impossível de cumprir não entra na busca.</p>
-      </div>
-      <div class="cartao cartao-vivo passo" data-passo="02" data-revelar style="--atraso:90ms">
-        <h3>O preço cai sozinho</h3>
-        <p class="pequeno fraco">Quanto mais perto do horário, maior o desconto — até o piso que o
-        prestador definiu, limitado ao teto de ${p.desconto_maximo_pct}% da plataforma. O preço que
-        você vê na reserva fica travado.</p>
-      </div>
-      <div class="cartao cartao-vivo passo" data-passo="03" data-revelar style="--atraso:180ms">
-        <h3>Você reserva e ele confirma</h3>
-        <p class="pequeno fraco">O horário fica só seu durante os ${p.janela_confirmacao_min} min da
-        janela de confirmação. Sem resposta, ele volta para a busca e você não é penalizado.</p>
-      </div>
-    </div>
-
-    ${vitrine ? secaoDoPreco(vitrine, p) : cru('')}
-
-    <section class="secao-titulo" data-revelar>
-      <div>
-        <span class="olho">Para quem atende</span>
-        <h2>O buraco na agenda não volta amanhã</h2>
-        <p>Um horário vago não pode ser estocado: as 15h de hoje deixam de existir às 15h01.</p>
-      </div>
-    </section>
-
-    <div class="grade grade-2">
-      <div class="cartao cartao-vivo" data-revelar>
-        <h3 class="sem-topo">Você escolhe o quanto cede</h3>
-        <p class="pequeno fraco">A régua de desconto é sua: define a partir de quantos minutos o
-        desconto começa, de quanto em quanto ele cresce e onde para. A plataforma nunca desconta
-        além do piso que você marcou, e o preço cheio continua valendo para a clientela fixa.</p>
-      </div>
-      <div class="cartao cartao-vivo" data-revelar style="--atraso:90ms">
-        <h3 class="sem-topo">Só paga quando atende</h3>
-        <p class="pequeno fraco">A comissão de ${p.comissao_pct_padrao}% incide sobre o
-        agendamento concluído, calculada em cima do valor final travado. Reserva expirada, recusada,
-        cancelada pelo cliente ou disputa procedente não geram cobrança para você.</p>
-      </div>
-    </div>
-
-    <section class="secao-titulo" id="regras" data-revelar>
-      <div>
-        <span class="olho">Confiança</span>
-        <h2>As regras aparecem, não ficam escondidas</h2>
-        <p>Toda decisão do sistema tem um identificador de regra, e ele chega até a tela.</p>
-      </div>
-    </section>
-
-    <div class="cartao" data-revelar>
-      <ul class="lista-limpa">
-        <li>
-          <div class="linha entre linha-topo">
-            <div class="crescer">
-              <div class="forte">Você sabe a consequência antes de confirmar</div>
-              <div class="pequeno fraco">Cancelar mostra a faixa aplicável e o efeito exato na
-              reputação antes do botão, nunca depois.</div>
-            </div>
-            <span class="selo selo-regra">RN-18</span>
-          </div>
-        </li>
-        <li>
-          <div class="linha entre linha-topo">
-            <div class="crescer">
-              <div class="forte">O preço que você viu é o preço que vale</div>
-              <div class="pequeno fraco">O valor é travado no instante da reserva e não muda depois,
-              nem se o prestador editar a régua.</div>
-            </div>
-            <span class="selo selo-regra">RN-04</span>
-          </div>
-        </li>
-        <li>
-          <div class="linha entre linha-topo">
-            <div class="crescer">
-              <div class="forte">Reputação vem de fatos, não de opinião solta</div>
-              <div class="pequeno fraco">Cada ponto sai de um evento rastreável — atendimento
-              concluído, avaliação, cancelamento, ausência. Ninguém edita o número à mão.</div>
-            </div>
-            <span class="selo selo-regra">RN-23</span>
-          </div>
-        </li>
-        <li>
-          <div class="linha entre linha-topo">
-            <div class="crescer">
-              <div class="forte">A busca por texto é interpretada, não decidida, pela IA</div>
-              <div class="pequeno fraco">O modelo extrai filtros. Quem seleciona, ordena e precifica
-              os horários é código determinístico — e a busca funciona com o modelo fora do ar.</div>
-            </div>
-            <span class="selo selo-regra">INV-14</span>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <section class="faixa acima-5" data-revelar>
-      <h2>Tem horário vago essa semana?</h2>
-      <p>Publique em menos de um minuto, defina sua régua e deixe o preço trabalhar. O cadastro de
-      prestador passa por aprovação do administrador antes da primeira publicação.</p>
-      <div class="linha">
-        <a class="botao" href="/cadastrar?perfil=PRESTADOR">
-          Criar conta de prestador <span class="seta">→</span>
-        </a>
-        <a class="botao botao-secundario" href="/buscar">Explorar horários abertos</a>
       </div>
     </section>
   `, {
-    titulo: 'Horários de última hora com desconto',
-    descricao: 'Encontre horários vagos de salões, barbearias e clínicas perto de você. '
-      + 'O desconto cresce conforme o horário se aproxima, e o preço fica travado na reserva.',
-    hero: heroDaHome({
-      abertos: abertos.length, maiorDesconto, economiaTotal, vitrine, p, categorias,
-    }),
+    titulo: 'Horários vagos perto de você, com desconto',
+    descricao: 'Encontre horários vagos de prestadores do seu bairro. O desconto cresce conforme o '
+      + 'horário se aproxima, dentro da régua de cada prestador, e o preço fica travado na reserva.',
+    hero: heroDaHome({ proximos, categorias }),
   });
 }
 
 /**
- * Demonstracao do preco dinamico com um horario real da vitrine.
- * Cada degrau vem de `projetarRegua` no dominio (RF-027) - a pagina desenha,
- * nao calcula.
+ * Fundo do hero: uma grade de agenda desenhada, sete colunas de dias com
+ * blocos de horario. A maioria e so contorno (agenda livre), alguns estao
+ * ocupados e uns poucos levam a peca laranja encaixada na ponta, como no logo.
+ * E decorativo e nao representa horario nenhum, por isso nao tem texto nem
+ * numero. As cores sao classes do CSS, para seguir o tema escolhido.
+ * Gerado uma vez na carga do modulo, com sequencia fixa: a mesma em toda visita.
+ */
+const FUNDO_DE_AGENDA = (() => {
+  let semente = 7;
+  const sortear = () => (semente = (semente * 16807) % 2147483647) / 2147483647;
+  const COLUNAS = 7, LINHAS = 11, LARG = 196, ALT = 64, VAO = 14;
+  const blocos = [];
+  for (let c = 0; c < COLUNAS; c++) {
+    for (let l = 0; l < LINHAS; l++) {
+      const x = c * (LARG + VAO), y = l * (ALT + VAO);
+      const r = sortear();
+      if (r < 0.1) {
+        // Horario vago: faixa da marca com a peca laranja na ponta.
+        blocos.push(`<rect class="af-vago" x="${x}" y="${y}" width="${LARG}" height="${ALT}" rx="14"/>`
+          + `<rect class="af-peca" x="${x + LARG - 52}" y="${y + 10}" width="42" height="${ALT - 20}" rx="9"/>`);
+      } else if (r < 0.38) {
+        blocos.push(`<rect class="af-ocupado" x="${x}" y="${y}" width="${LARG}" height="${ALT}" rx="14"/>`);
+      } else {
+        blocos.push(`<rect class="af-livre" x="${x + 1}" y="${y + 1}" width="${LARG - 2}" height="${ALT - 2}" rx="13"/>`);
+      }
+    }
+  }
+  const w = COLUNAS * (LARG + VAO) - VAO, h = LINHAS * (ALT + VAO) - VAO;
+  return `<div class="heroi-fundo" aria-hidden="true"><svg viewBox="0 0 ${w} ${h}" `
+    + `preserveAspectRatio="xMidYMid slice" focusable="false">${blocos.join('')}</svg></div>`;
+})();
+
+/**
+ * Hero da home: o titulo de um lado e, do outro, a agenda aberta - os
+ * proximos horarios publicados de verdade, cada um com o preco vigente que o
+ * dominio calculou para este instante. E a ideia do produto na primeira tela:
+ * um horario que vagou na agenda de alguem, perto e por menos.
+ */
+function heroDaHome({ proximos, categorias }) {
+  const atalhos = categorias.filter((c) => c.abertos > 0).sort((a, b) => b.abertos - a.abertos).slice(0, 4);
+
+  return html`
+  <section class="heroi">
+    ${cru(FUNDO_DE_AGENDA)}
+    <div class="heroi-interno">
+      <div class="heroi-texto" data-revelar>
+        <h1>Horário vago perto de você, por menos.</h1>
+        <p class="heroi-chamada">
+          Prestadores do bairro publicam os horários que ficaram livres na agenda. Quanto mais perto da
+          hora, maior o desconto, até o limite que cada um define.
+        </p>
+
+        <form class="heroi-busca" method="get" action="/buscar" role="search">
+          <label class="so-leitor" for="busca-hero">O que você precisa?</label>
+          <div class="busca-principal">
+            <input id="busca-hero" name="descricao" class="crescer"
+                   placeholder="Ex.: corte hoje depois das 18h">
+            <button class="botao" type="submit">Encontrar horários</button>
+          </div>
+        </form>
+
+        ${atalhos.length ? html`
+          <div class="heroi-atalhos">
+            <span class="rotulo-atalhos">ou vá direto:</span>
+            ${juntar(atalhos.map((c) => chip(c.nome, { href: `/buscar?categoriaId=${c.id}`, neutro: true, remover: false })))}
+          </div>` : cru('')}
+
+        <p class="heroi-prestador">
+          Atende clientes? <a href="#para-prestadores">Veja como publicar seus horários vagos</a>.
+        </p>
+      </div>
+
+      ${agendaAberta(proximos)}
+    </div>
+  </section>`;
+}
+
+/** Os proximos horarios abertos, agrupados por dia, como uma coluna de agenda. */
+function agendaAberta(proximos) {
+  const LIMITE = 6;
+  if (!proximos.length) {
+    return html`
+      <section class="agenda-aberta" aria-labelledby="agenda-aberta-titulo" data-revelar style="--atraso:120ms">
+        <div class="agenda-aberta-cabeca"><h2 id="agenda-aberta-titulo">Agenda aberta</h2></div>
+        ${vazio('Assim que um prestador publicar um horário vago, ele aparece aqui com o preço do momento.', {
+    titulo: `Nenhum horário aberto nas próximas ${busca.JANELA_PADRAO_H} h`,
+    acoes: [['/buscar?janela=72', 'Buscar nos próximos 3 dias']],
+  })}
+      </section>`;
+  }
+
+  let diaAnterior = null;
+  const linhas = proximos.slice(0, LIMITE).map((v) => {
+    const dia = formatarDiaLongo(v.inicio);
+    const cabecaDoDia = dia !== diaAnterior
+      ? html`<li class="agenda-aberta-dia" aria-hidden="true">${dia[0].toUpperCase() + dia.slice(1)}</li>` : cru('');
+    diaAnterior = dia;
+    const comDesconto = v.preco.percentualEfetivo > 0;
+    return html`
+      ${cabecaDoDia}
+      <li>
+        <a class="agenda-aberta-link" href="/horarios/${v.id}">
+          <span class="agenda-aberta-hora"><span class="so-leitor">${dia}, às </span>${formatarHora(v.inicio)}</span>
+          <span class="agenda-aberta-faixa">
+            <span class="agenda-aberta-servico">${v.servico_nome}</span>
+            <span class="agenda-aberta-onde">${v.nome_exibicao ?? v.prestador_nome}${v.bairro ? ` · ${v.bairro}` : ''}</span>
+          </span>
+          <span class="agenda-aberta-preco${comDesconto ? '' : ' cheio'}">
+            <strong>${formatarBRL(v.preco.precoVigente)}</strong>
+            <span>${comDesconto ? `−${v.preco.percentualEfetivo}%` : 'preço cheio'}</span>
+          </span>
+        </a>
+      </li>`;
+  });
+
+  return html`
+    <section class="agenda-aberta" aria-labelledby="agenda-aberta-titulo" data-revelar style="--atraso:120ms">
+      <div class="agenda-aberta-cabeca">
+        <h2 id="agenda-aberta-titulo">Agenda aberta agora</h2>
+        <p>${plural(proximos.length, 'horário', 'horários')} nas próximas ${busca.JANELA_PADRAO_H}&nbsp;h</p>
+      </div>
+      <ol class="agenda-aberta-lista">${juntar(linhas)}</ol>
+      <div class="agenda-aberta-rodape">
+        <span>Preço deste instante. Ele trava quando você reserva.</span>
+        <a href="/buscar">${proximos.length > LIMITE ? `Ver os ${proximos.length} horários` : 'Abrir a busca'} <span class="seta">→</span></a>
+      </div>
+    </section>`;
+}
+
+function secaoDeCategorias(categorias) {
+  if (!categorias.length) return cru('');
+  const comFoto = [];
+  const semFoto = [];
+  for (const c of categorias) {
+    const foto = FOTOS_DE_CATEGORIA.find((f) => semAcento(c.nome).includes(f.chave));
+    if (foto && existeEmPublic(foto.arquivo) && !comFoto.some((x) => x.foto === foto)) comFoto.push({ ...c, foto });
+    else semFoto.push(c);
+  }
+  const contagem = (c) => (c.abertos ? plural(c.abertos, 'horário aberto', 'horários abertos') : 'Nenhum horário agora');
+
+  return html`
+    <section class="secao secao-primeira" aria-labelledby="titulo-categorias">
+      <div class="secao-cabeca" data-revelar>
+        <div>
+          <h2 id="titulo-categorias">O que vagou por aqui</h2>
+          <p>As contagens são dos horários abertos agora, nas próximas ${busca.JANELA_PADRAO_H} h.</p>
+        </div>
+      </div>
+      <div class="categorias">
+        ${juntar(comFoto.map((c, i) => html`
+          <a class="categoria-foto" href="/buscar?categoriaId=${c.id}" data-revelar style="--atraso:${i * 80}ms">
+            <figure><img src="/estatico/${c.foto.arquivo}" alt="${c.foto.alt}" width="720" height="900"
+              loading="lazy" decoding="async"></figure>
+            <span class="categoria-nome">${c.nome}</span>
+            <span class="categoria-conta">${contagem(c)}</span>
+          </a>`))}
+        ${semFoto.length ? html`
+          <div class="categorias-outras" data-revelar style="--atraso:${comFoto.length * 80}ms">
+            <h3>${comFoto.length ? 'Outras categorias' : 'Categorias'}</h3>
+            <ul>
+              ${juntar(semFoto.map((c) => html`
+                <li><a href="/buscar?categoriaId=${c.id}">${c.nome} <span class="num">${c.abertos || '—'}</span></a></li>`))}
+            </ul>
+          </div>` : cru('')}
+      </div>
+    </section>`;
+}
+
+/**
+ * Por que existe desconto, com um horario real da vitrine. Cada degrau vem de
+ * `projetarRegua` no dominio (RF-027) - a pagina desenha, nao calcula.
  */
 function secaoDoPreco(vitrine, p) {
   const detalhe = horariosApp.detalhe(vitrine.id);
   if (!detalhe.regua.length) return cru('');
 
   return html`
-    <section class="secao-titulo" id="preco" data-revelar>
-      <div>
-        <span class="olho">Preço dinâmico</span>
-        <h2>Como o preço caminha até o horário</h2>
-        <p>Exemplo real: a régua de "${detalhe.servico_nome}",
-        de ${detalhe.nome_exibicao ?? detalhe.prestador_nome},
-        às ${formatarHora(detalhe.inicio)}.</p>
-      </div>
-      <a class="botao botao-secundario botao-pequeno" href="/horarios/${detalhe.id}">
-        Abrir este horário <span class="seta">→</span>
-      </a>
-    </section>
-
-    <div class="cartao" data-revelar>
-      ${reguaDeDesconto(detalhe.regua, { antecedenciaMin: detalhe.preco.antecedenciaMin })}
-      ${notaDeRegra('RN-01', `A faixa aplicável é a de menor antecedência entre as que já entraram em vigor. `
-    + `Nenhum desconto passa do teto de ${p.desconto_maximo_pct}% da plataforma nem do piso do prestador.`)}
-    </div>`;
-}
-
-/**
- * Hero da home - bloco puramente visual, servido antes do <main>.
- *
- * A arte tem duas camadas: a imagem em `public/hero.jpg` (se existir) e,
- * por baixo, um gradiente que assume o lugar dela quando o arquivo falta.
- * Os cartoes flutuantes usam o horario real de maior desconto no banco.
- */
-function heroDaHome({ abertos, maiorDesconto, economiaTotal, vitrine, p, categorias }) {
-  const precoDemo = vitrine
-    ? html`
-      <div class="antes">${formatarBRL(vitrine.preco.precoBase)}</div>
-      <div class="agora">${formatarBRL(vitrine.preco.precoVigente)}</div>
-      <div class="pequeno fraco">${vitrine.servico_nome} · ${formatarHora(vitrine.inicio)}</div>
-      <div class="contagem">−${vitrine.preco.percentualEfetivo}% e caindo</div>`
-    : html`
-      <div class="antes">R$ 120,00</div>
-      <div class="agora">R$ 78,00</div>
-      <div class="pequeno fraco">Exemplo de régua de desconto</div>
-      <div class="contagem">−35% e caindo</div>`;
-
-  return html`
-  <section class="heroi">
-    <div class="heroi-fundo" aria-hidden="true">
-      <span class="heroi-brilho heroi-brilho-a"></span>
-      <span class="heroi-brilho heroi-brilho-b"></span>
-      <span class="heroi-grade"></span>
-    </div>
-
-    <div class="heroi-interno">
-      <div class="heroi-texto" data-revelar>
-        <a class="etiqueta" href="/buscar">
-          <span class="ponto-vivo" aria-hidden="true"></span>
-          <span><b>${abertos}</b> ${abertos === 1 ? 'horário aberto' : 'horários abertos'} nas próximas ${busca.JANELA_PADRAO_H}&nbsp;h</span>
-        </a>
-
-        <h1>Um horário vago perto de você <em>custa menos</em>.</h1>
-
-        <p class="heroi-chamada">
-          Salões, barbearias e clínicas publicam os buracos da agenda. O desconto cresce conforme o
-          horário se aproxima, seguindo a régua que o próprio prestador definiu.
-        </p>
-
-        <form class="heroi-busca" method="get" action="/buscar" role="search">
-          <label class="so-leitor" for="busca-hero">O que você precisa hoje?</label>
-          <div class="busca-principal">
-            <input id="busca-hero" name="descricao" class="crescer"
-                   placeholder="Ex.: cortar o cabelo hoje depois das 18h">
-            <button class="botao" type="submit">Buscar <span class="seta">→</span></button>
-          </div>
-        </form>
-
-        ${categorias.length ? html`
-          <div class="heroi-atalhos">
-            <span class="rotulo-atalhos">ou vá direto:</span>
-            ${juntar(categorias.slice(0, 6).map((c) => chip(`${c.nome} · ${c.abertos}`, {
-    href: `/buscar?categoriaId=${c.id}`, neutro: true, remover: false,
-  })))}
-          </div>` : cru('')}
-
-        <dl class="heroi-numeros">
-          <div>
-            <dt data-ate="${maiorDesconto}" data-prefixo="−" data-sufixo="%">−${maiorDesconto}%</dt>
-            <dd>maior desconto agora</dd>
-          </div>
-          <div>
-            <dt>${formatarBRL(economiaTotal)}</dt>
-            <dd>de economia na vitrine</dd>
-          </div>
-          <div>
-            <dt data-ate="${p.janela_confirmacao_min}" data-sufixo=" min">${p.janela_confirmacao_min} min</dt>
-            <dd>para o prestador confirmar</dd>
-          </div>
+    <section class="secao par" id="preco" aria-labelledby="titulo-preco">
+      <div class="secao-texto" data-revelar>
+        <h2 id="titulo-preco">O desconto vem do relógio.</h2>
+        <p>O serviço é o mesmo do preço cheio. O que muda é quanto falta para começar: um horário vago não
+        pode ser guardado para depois.</p>
+        <p>Cada prestador decide a partir de quando o desconto começa e até onde ele vai. A plataforma
+        nunca passa de ${p.desconto_maximo_pct}%.</p>
+        <dl class="termos">
+          <div><dt>Preço-base</dt><dd>o preço cheio do serviço, definido pelo prestador.</dd></div>
+          <div><dt>Faixa</dt><dd>quanto tempo antes do horário cada desconto entra em vigor.</dd></div>
+          <div><dt>Preço vigente</dt><dd>o preço deste instante. Pode baixar até a hora, nunca subir.</dd></div>
+          <div><dt>Preço travado</dt><dd>o vigente no momento da reserva. Daí em diante, não muda.</dd></div>
         </dl>
       </div>
 
-      <div class="heroi-arte" data-revelar style="--atraso:140ms">
-        <figure class="heroi-moldura">${imagemDoHero()}</figure>
-
-        <article class="cartao-flutuante">${precoDemo}</article>
-
-        <article class="cartao-flutuante cartao-flutuante-alto">
-          <div class="mini fraco">Política ao expirar</div>
-          <div class="forte pequeno">${p.politica_expiracao === 'AUTOCONFIRMAR' ? 'Autoconfirmar' : 'Liberar o horário'}</div>
-        </article>
+      <div class="cartao" data-revelar style="--atraso:120ms">
+        <div class="linha entre linha-topo abaixo-3">
+          <div class="crescer">
+            <h3 class="sem-topo sem-fundo">${detalhe.servico_nome}</h3>
+            <p class="pequeno fraco sem-fundo">${detalhe.nome_exibicao ?? detalhe.prestador_nome},
+              ${formatarDiaLongo(detalhe.inicio)} às ${formatarHora(detalhe.inicio)} · exemplo real da vitrine</p>
+          </div>
+          <a class="botao botao-secundario botao-pequeno" href="/horarios/${detalhe.id}">Abrir este horário</a>
+        </div>
+        ${reguaDeDesconto(detalhe.regua, { antecedenciaMin: detalhe.preco.antecedenciaMin })}
+        ${notaDeRegra('RN-01', 'Vale a faixa de menor antecedência entre as que já entraram em vigor. '
+    + `Nenhum desconto passa do teto de ${p.desconto_maximo_pct}% da plataforma nem do piso do prestador.`)}
       </div>
-    </div>
-  </section>`;
+    </section>`;
 }
 
-/**
- * A imagem do hero e opcional: enquanto `public/hero.jpg` nao existir, a
- * moldura fica so com o gradiente - nenhuma <img> quebrada na pagina.
- * `fetchpriority=high` porque ela e o maior elemento visivel da home (LCP);
- * `width`/`height` reservam a caixa e evitam o pulo de layout.
- */
-function imagemDoHero() {
-  const arquivo = fileURLToPath(new URL('../../../../public/hero.jpg', import.meta.url));
-  if (!existsSync(arquivo)) return cru('');
-  return html`<img src="/estatico/hero.jpg"
-    alt="Cabeleireira penteando uma cliente em um salão de bairro no fim da tarde"
-    width="900" height="1125" loading="eager" decoding="async" fetchpriority="high">`;
+function secaoComoFunciona(p) {
+  return html`
+    <section class="secao" id="como-funciona" aria-labelledby="titulo-como">
+      <div class="secao-cabeca" data-revelar>
+        <div>
+          <h2 id="titulo-como">Do horário vago ao atendimento</h2>
+          <p>Buscar não exige conta. Para reservar, você entra ou cria uma conta de cliente.</p>
+        </div>
+        <a class="botao botao-secundario" href="/buscar">Encontrar horários <span class="seta">→</span></a>
+      </div>
+      <ol class="passos passos-linha" data-revelar>
+        <li><h3>Busque</h3><p>Por categoria, região e janela de horário, ou escrevendo o que você precisa.</p></li>
+        <li><h3>Compare</h3><p>Cada horário mostra o preço cheio, o desconto do momento e a reputação de quem atende.</p></li>
+        <li><h3>Reserve</h3><p>O preço trava na hora, e o horário fica bloqueado só para você enquanto o prestador responde.</p></li>
+        <li><h3>Espere a confirmação</h3><p>O prestador tem a janela dele, em geral ${p.janela_confirmacao_min} min.
+          Sem resposta, vale a política dele: liberar o horário ou confirmar sozinho. Você não é penalizado.</p></li>
+        <li><h3>Vá ao atendimento</h3><p>O pagamento é presencial, direto com o prestador. Depois, os dois se avaliam.</p></li>
+      </ol>
+    </section>`;
+}
+
+function secaoDoPrestador(p) {
+  const foto = existeEmPublic('foto-barbearia.jpg')
+    ? html`<figure data-revelar><img src="/estatico/foto-barbearia.jpg" width="720" height="900" loading="lazy" decoding="async"
+        alt="Barbeiro recebendo um cliente na porta da barbearia"></figure>`
+    : cru('');
+
+  return html`
+    <section class="secao bloco-prestador" id="para-prestadores" aria-labelledby="titulo-prestador">
+      ${foto}
+      <div class="secao-texto" data-revelar style="--atraso:100ms">
+        <h2 id="titulo-prestador">O horário vago vira cliente.</h2>
+        <p>As 15h de hoje deixam de existir às 15h01. Publique o horário que ficou livre e deixe a sua régua
+        de desconto trabalhar até lá.</p>
+        <ol class="passos">
+          <li><h3>Crie a conta de prestador</h3><p>Com o nome do negócio, a região e um contato.</p></li>
+          <li><h3>Aguarde a aprovação</h3><p>Um administrador analisa o cadastro. Enquanto isso, você já monta
+            serviços e régua.</p></li>
+          <li><h3>Publique o horário vago</h3><p>Escolha o serviço, a hora e a régua. Publicar pede ao menos
+            ${p.antecedencia_min_publicacao_min} min de antecedência.</p></li>
+          <li><h3>Responda às reservas</h3><p>Confirme ou recuse, com motivo, dentro da sua janela de confirmação.</p></li>
+        </ol>
+        <div class="vantagens">
+          <div><h3>Você decide quanto cede</h3><p>Onde o desconto começa, quanto cresce e onde para. O preço cheio
+            continua valendo para a clientela fixa.</p></div>
+          <div><h3>Comissão só no atendimento feito</h3><p>${p.comissao_pct_padrao}% sobre o valor final do agendamento
+            concluído. Reserva expirada, recusada ou cancelada pelo cliente não gera cobrança.</p></div>
+        </div>
+        <div class="linha">
+          <a class="botao botao-grande" href="/cadastrar?perfil=PRESTADOR">Cadastrar meu negócio <span class="seta">→</span></a>
+          <a class="botao botao-fantasma" href="/entrar">Já tenho conta</a>
+        </div>
+      </div>
+    </section>`;
+}
+
+function secaoDeRegras() {
+  const regras = [
+    ['Você vê a consequência antes de confirmar', 'Cancelar mostra a faixa aplicável e o efeito exato na reputação antes do botão, nunca depois.', 'RN-18'],
+    ['O preço que você viu é o preço que vale', 'O valor trava no instante da reserva e não muda depois, nem se o prestador editar a régua.', 'RN-04'],
+    ['Reputação vem de fatos', 'Cada ponto sai de um evento rastreável: atendimento concluído, avaliação, cancelamento, ausência. Ninguém edita o número à mão.', 'RN-23'],
+    ['Avaliação às cegas', 'As notas só aparecem quando os dois avaliam ou quando o prazo acaba, para ninguém avaliar por retaliação.', 'RN-25'],
+    ['Disputa com desfecho definido', 'Depois do atendimento, qualquer parte pode abrir disputa com motivo e evidência. Só o administrador decide, com justificativa escrita.', 'RN-27'],
+    ['A IA interpreta, o sistema decide', 'O modelo transforma o seu texto em filtros. Quem seleciona, ordena e precifica é código determinístico, e a busca funciona sem ele.', 'INV-14'],
+  ];
+  return html`
+    <section class="secao" id="regras" aria-labelledby="titulo-regras">
+      <div class="secao-cabeca" data-revelar>
+        <div>
+          <h2 id="titulo-regras">Regras que aparecem antes de você agir</h2>
+          <p>Toda decisão do sistema cita a regra que a tomou, e esse código chega até a tela.</p>
+        </div>
+      </div>
+      <ul class="regras-lista">
+        ${juntar(regras.map(([titulo, texto, regra], i) => html`
+          <li data-revelar style="--atraso:${(i % 2) * 80}ms">
+            <h3>${titulo} <span class="selo selo-regra">${regra}</span></h3>
+            <p>${texto}</p>
+          </li>`))}
+      </ul>
+    </section>`;
+}
+
+function secaoDePerguntas() {
+  const perguntas = [
+    ['A reserva já garante o horário?', html`Ela bloqueia o horário só para você e trava o preço, mas o atendimento só
+      fica confirmado quando o prestador aceita, ou quando a janela dele vence e a política dele é confirmar sozinho.`],
+    ['Como eu pago?', html`Presencialmente, direto ao prestador. O Encaixe não cobra o cliente nem processa
+      pagamento: só registra o valor travado e a comissão devida pelo prestador.`],
+    ['E se eu precisar cancelar?', html`Antes de confirmar, a tela mostra a faixa aplicável e o efeito exato na sua
+      reputação. Quanto mais perto do horário, maior a penalidade.`],
+    ['Por que um horário aparece com preço cheio?', html`O desconto só começa na faixa de antecedência que o
+      prestador definiu. Até lá vale o preço-base; alguns horários nem têm desconto.`],
+    ['Reputação e estrelas são a mesma coisa?', html`Não. A estrela é a nota de 1 a 5 de um atendimento. A reputação,
+      de 0 a 100, soma eventos: atendimentos, avaliações, cancelamentos e ausências.`],
+  ];
+  return html`
+    <section class="secao par" id="perguntas" aria-labelledby="titulo-perguntas">
+      <div class="secao-texto" data-revelar>
+        <h2 id="titulo-perguntas">Perguntas frequentes</h2>
+        <p>O que costuma ficar em dúvida antes da primeira reserva.</p>
+        <p><a href="/ajuda">Todas as perguntas na Ajuda <span class="seta">→</span></a></p>
+      </div>
+      <div class="cartao faq" data-revelar style="--atraso:100ms">
+        ${juntar(perguntas.map(([pergunta, resposta]) => html`
+          <details><summary>${pergunta}</summary><p>${resposta}</p></details>`))}
+      </div>
+    </section>`;
 }
 
 // -------------------------------------------------------------- entrar
@@ -616,7 +684,7 @@ async function buscar(ctx) {
         </div>
       </div>
 
-      <div class="grade grade-4 grade-campos">
+      <div class="grade grade-campos grade-filtros">
         <div class="campo">
           <label for="categoriaId">Categoria</label>
           <select id="categoriaId" name="categoriaId">
@@ -845,11 +913,11 @@ function detalheDoHorario(ctx) {
           <span class="duracao">${vaga.duracao_min} min</span>
         </div>
         <div class="vaga-corpo">
-          <div class="vaga-sinais sem-topo">
-            ${seloReputacao(vaga.prestador_reputacao)}
-            <span class="selo selo-neutro">Começa em ${humanizarMinutos(vaga.preco.antecedenciaMin)}</span>
-            <span class="selo selo-info">${politica.titulo}</span>
-          </div>
+          <ul class="vaga-sinais sem-topo">
+            <li class="sinal">${icone('relogio')}Começa em ${humanizarMinutos(vaga.preco.antecedenciaMin)}</li>
+            <li class="sinal">${icone(vaga.politica_expiracao === 'AUTOCONFIRMAR' ? 'confirmacao' : 'espera')}${politica.titulo}</li>
+            <li class="sinal">${icone('reputacao')}Reputação ${vaga.prestador_reputacao}/100</li>
+          </ul>
           <p class="pequeno fraco acima-3 sem-fundo">${politica.texto}</p>
         </div>
         <div class="vaga-lado">
@@ -876,23 +944,23 @@ function detalheDoHorario(ctx) {
       </div>` : cru('')}
 
     <h2>O que acontece depois de reservar</h2>
-    <div class="grade grade-3">
-      <div class="cartao passo" data-passo="01">
+    <ol class="passos passos-linha cartao">
+      <li>
         <h3>O preço trava</h3>
-        <p class="pequeno fraco">O valor vigente vira o valor do agendamento e a comissão passa a ser
+        <p class="pequeno">O valor vigente vira o valor do agendamento e a comissão passa a ser
         calculada sobre ele, nunca sobre o preço-base.</p>
-      </div>
-      <div class="cartao passo" data-passo="02">
+      </li>
+      <li>
         <h3>O prestador responde</h3>
-        <p class="pequeno fraco">${nome} tem ${vaga.janela_confirmacao_min} min para confirmar ou
+        <p class="pequeno">${nome} tem ${vaga.janela_confirmacao_min} min para confirmar ou
         recusar. Enquanto isso, o horário fica bloqueado só para você.</p>
-      </div>
-      <div class="cartao passo" data-passo="03">
+      </li>
+      <li>
         <h3>Você é avisado</h3>
-        <p class="pequeno fraco">Confirmação, recusa e expiração geram notificação. Recusa e expiração
+        <p class="pequeno">Confirmação, recusa e expiração geram notificação. Recusa e expiração
         não penalizam o cliente.</p>
-      </div>
-    </div>
+      </li>
+    </ol>
     ${notaDeRegra('RN-09', 'Enquanto a reserva estiver em aberto, nenhum outro cliente consegue reservar '
     + 'este horário: um horário nunca tem dois agendamentos ativos.')}
   `, {

@@ -24,7 +24,11 @@ npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
 ```
 
 Para testar sem tocar no banco da equipe: `DB_PATH=<pasta temporária>/demo.db npm run db:seed` e
-`PORT=3917 DB_PATH=... node src/main.js`.
+`PORT=3917 DB_PATH=... node src/main.js` (some `FOTOS_DIR` junto, para as fotos não irem para `dados/`).
+
+Para abrir no celular: `HOST=0.0.0.0 npm start` e `http://192.168.15.7:3000` no celular, no mesmo
+Wi-Fi. O `ipconfig` desta máquina lista VirtualBox, Radmin e ZeroTier; o IP certo é o da "Ethernet 2".
+O modo celular do DevTools é fiel ao layout (há `meta viewport`); só não reproduz desempenho.
 
 Rodar um teste isolado:
 
@@ -69,11 +73,13 @@ Consequências práticas disso no dia a dia:
 O projeto seguiu o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
 Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
-- **Estado em 2026-11-06 (etapa 66):** spec v0.1.12. As 29 Specs originais estão **concluídas**
-  (evidência na §12 conferida por `grep`); as 107 issues estão fechadas. A **SPEC-030** (configurações
-  da conta, `/conta`) teve a fase 1 concluída na etapa 66; a fase 2, exclusão de conta, é a OPEN-301. O
-  que mais falta está na seção 4 de `docs/proximos-passos.docx`: validar a QA-01 com o professor, a
-  lacuna da RN-05, a RN-17 sem teste nomeado e as pendências P1 a P10 de `docs/seguranca.md`.
+- **Estado em 2026-11-06 (etapa 66, PR #153 mergeado):** spec v0.1.12. As 29 Specs originais estão
+  **concluídas** (evidência na §12 conferida por `grep`); as 107 issues estão fechadas. A **SPEC-030**
+  (configurações da conta, `/conta`) teve a fase 1 concluída; a **fase 2, exclusão de conta**, é a
+  OPEN-301, com as decisões já tomadas (D4/D5: anonimizar, estado novo `EXCLUIDO` na §9.6, bloqueio
+  com agendamento em aberto, disputa ou comissão a pagar). Também falta: validar a QA-01 com o
+  professor, a lacuna da RN-05, a RN-17 sem teste nomeado e as pendências P1 a P10 de
+  `docs/seguranca.md`. O `docs/proximos-passos.docx` parou em 30/10 e não cobre as etapas 65 e 66.
 - **Redesign do front-end em aberto (será a etapa 67).** O professor reprovou o visual por "parecer
   template genérico". A primeira tentativa (direção "A tabela da parede", serifada, foto fixa numa
   metade da página) foi reprovada pelo Enzo, revertida e apagada. Lições: **nada de foto de acervo aberto** (Wikimedia
@@ -172,7 +178,19 @@ o intervalo falhar.
 - **`db:reset` falha com `EPERM` se um servidor estiver rodando** e segurando `dados/encaixe.db`.
   Pare o `npm run dev` antes.
 - **Ordem importa no CSS.** Regra sem especificidade extra colocada antes da declaração base perde
-  para ela. Ajuste responsivo vai na seção responsiva, no fim do arquivo — não perto do token.
+  para ela. Ajuste responsivo vai na seção responsiva, no fim do arquivo — não perto do token. E
+  variante de elemento posicionado herda o que a regra geral da mesma `@media` define: o
+  `.cartao-flutuante-alto` herdava `left`/`bottom` e se esticava sobre a foto inteira do hero.
+- **`[data-revelar]` redefine o `transition`** e vem depois do `.cartao`. Por isso a lista dele repete
+  sombra, borda e fundo; sem elas, o hover dos cartões "acendia e apagava" de uma vez. Propriedade nova
+  com transição num elemento revelado entra nas duas listas.
+- **`--rapido`, `--medio` e `--suave` já trazem a curva.** `transition: transform var(--medio) var(--mola)`
+  fica com duas curvas, é descartada pelo navegador e o efeito aparece de uma vez, sem erro nenhum.
+  E animação que "não aparece" pode ser o Windows com "Efeitos de animação" desligado: o site corta
+  movimento nesse caso (RF-093).
+- **Efeito caro trava o hero em PC fraco:** `filter: blur()` animado, `mix-blend-mode` sobre área
+  grande e `backdrop-filter` no cabeçalho fixo foram removidos por isso. Anime só `transform` e
+  `opacity`.
 - **Tema escuro inverte a polaridade da marca.** `--primaria` clareia no escuro, então texto branco
   sobre ela cai para ~2,8:1. Texto sobre cor cheia usa `--sobre-primaria` / `--sobre-acento` /
   `--sobre-perigo`, que trocam de lado junto com o tema.
@@ -199,7 +217,12 @@ o intervalo falhar.
 - **Git Bash converte argumentos que começam com `/` em caminhos do Windows** (`/buscar` vira
   `C:/Program Files/Git/buscar`). Use `MSYS_NO_PATHCONV=1` ao passar rotas para scripts.
 - **Os arquivos são CRLF.** Buscar um trecho com `\n` no meio falha em silêncio, e `sed` quebra em
-  linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`.
+  linha com emoji (`docs/tasks.md`). Para edição programática, use Node e trate `\r\n`. Script com
+  crase ou `${}` não cabe em `node -e` nem em heredoc no Git Bash (o escape se perde): grave o script
+  num arquivo fora do projeto e rode.
+- **Servidor de teste em segundo plano pode sobreviver** e segurar a porta (o novo cai com
+  `EADDRINUSE` e as capturas saem do código antigo). Confira com `curl` qual porta responde antes de
+  confiar num print; na dúvida, suba noutra porta.
 - **"Tudo verde" não é "toda regra coberta".** A RN-05 tem um teste só e não barra a edição da régua de
   um horário já reservado (o preço segue travado pela RN-04, mas a projeção muda); a RN-17 não aparece
   no nome de nenhum teste. A issue T-68 foi fechada com essas lacunas abertas.
@@ -237,9 +260,10 @@ Duas ferramentas tornam a suíte possível, ambas em `tests/apoio/cenario.js`:
 (`viajarPara()`, `avancarHoras()`) — metade das regras depende de "quanto falta". O provedor de LLM
 também é injetável, o que permite testar confiança baixa, timeout e formato quebrado.
 
-A interface também é testada: `integracao/http.test.js` (autenticação, autorização, CSRF, escape) e
-`integracao/vitrine.test.js` (o que a tela do horário mostra) sobem um servidor real em porta
-efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste, não o esconda.
+A interface também é testada: `integracao/http.test.js` (autenticação, autorização, CSRF, escape),
+`integracao/vitrine.test.js` (o que a tela do horário mostra) e `integracao/spec-030-conta.test.js`
+(upload com `FormData`, cookie de aparência, download; `FOTOS_DIR` numa pasta temporária) sobem um
+servidor real em porta efêmera. Mudança de texto exibido pode quebrar asserção — atualize o teste, não o esconda.
 
 ## Documentação
 

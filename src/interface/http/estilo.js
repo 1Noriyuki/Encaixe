@@ -11,20 +11,20 @@
 
 /** Tema escuro azulado: "Azul-escuro" e o "seguir o sistema" no escuro. */
 const TOKENS_AZUL = `
-  --fundo: #0f1426;
-  --fundo-fundo: #0b0f1e;
-  --superficie: #172038;
-  --superficie-2: #1e2945;
-  --superficie-3: #283453;
-  --borda: #27314f;
-  --borda-forte: #3a4669;
+  --fundo: #0a1122;
+  --fundo-fundo: #070c19;
+  --superficie: #101a31;
+  --superficie-2: #16223d;
+  --superficie-3: #1f2c4a;
+  --borda: #1d2945;
+  --borda-forte: #324164;
   --texto: #eef0f7;
   --texto-fraco: #a7aec5;
   --texto-tenue: #868da4;
 
   --primaria: #8b90ff;
   --primaria-forte: #a8acff;
-  --primaria-fraca: #23264a;
+  --primaria-fraca: #1c2248;
   --acento: #fb923c;
   --acento-forte: #fdba74;
   --acento-fraco: #35210f;
@@ -46,7 +46,7 @@ const TOKENS_AZUL = `
   --desconto-fraco: #3a2211;
   --desconto-borda: #5d3a1a;
 
-  --sombra: 0 1px 2px rgba(0,0,0,.34), 0 3px 14px rgba(0,0,0,.24);
+  --sombra: none;
   --sombra-alta: 0 2px 4px rgba(0,0,0,.3), 0 16px 38px rgba(0,0,0,.42);
   --sombra-flutuante: 0 20px 55px -14px rgba(0,0,0,.72);
 `;
@@ -102,22 +102,28 @@ export const CSS = `
    precisa de um valor novo ganha um token, nao um numero solto.
    ============================================================== */
 :root {
-  /* --- superficies e texto --- */
-  --fundo: #f5f6fa;
-  --fundo-fundo: #eceef6;
+  /* --- superficies e texto ---
+     Neutro quase sem matiz, um passo para o quente: o cinza-lavanda de antes
+     (etapa 67) somado ao indigo deixava o site com cara de painel SaaS. A
+     superficie se separa do fundo pelo tom, nao por sombra. */
+  --fundo: #f7f5ef;
+  --fundo-fundo: #eeebe2;
   --superficie: #ffffff;
-  --superficie-2: #f1f3f9;
-  --superficie-3: #e6e9f4;
-  --borda: #e0e3ee;
-  --borda-forte: #cbd0e2;
-  --texto: #171a26;
-  --texto-fraco: #5b6379;
-  --texto-tenue: #7c849c;
+  --superficie-2: #f2efe7;
+  --superficie-3: #e7e3d9;
+  --borda: #e6e1d6;
+  --borda-forte: #cbc5b8;
+  --texto: #15161c;
+  --texto-fraco: #4f515b;
+  --texto-tenue: #686a73;
 
   /* --- marca --- */
   --primaria: #3b41c5;
   --primaria-forte: #2b30a0;
-  --primaria-fraca: #eaebfb;
+  --primaria-fraca: #ebecfa;
+  /* Campo da marca: o indigo escuro nos tres temas. No escuro a --primaria-forte
+     clareia e o texto branco do campo deixava de ser legivel. */
+  --campo-marca: #2b30a0;
   --acento: #f97316;
   --acento-forte: #c2530a;
   --acento-fraco: #fff0e2;
@@ -148,29 +154,39 @@ export const CSS = `
   /* --- tipografia --- */
   --fonte: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --fonte-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  --txt-mini: 0.75rem;
-  --txt-peq: 0.8438rem;
-  --txt-corpo: 0.9688rem;
-  --txt-md: 1.0625rem;
-  --txt-lg: 1.1875rem;
-  --txt-xl: 1.4375rem;
-  --txt-2xl: 1.75rem;
+  /* Piso de 13 px: regra, prazo e penalidade nao podem morar em letra minuscula. */
+  --txt-mini: 0.8125rem;
+  --txt-peq: 0.875rem;
+  --txt-corpo: 1rem;
+  --txt-md: 1.125rem;
+  --txt-lg: 1.25rem;
+  --txt-xl: 1.5rem;
+  --txt-2xl: 2rem;
+  /* Titulo de secao publica e titulo do hero: os dois tamanhos grandes do site. */
+  --txt-3xl: clamp(1.75rem, 1.1rem + 2.2vw, 2.75rem);
+  --txt-display: clamp(2.25rem, 1.1rem + 3.6vw, 3.875rem);
 
   /* --- ritmo vertical e horizontal --- */
   --e1: 4px;  --e2: 8px;  --e3: 12px; --e4: 16px;
   --e5: 24px; --e6: 32px; --e7: 48px; --e8: 72px;
+  /* Distancia entre secoes da pagina publica: maior que qualquer folga interna. */
+  --e9: 128px;
 
-  /* --- forma --- */
-  --raio-p: 8px;
-  --raio: 13px;
-  --raio-g: 20px;
+  /* --- forma ---
+     Botao e chip sao pilula, como as faixas arredondadas do "E de agenda";
+     cartao e campo usam o raio medio. */
+  --raio-p: 10px;
+  --raio: 16px;
+  --raio-g: 24px;
   --pilula: 999px;
-  --largura: 1140px;
+  --largura: 1200px;
 
-  /* --- profundidade --- */
-  --sombra: 0 1px 2px rgba(20,25,50,.05), 0 3px 12px rgba(20,25,50,.045);
-  --sombra-alta: 0 2px 4px rgba(20,25,50,.04), 0 14px 34px rgba(20,25,50,.10);
-  --sombra-flutuante: 0 18px 50px -14px rgba(20,25,50,.30);
+  /* --- profundidade ---
+     Nada em repouso tem sombra: so o que de fato flutua (o "pular para o
+     conteudo", a aba de foco). Cartao se separa do fundo pelo tom. */
+  --sombra: none;
+  --sombra-alta: 0 1px 2px rgba(21,22,28,.06), 0 10px 30px -12px rgba(21,22,28,.16);
+  --sombra-flutuante: 0 18px 50px -14px rgba(21,22,28,.28);
 
   /* --- movimento --- */
   --mola: cubic-bezier(.22,.68,.36,1);
@@ -178,8 +194,6 @@ export const CSS = `
   --medio: .32s var(--mola);
   /* Hover de cartao: acende e apaga devagar, sem o "estalo" do --rapido. */
   --suave: .45s cubic-bezier(.4,0,.2,1);
-
-  --grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23r)' opacity='.42'/%3E%3C/svg%3E");
 }
 
 /* RF-093 (SPEC-030): "seguir o sistema" usa o azul-escuro quando o sistema
@@ -223,13 +237,13 @@ a:hover { text-decoration: underline; }
 
 h1, h2, h3, h4 {
   text-wrap: balance;
-  letter-spacing: -.021em;
-  line-height: 1.22;
+  letter-spacing: -.022em;
+  line-height: 1.18;
   font-weight: 700;
 }
 p { text-wrap: pretty; }
 
-h2 { font-size: var(--txt-lg); margin: var(--e6) 0 var(--e3); }
+h2 { font-size: var(--txt-xl); margin: var(--e7) 0 var(--e3); }
 h3 { font-size: var(--txt-md); margin: var(--e5) 0 var(--e2); }
 h4 { font-size: var(--txt-corpo); margin: var(--e4) 0 var(--e1); }
 
@@ -245,8 +259,8 @@ img { max-width: 100%; }
 
 /* Numero, preco e horario sempre com digito de largura fixa: coluna que
    nao "treme" quando o valor muda. */
-.preco-vigente, .preco-base, .metrica .valor, .heroi-numeros dt,
-.vaga-quando .hora, .cartao-flutuante .agora, .regua-preco, .num {
+.preco-vigente, .preco-base, .metrica .valor, .selo-regra, .regra-nota code,
+.vaga-quando, .agenda-aberta-hora, .agenda-aberta-preco, .regua-preco, .num, td, th {
   font-variant-numeric: tabular-nums;
 }
 
@@ -273,19 +287,17 @@ img { max-width: 100%; }
 .topo {
   position: sticky; top: 0; z-index: 20;
   /* Sem backdrop-filter: o desfoque refazia a pintura do cabecalho a cada
-     quadro de rolagem e travava o hero em maquina fraca. */
-  background: var(--superficie);
+     quadro de rolagem e travava o hero em maquina fraca. A barra tem a cor
+     do fundo: e a pagina que continua, nao uma faixa a parte. */
+  background: var(--fundo);
   border-bottom: 1px solid transparent;
-  transition: border-color var(--medio), box-shadow var(--medio);
+  transition: border-color var(--medio);
 }
-.topo.rolado {
-  border-bottom-color: var(--borda);
-  box-shadow: 0 1px 22px rgba(20,25,50,.07);
-}
+.topo.rolado { border-bottom-color: var(--borda); }
 
 .topo-interno {
   max-width: var(--largura); margin: 0 auto; padding: 0 var(--e5);
-  display: flex; align-items: center; gap: var(--e5); min-height: 64px;
+  display: flex; align-items: center; gap: var(--e5); min-height: 68px;
 }
 
 .marca {
@@ -307,12 +319,30 @@ img { max-width: 100%; }
 
 .nav { display: flex; align-items: center; gap: 2px; margin-left: auto; min-width: 0; }
 .nav a {
-  color: var(--texto-fraco); padding: 8px 12px; border-radius: var(--raio-p);
+  color: var(--texto-fraco); padding: 9px 14px; border-radius: var(--pilula);
   font-size: var(--txt-peq); font-weight: 600; white-space: nowrap;
   transition: background var(--rapido), color var(--rapido);
 }
-.nav a:hover { background: var(--superficie-2); color: var(--texto); text-decoration: none; }
-.nav a[aria-current="page"] { background: var(--primaria-fraca); color: var(--primaria-forte); }
+/* Todo item de texto do cabecalho (abas, Avisos, nome, sair) segue um padrao
+   so: sem fundo nem contorno; no hover um sublinhado cresce da esquerda para
+   a direita e, ao sair, recolhe pela direita. A pagina atual fica com ele
+   aceso. Fundo cheio e so da acao. */
+.nav a:not(.nav-acao), .sino, .nav-perfil a { position: relative; }
+.nav a:not(.nav-acao)::after, .sino::after, .nav-perfil a::after {
+  content: ""; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px;
+  border-radius: 2px; background: currentColor; pointer-events: none;
+  transform: scaleX(0); transform-origin: 100% 50%;
+  transition: transform var(--medio);
+}
+.nav a:not(.nav-acao):hover, .sino:hover, .nav-perfil a:hover { color: var(--texto); text-decoration: none; }
+.nav a:not(.nav-acao):hover::after, .nav a:not(.nav-acao):focus-visible::after, .nav a[aria-current="page"]::after,
+.sino:hover::after, .sino:focus-visible::after, .nav-perfil a:hover::after, .nav-perfil a:focus-visible::after {
+  transform: scaleX(1); transform-origin: 0 50%;
+}
+.nav a[aria-current="page"] { color: var(--texto); }
+/* A acao do visitante (criar conta) e a unica do cabecalho com a cor da marca. */
+.nav a.nav-acao { background: var(--primaria); color: var(--sobre-primaria); margin-left: var(--e1); }
+.nav a.nav-acao:hover { background: var(--primaria-forte); color: var(--sobre-primaria); }
 
 .topo-conta {
   display: flex; align-items: center; gap: var(--e3);
@@ -321,14 +351,16 @@ img { max-width: 100%; }
 }
 .nav-perfil {
   display: flex; align-items: center; gap: var(--e2);
-  font-size: var(--txt-mini); color: var(--texto-fraco); white-space: nowrap;
+  font-size: var(--txt-peq); color: var(--texto-fraco); white-space: nowrap;
 }
 .nav-perfil .quem {
   display: inline-flex; align-items: center; gap: 7px;
-  font-weight: 600; color: var(--texto); border-radius: var(--pilula); padding: 2px 8px 2px 2px;
-  transition: background var(--rapido);
+  font-weight: 600; color: var(--texto); padding: 9px 0;
+  transition: color var(--rapido);
 }
-.nav-perfil .quem:hover { background: var(--superficie-2); text-decoration: none; }
+.nav-perfil .quem::after { left: 35px; right: 0; }
+.nav-perfil > a:not(.quem) { padding: 9px 0; font-weight: 600; color: var(--texto-fraco); }
+.nav-perfil > a:not(.quem)::after { left: 0; right: 0; }
 
 /* RF-088 / RF-090: foto de perfil, ou as iniciais sobre a cor da marca. */
 .avatar {
@@ -343,11 +375,10 @@ img { max-width: 100%; }
 
 .sino {
   position: relative; display: inline-flex; align-items: center; gap: 6px;
-  padding: 7px 12px; border-radius: var(--pilula);
-  background: var(--superficie-2); color: var(--texto-fraco);
-  font-size: var(--txt-mini); font-weight: 650;
+  padding: 9px 14px;
+  color: var(--texto-fraco);
+  font-size: var(--txt-peq); font-weight: 600;
 }
-.sino:hover { text-decoration: none; color: var(--texto); background: var(--superficie-3); }
 .sino svg { width: 15px; height: 15px; }
 .sino-contador {
   background: var(--acento); color: var(--sobre-acento);
@@ -362,7 +393,7 @@ img { max-width: 100%; }
 .pagina-estreita { max-width: 640px; }
 
 .cabecalho-pagina { margin-bottom: var(--e5); }
-.cabecalho-pagina h1 { margin: 0 0 6px; font-size: var(--txt-2xl); letter-spacing: -.03em; }
+.cabecalho-pagina h1 { margin: 0 0 var(--e2); font-size: var(--txt-2xl); letter-spacing: -.032em; }
 .cabecalho-pagina p { margin: 0; color: var(--texto-fraco); max-width: 64ch; }
 
 .secao-titulo {
@@ -371,11 +402,13 @@ img { max-width: 100%; }
 }
 .secao-titulo:first-child { margin-top: 0; }
 .secao-titulo h2 { margin: 0; font-size: var(--txt-xl); }
-.secao-titulo p { margin: 5px 0 0; color: var(--texto-fraco); font-size: var(--txt-peq); max-width: 60ch; }
+.secao-titulo p { margin: 6px 0 0; color: var(--texto-fraco); font-size: var(--txt-peq); max-width: 60ch; }
+/* Contexto acima de um titulo de tela (a categoria do horario, a area do
+   painel). Em caixa normal e no tamanho do texto: rotulo minusculo em caixa
+   alta espacada era o sotaque de template que a etapa 67 tirou. */
 .olho {
-  display: block; font-size: var(--txt-mini); font-weight: 700;
-  letter-spacing: .11em; text-transform: uppercase;
-  color: var(--primaria); margin-bottom: 5px;
+  display: block; font-size: var(--txt-peq); font-weight: 650;
+  color: var(--primaria); margin-bottom: var(--e1);
 }
 
 .grade { display: grid; gap: var(--e4); }
@@ -419,19 +452,19 @@ img { max-width: 100%; }
 .trilha a:hover { color: var(--primaria); }
 
 .rodape {
-  border-top: 1px solid var(--borda);
+  margin-top: var(--e8);
   background: var(--fundo-fundo);
   color: var(--texto-fraco); font-size: var(--txt-peq);
-  flex-shrink: 0;
+  flex-shrink: 0; overflow: hidden;
 }
 .rodape-interno {
-  max-width: var(--largura); margin: 0 auto; padding: var(--e6) var(--e5) var(--e7);
+  max-width: var(--largura); margin: 0 auto; padding: var(--e7) var(--e5) var(--e6);
   display: grid; gap: var(--e5);
   grid-template-columns: minmax(230px, 1.5fr) repeat(auto-fit, minmax(140px, 1fr));
 }
 .rodape h2 {
-  font-size: var(--txt-mini); text-transform: uppercase; letter-spacing: .1em;
-  margin: 0 0 var(--e2); color: var(--texto-tenue);
+  font-size: var(--txt-peq); font-weight: 700;
+  margin: 0 0 var(--e3); color: var(--texto);
 }
 .rodape ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; }
 .rodape a { color: var(--texto-fraco); }
@@ -444,9 +477,18 @@ img { max-width: 100%; }
 .rodape-nota { margin: var(--e2) 0 0; max-width: 44ch; }
 .rodape-fim {
   max-width: var(--largura); margin: 0 auto;
-  padding: 0 var(--e5) var(--e6);
+  padding: 0 var(--e5) var(--e5);
   font-size: var(--txt-mini); color: var(--texto-tenue);
 }
+/* O fechamento: a palavra da marca na largura inteira, cortada pela borda de
+   baixo, no tom de uma superficie. Decorativa: o nome ja esta escrito acima. */
+.rodape-assinatura {
+  max-width: var(--largura); margin: 0 auto; padding: 0 var(--e5);
+  /* Escura o bastante para ser lida como a marca, ainda abaixo do texto. */
+  color: color-mix(in srgb, var(--texto-tenue) 55%, var(--fundo-fundo)); line-height: 0;
+}
+.rodape-assinatura { height: clamp(48px, 10vw, 150px); overflow: hidden; }
+.rodape-assinatura svg { display: block; width: 100%; height: auto; }
 
 /* ==============================================================
    5. TEXTOS AUXILIARES
@@ -469,9 +511,7 @@ img { max-width: 100%; }
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   padding: var(--e5);
-  box-shadow: var(--sombra);
-  transition: transform var(--suave), box-shadow var(--suave),
-    border-color var(--suave), background-color var(--suave);
+  transition: border-color var(--suave), background-color var(--suave);
 }
 .cartao + .cartao { margin-top: var(--e3); }
 /* Na grade o espaco vem do gap; a margem acima empurrava o 2o e o 3o cartao da
@@ -480,18 +520,13 @@ img { max-width: 100%; }
 .cartao > :first-child { margin-top: 0; }
 .cartao > :last-child { margin-bottom: 0; }
 /* So em aparelho com mouse: no toque o :hover gruda depois do toque. */
+/* Sem pulo nem brilho: a borda assume a cor da marca e basta. */
 @media (hover: hover) {
-  .cartao-vivo:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--sombra-alta),
-      0 0 0 1px color-mix(in srgb, var(--primaria) 18%, transparent),
-      0 14px 40px -16px color-mix(in srgb, var(--primaria) 55%, transparent);
-    border-color: color-mix(in srgb, var(--primaria) 34%, var(--borda));
-  }
+  .cartao-vivo:hover { border-color: color-mix(in srgb, var(--primaria) 45%, var(--borda)); }
 }
-.cartao-calmo { box-shadow: none; background: var(--superficie-2); border-color: transparent; }
-.cartao-realce { border-left: 3px solid var(--primaria); }
-.cartao-alerta { border-left: 3px solid var(--perigo); }
+.cartao-calmo { background: var(--superficie-2); border-color: transparent; }
+.cartao-realce { box-shadow: inset 3px 0 0 var(--primaria); }
+.cartao-alerta { box-shadow: inset 3px 0 0 var(--perigo); }
 
 .lista-cartoes { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--e3); }
 
@@ -500,7 +535,7 @@ img { max-width: 100%; }
    intacto, texto ainda selecionavel. */
 .item-clicavel { position: relative; cursor: pointer; }
 @media (hover: hover) {
-  .item-clicavel:hover { background: color-mix(in srgb, var(--primaria) 4%, var(--superficie)); }
+  .item-clicavel:hover { background: color-mix(in srgb, var(--primaria) 3%, var(--superficie)); }
 }
 .item-clicavel .link-estendido { color: var(--texto); }
 .item-clicavel .link-estendido:hover { text-decoration: none; }
@@ -534,10 +569,12 @@ img { max-width: 100%; }
   background: var(--desconto-fraco); color: var(--desconto);
   box-shadow: inset 0 0 0 1px var(--desconto-borda); font-weight: 700;
 }
+/* Codigo de regra (RN-18, RF-082): rastreabilidade que aparece de proposito.
+   Na fonte do texto, com algarismo tabular: em mono parecia sobra de debug. */
 .selo-regra {
   background: var(--superficie-2); color: var(--texto-fraco);
-  font-family: var(--fonte-mono); font-size: 11.5px; font-weight: 650;
-  letter-spacing: -.01em;
+  box-shadow: inset 0 0 0 1px var(--borda);
+  font-size: var(--txt-mini); font-weight: 650; letter-spacing: 0;
 }
 .selo-regra::before, .selo-desconto::before { display: none; }
 
@@ -546,32 +583,25 @@ img { max-width: 100%; }
    ============================================================== */
 .botao {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  padding: 10px 18px; border-radius: var(--raio-p);
+  padding: 11px 20px; border-radius: var(--pilula);
   border: 1px solid transparent;
   background: var(--primaria); color: var(--sobre-primaria);
   font-family: inherit; font-size: var(--txt-peq); font-weight: 650;
   line-height: 1.45; cursor: pointer; text-align: center;
-  box-shadow: 0 1px 2px rgba(20,25,50,.09);
-  transition: transform var(--rapido), background var(--rapido), box-shadow var(--medio), filter var(--rapido);
+  transition: transform var(--rapido), background var(--rapido), border-color var(--rapido), filter var(--rapido);
 }
-.botao:hover {
-  background: var(--primaria-forte); color: var(--sobre-primaria); text-decoration: none;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--primaria) 72%, transparent);
-}
-.botao:active { transform: translateY(0); }
+.botao:hover { background: var(--primaria-forte); color: var(--sobre-primaria); text-decoration: none; }
+/* O aperto e o retorno de toque: o botao afunda um pouco enquanto e pressionado. */
+.botao:active { transform: scale(.97); }
 .botao:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .botao-secundario { background: var(--superficie); color: var(--texto); border-color: var(--borda-forte); }
-.botao-secundario:hover { background: var(--superficie-2); color: var(--texto); box-shadow: var(--sombra); }
+.botao-secundario:hover { background: var(--superficie-2); color: var(--texto); border-color: var(--texto-tenue); }
 .botao-perigo { background: var(--perigo); color: var(--sobre-perigo); }
-.botao-perigo:hover {
-  background: var(--perigo); filter: brightness(.9);
-  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--perigo) 70%, transparent);
-}
-.botao-fantasma { background: transparent; color: var(--texto-fraco); border-color: transparent; box-shadow: none; }
-.botao-fantasma:hover { background: var(--superficie-2); color: var(--texto); box-shadow: none; }
-.botao-pequeno { padding: 7px 13px; font-size: var(--txt-mini); }
-.botao-grande { padding: 13px 24px; font-size: var(--txt-corpo); }
+.botao-perigo:hover { background: var(--perigo); color: var(--sobre-perigo); filter: brightness(.9); }
+.botao-fantasma { background: transparent; color: var(--texto-fraco); border-color: transparent; }
+.botao-fantasma:hover { background: transparent; color: var(--texto); }
+.botao-pequeno { padding: 8px 15px; font-size: var(--txt-mini); }
+.botao-grande { padding: 14px 26px; font-size: var(--txt-corpo); }
 .botao-largo { width: 100%; }
 
 /* Seta que anda no hover: detalhe pequeno, tira o ar de template. */
@@ -591,9 +621,11 @@ img { max-width: 100%; }
 /* Grade de campos lado a lado: o espaco entre linhas ja vem do gap. Com a
    margem do .campo, o ultimo (sem margem) descia 16 px abaixo dos outros. */
 .grade-campos > .campo { margin-bottom: 0; }
+/* Filtros da busca: quatro escolhas e o botao, que so ocupa a largura do rotulo. */
+.grade-filtros { grid-template-columns: repeat(4, minmax(0, 1fr)) auto; }
 
 input, select, textarea {
-  width: 100%; padding: 10px 12px;
+  width: 100%; padding: 11px 13px;
   border: 1px solid var(--borda-forte); border-radius: var(--raio-p);
   background: var(--superficie); color: var(--texto);
   font: inherit; font-size: var(--txt-peq);
@@ -625,19 +657,22 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 .busca-principal {
   display: flex; gap: var(--e2); align-items: stretch;
   background: var(--superficie);
-  border: 1px solid var(--borda-forte);
-  border-radius: var(--raio-g);
-  padding: var(--e2);
-  box-shadow: var(--sombra-alta);
+  border: 1.5px solid var(--borda-forte);
+  border-radius: var(--pilula);
+  padding: 6px;
+  transition: border-color var(--rapido), box-shadow var(--rapido);
 }
 .busca-principal input {
   border: 0; background: transparent; box-shadow: none;
-  font-size: var(--txt-corpo); padding: 10px 14px;
+  font-size: var(--txt-corpo); padding: 10px 16px;
 }
 .busca-principal input:hover { border-color: transparent; }
 .busca-principal input:focus { box-shadow: none; }
-.busca-principal:focus-within { border-color: var(--primaria); }
-.busca-principal .botao { border-radius: var(--raio-p); flex-shrink: 0; }
+.busca-principal:focus-within {
+  border-color: var(--primaria);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primaria) 18%, transparent);
+}
+.busca-principal .botao { flex-shrink: 0; }
 
 /* ==============================================================
    10. AVISOS E NOTAS DE REGRA
@@ -663,14 +698,15 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 .regra-nota {
   display: flex; gap: 10px; align-items: baseline;
   background: var(--superficie-2);
-  border-left: 3px solid var(--primaria);
-  padding: 11px 15px; border-radius: 0 var(--raio-p) var(--raio-p) 0;
+  padding: 12px 16px; border-radius: var(--raio-p);
   font-size: var(--txt-peq); color: var(--texto-fraco);
   margin: var(--e4) 0 0;
 }
+/* O codigo da regra e uma etiqueta, nao codigo-fonte: fonte do texto. */
 .regra-nota code {
-  color: var(--primaria-forte); font-weight: 700; flex-shrink: 0;
-  font-size: var(--txt-mini); letter-spacing: -.01em;
+  font-family: var(--fonte); color: var(--primaria-forte); font-weight: 700; flex-shrink: 0;
+  font-size: var(--txt-mini); padding: 1px 8px; border-radius: var(--pilula);
+  background: var(--primaria-fraca);
 }
 
 /* ==============================================================
@@ -681,7 +717,7 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
   color: var(--texto-tenue); text-decoration: line-through;
   text-decoration-thickness: 1.5px; font-size: var(--txt-peq);
 }
-.preco-vigente { font-size: 1.625rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.1; }
+.preco-vigente { font-size: 1.75rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.1; }
 .preco-nota { font-size: var(--txt-mini); color: var(--texto-fraco); margin-top: 4px; }
 .preco-nota strong { color: var(--desconto); font-weight: 700; }
 
@@ -701,12 +737,11 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 }
 .regua-quando { color: var(--texto-fraco); font-size: var(--txt-mini); white-space: nowrap; }
 .regua-barra { height: 8px; border-radius: var(--pilula); background: var(--superficie-2); overflow: hidden; }
-.regua-barra > i {
-  display: block; height: 100%; border-radius: var(--pilula);
-  background: linear-gradient(90deg, var(--primaria), var(--acento));
-}
+.regua-barra > i { display: block; height: 100%; border-radius: var(--pilula); background: var(--primaria); }
 .regua-preco { font-weight: 700; white-space: nowrap; }
+/* A faixa vigente leva a peca laranja da marca: e o "agora" da regua. */
 .regua-degrau.agora { background: var(--desconto-fraco); box-shadow: inset 0 0 0 1px var(--desconto-borda); }
+.regua-degrau.agora .regua-barra > i { background: var(--acento); }
 .regua-degrau.agora .regua-quando { color: var(--desconto); font-weight: 700; }
 .regua-degrau.agora .regua-preco { color: var(--desconto); }
 .regua-degrau.passado { opacity: .5; }
@@ -733,21 +768,33 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
   background: var(--superficie);
   box-shadow: inset 0 0 0 1px var(--borda);
 }
-.vaga-quando .dia {
-  font-size: var(--txt-mini); color: var(--texto-fraco);
-  text-transform: uppercase; letter-spacing: .06em; font-weight: 650;
-}
-.vaga-quando .hora { font-size: 1.375rem; font-weight: 750; letter-spacing: -.03em; line-height: 1.2; }
+.vaga-quando .dia { font-size: var(--txt-mini); color: var(--texto-fraco); font-weight: 650; }
+.vaga-quando .hora { font-size: 1.5rem; font-weight: 750; letter-spacing: -.03em; line-height: 1.2; }
 .vaga-quando .duracao { font-size: var(--txt-mini); color: var(--texto-tenue); }
 
 .vaga-corpo { flex: 1; min-width: 0; }
-.vaga-titulo { font-weight: 650; font-size: var(--txt-md); letter-spacing: -.015em; }
+.vaga-titulo { font-weight: 700; font-size: var(--txt-lg); letter-spacing: -.02em; }
 .vaga-meta {
   display: flex; flex-wrap: wrap; gap: 3px var(--e2);
   font-size: var(--txt-peq); color: var(--texto-fraco); margin-top: 2px;
 }
 .vaga-meta .ponto { color: var(--borda-forte); }
-.vaga-sinais { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--e3); }
+/* Sinais da oferta: texto com icone, sem uma pilula de cor para cada um. So
+   ganha cor o que significa alguma coisa (reputacao baixa, por exemplo). */
+.vaga-sinais {
+  list-style: none; padding: 0; margin: var(--e3) 0 0;
+  display: flex; flex-wrap: wrap; gap: 6px var(--e4);
+  font-size: var(--txt-peq); color: var(--texto-fraco);
+}
+.sinal { display: inline-flex; align-items: center; gap: 6px; }
+.sinal .icone { color: var(--texto-tenue); }
+.sinal-alerta, .sinal-alerta .icone { color: var(--perigo); font-weight: 650; }
+.sinal-atencao, .sinal-atencao .icone { color: var(--aviso); font-weight: 650; }
+
+/* Linguagem de icones: traco de 1,75, cantos redondos, sempre ao lado de um
+   rotulo escrito. Nenhum icone sozinho carrega significado. */
+.icone { width: 16px; height: 16px; flex-shrink: 0; vertical-align: -3px; }
+.icone-g { width: 20px; height: 20px; }
 /* Largura fixa: crescendo pelo conteudo, a nota longa do preco empurrava o
    titulo para tres linhas em tela de tablet. */
 .vaga-lado {
@@ -797,10 +844,7 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 .tabela-rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table { width: 100%; border-collapse: collapse; font-size: var(--txt-peq); }
 th, td { padding: 11px 13px; text-align: left; border-bottom: 1px solid var(--borda); vertical-align: top; }
-th {
-  font-size: var(--txt-mini); text-transform: uppercase; letter-spacing: .05em;
-  color: var(--texto-tenue); font-weight: 700; white-space: nowrap;
-}
+th { font-size: var(--txt-mini); color: var(--texto-fraco); font-weight: 700; white-space: nowrap; }
 tbody tr:last-child td, tbody tr:last-child th { border-bottom: none; }
 tbody tr { transition: background var(--rapido); }
 .tabela-rolagem tbody tr:hover { background: var(--superficie-2); }
@@ -816,12 +860,11 @@ tbody tr { transition: background var(--rapido); }
    15. METRICAS, REPUTACAO, ESTRELAS
    ============================================================== */
 .metrica {
-  background: var(--superficie-2); border-radius: var(--raio);
-  padding: var(--e4) var(--e4) 15px;
-  border: 1px solid transparent;
-  transition: border-color var(--medio);
+  background: var(--superficie); border-radius: var(--raio);
+  padding: var(--e4) var(--e5) 18px;
+  border: 1px solid var(--borda);
 }
-.metrica:hover { border-color: var(--borda); }
+.cartao .metrica { background: var(--superficie-2); border-color: transparent; }
 /* Metrica que pede acao: a unica do painel com a cor do acento. */
 .metrica-destaque {
   background: var(--acento-fraco);
@@ -829,7 +872,7 @@ tbody tr { transition: background var(--rapido); }
 }
 .metrica-destaque .valor { color: var(--acento-forte); }
 .metrica .valor { font-size: var(--txt-2xl); font-weight: 750; letter-spacing: -.035em; line-height: 1.15; }
-.metrica .rotulo { font-size: var(--txt-mini); color: var(--texto-fraco); font-weight: 600; margin-top: 2px; }
+.metrica .rotulo { font-size: var(--txt-peq); color: var(--texto); font-weight: 650; margin-top: 4px; }
 .metrica .detalhe { font-size: var(--txt-mini); color: var(--texto-tenue); margin-top: 3px; }
 
 .barra {
@@ -858,9 +901,7 @@ tbody tr { transition: background var(--rapido); }
   text-align: center; padding: var(--e7) var(--e5);
   color: var(--texto-fraco);
   border: 1.5px dashed var(--borda-forte); border-radius: var(--raio);
-  background: repeating-linear-gradient(135deg,
-    transparent 0 10px,
-    color-mix(in srgb, var(--borda) 24%, transparent) 10px 11px);
+  background: var(--superficie-2);
 }
 .vazio-titulo { display: block; font-weight: 700; color: var(--texto); font-size: var(--txt-md); margin-bottom: 5px; }
 .vazio p { margin: 0 auto; max-width: 48ch; }
@@ -885,13 +926,10 @@ tbody tr { transition: background var(--rapido); }
    17. FILTROS ATIVOS
    ============================================================== */
 .filtros-ativos { display: flex; flex-wrap: wrap; gap: var(--e2); align-items: center; margin: var(--e4) 0; }
-.rotulo-filtros {
-  font-size: var(--txt-mini); color: var(--texto-tenue); font-weight: 700;
-  text-transform: uppercase; letter-spacing: .08em;
-}
+.rotulo-filtros { font-size: var(--txt-peq); color: var(--texto-fraco); font-weight: 650; }
 .chip {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 5px 7px 5px 13px; border-radius: var(--pilula);
+  padding: 6px 8px 6px 14px; border-radius: var(--pilula);
   background: var(--primaria-fraca); color: var(--primaria-forte);
   font-size: var(--txt-mini); font-weight: 650; white-space: nowrap;
 }
@@ -902,188 +940,219 @@ tbody tr { transition: background var(--rapido); }
   background: color-mix(in srgb, var(--primaria) 18%, transparent);
 }
 a.chip:hover .x { background: var(--primaria); color: #fff; }
-.chip-neutro { background: var(--superficie-2); color: var(--texto-fraco); }
-.chip-ir { padding: 5px 13px; transition: background var(--suave), color var(--suave); }
+.chip-neutro { background: var(--superficie-3); color: var(--texto); }
+.chip-ir { padding: 7px 15px; transition: background var(--suave), color var(--suave); }
 a.chip-neutro:hover { background: var(--superficie-3); color: var(--texto); }
 
 /* ==============================================================
-   18. PASSOS NUMERADOS
+   18. PASSOS
+   Lista ordenada de verdade (<ol>): a ordem e conteudo, entao o
+   leitor de tela anuncia "1 de 5". O marcador e uma faixa curta da
+   marca, nao um "01" em fonte mono.
    ============================================================== */
-.passo { position: relative; padding-top: var(--e3); }
-.passo::before {
-  content: attr(data-passo); display: block; margin-bottom: var(--e3);
-  font-family: var(--fonte-mono); font-size: var(--txt-peq); font-weight: 700;
-  color: var(--primaria); letter-spacing: .08em;
+.passos { list-style: none; padding: 0; margin: 0; counter-reset: passo; display: grid; gap: var(--e5); }
+.passos > li { counter-increment: passo; position: relative; padding-left: 52px; }
+.passos > li::before {
+  content: counter(passo); position: absolute; left: 0; top: -1px;
+  width: 36px; height: 26px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primaria-fraca); color: var(--primaria-forte);
+  font-weight: 750; font-size: var(--txt-peq); font-variant-numeric: tabular-nums;
 }
-/* O traco fica sobre a borda de cima e comeca depois da curva do canto: em
-   top/left 0 ele nascia dentro do arredondamento e escapava do contorno. */
-.passo::after {
-  content: ''; position: absolute; top: -1px; left: var(--raio); height: 2px; width: 36px;
-  background: linear-gradient(90deg, var(--primaria), transparent); border-radius: 2px;
-}
-.passo h3 { margin: 0 0 6px; font-size: var(--txt-md); }
-.passo p { margin: 0; }
+.passos h3 { margin: 0 0 4px; font-size: var(--txt-md); }
+.passos p { margin: 0; color: var(--texto-fraco); }
+/* Em linha: os passos lado a lado, para fluxos curtos (o depois da reserva). */
+.passos-linha { grid-template-columns: repeat(auto-fit, minmax(min(168px, 100%), 1fr)); gap: var(--e5); }
+.passos-linha > li { padding-left: 0; padding-top: 40px; }
+.passos-linha > li::before { top: 0; }
+.passos.cartao { padding: var(--e5); }
 
 /* ==============================================================
-   19. FAIXA DE CHAMADA
+   19. SECOES DA PAGINA PUBLICA
+   Cada secao tem composicao propria; o espaco entre elas e maior
+   que qualquer folga interna. Nenhuma e "rotulo + titulo + 3 cartoes".
    ============================================================== */
-.faixa {
-  position: relative; overflow: hidden;
+.secao { margin-top: var(--e9); }
+.secao-primeira { margin-top: var(--e4); }
+.secao-cabeca h2, .secao-texto h2 {
+  font-size: var(--txt-3xl); letter-spacing: -.035em; line-height: 1.08; margin: 0;
+}
+.secao-cabeca {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: var(--e4) var(--e6); flex-wrap: wrap; margin-bottom: var(--e6);
+}
+.secao-cabeca p { margin: var(--e3) 0 0; color: var(--texto-fraco); font-size: var(--txt-md); max-width: 52ch; }
+.secao-texto > p { margin: var(--e4) 0 0; font-size: var(--txt-md); max-width: 46ch; }
+.secao-texto > p + p { color: var(--texto-fraco); }
+
+/* Texto de um lado, prova do outro. A coluna de texto e a mais estreita. */
+.par { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e7); align-items: start; }
+.par-centro { align-items: center; }
+
+/* Glossario do preco: os quatro termos que o cliente encontra na tela. */
+.termos { margin: var(--e6) 0 0; display: grid; gap: var(--e4); }
+.termos div { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: var(--e3); align-items: baseline; }
+.termos dt { font-weight: 700; }
+.termos dd { margin: 0; color: var(--texto-fraco); }
+
+/* Categorias: a foto do mundo de cada uma, com a contagem real embaixo. */
+.categorias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, .95fr); gap: var(--e5); align-items: start; }
+.categoria-foto { display: block; color: var(--texto); }
+.categoria-foto:hover { text-decoration: none; }
+.categoria-foto figure { margin: 0; aspect-ratio: 4 / 5; border-radius: var(--raio); overflow: hidden; background: var(--superficie-3); }
+.categoria-foto img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .7s var(--mola); }
+@media (hover: hover) { .categoria-foto:hover img { transform: scale(1.04); } }
+.categoria-nome { display: block; margin-top: var(--e3); font-weight: 700; font-size: var(--txt-md); }
+.categoria-conta { display: block; color: var(--texto-fraco); font-size: var(--txt-peq); }
+.categoria-foto:hover .categoria-nome { color: var(--primaria); }
+.categorias-outras {
+  padding: var(--e5); border-radius: var(--raio);
+  background: var(--superficie); border: 1px solid var(--borda);
+}
+.categorias-outras h3 { margin: 0 0 var(--e3); font-size: var(--txt-md); }
+.categorias-outras ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.categorias-outras a {
+  display: flex; justify-content: space-between; gap: var(--e3); align-items: baseline;
+  padding: 10px 12px; margin: 0 -12px; border-radius: var(--raio-p); color: var(--texto); font-weight: 600;
+}
+.categorias-outras a:hover { background: var(--superficie-2); text-decoration: none; color: var(--primaria); }
+.categorias-outras .num { color: var(--texto-fraco); font-weight: 500; font-size: var(--txt-peq); white-space: nowrap; }
+
+/* Bloco do prestador: a foto de quem atende ao lado do que ele faz aqui. */
+.bloco-prestador {
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--e7);
+  background: var(--superficie); border: 1px solid var(--borda);
+  border-radius: var(--raio-g); padding: var(--e6); align-items: center;
+}
+.bloco-prestador figure { margin: 0; aspect-ratio: 4 / 5; border-radius: var(--raio); overflow: hidden; }
+.bloco-prestador img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bloco-prestador .passos { margin-top: var(--e6); }
+.vantagens { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e5); margin: var(--e6) 0; padding: var(--e5); border-radius: var(--raio); background: var(--superficie-2); }
+.vantagens h3 { margin: 0 0 4px; font-size: var(--txt-corpo); }
+.vantagens p { margin: 0; color: var(--texto-fraco); font-size: var(--txt-peq); }
+
+/* Regras de confianca: duas colunas de texto, o codigo da regra ao lado do titulo. */
+.regras-lista { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: var(--e6) var(--e7); }
+.regras-lista h3 { margin: 0 0 6px; font-size: var(--txt-md); display: flex; gap: var(--e3); align-items: baseline; justify-content: space-between; }
+.regras-lista p { margin: 0; color: var(--texto-fraco); }
+
+/* ==============================================================
+   19b. CAMPO DA MARCA (chamada final)
+   Cor cheia e chapada: sem degrade, sem grao.
+   ============================================================== */
+.campo-marca {
   border-radius: var(--raio-g); padding: var(--e7) var(--e6);
-  background: linear-gradient(125deg, #262a91, #3b41c5 52%, #8f4a6e 100%);
-  color: #fff; box-shadow: var(--sombra-alta);
+  background: var(--campo-marca); color: #fff;
 }
-.faixa::before {
-  content: ''; position: absolute; inset: 0;
-  background-image: var(--grao); opacity: .2; mix-blend-mode: soft-light;
-}
-.faixa > * { position: relative; }
-.faixa h2 { margin: 0 0 var(--e2); font-size: var(--txt-2xl); color: #fff; }
-.faixa p { margin: 0 0 var(--e5); color: rgba(255,255,255,.88); max-width: 54ch; }
-.faixa .botao { background: #fff; color: #262a91; }
-.faixa .botao:hover { background: #fff; color: #262a91; filter: brightness(.94); }
-.faixa .botao-secundario { background: transparent; color: #fff; border-color: rgba(255,255,255,.5); }
-.faixa .botao-secundario:hover { background: rgba(255,255,255,.14); color: #fff; filter: none; }
+.campo-marca h2 { color: #fff; }
+.campo-marca p { color: rgba(255,255,255,.86); }
+.campo-marca .botao { background: #fff; color: #2b30a0; }
+.campo-marca .botao:hover { background: #fff; color: #2b30a0; filter: brightness(.94); }
+.campo-marca .botao-secundario { background: transparent; color: #fff; border-color: rgba(255,255,255,.55); }
+.campo-marca .botao-secundario:hover { background: rgba(255,255,255,.12); color: #fff; filter: none; }
+/* Sobre cor cheia o vidro so satura o indigo: os botoes do campo ficam chapados. */
+.campo-marca .botao { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+.chamada-final { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e6) var(--e7); }
+.chamada-final h2 { font-size: var(--txt-2xl); margin: 0 0 var(--e2); letter-spacing: -.03em; }
+.chamada-final p { margin: 0 0 var(--e5); max-width: 42ch; }
+.chamada-final > div + div { padding-left: var(--e7); box-shadow: inset 1px 0 0 rgba(255,255,255,.22); }
 
 /* ==============================================================
-   20. HERO
+   20. HERO: A AGENDA ABERTA
+   O titulo de um lado; do outro, os proximos horarios abertos de
+   verdade, numa coluna de agenda. Cada linha e uma faixa da marca
+   com a peca laranja do preco encaixada na ponta, como no logo.
    ============================================================== */
 .progresso {
   position: fixed; top: 0; left: 0; height: 2px; z-index: 30; width: 100%;
   /* scaleX em vez de width: largura muda o layout a cada quadro de rolagem. */
   transform: scaleX(var(--avanco, 0)); transform-origin: 0 50%;
-  background: linear-gradient(90deg, var(--primaria), var(--acento));
+  background: var(--primaria);
 }
 
-.heroi { position: relative; overflow: clip; border-bottom: 1px solid var(--borda); isolation: isolate; }
-.heroi-fundo { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
-/* Brilhos parados e sem filter: blur(90px) animado era o que travava o hero
-   em PC fraco. O radial-gradient ja termina transparente, entao o desfoque
-   nao acrescentava nada que se veja. */
-.heroi-brilho { position: absolute; border-radius: 50%; opacity: .32; }
-.heroi-brilho-a {
-  width: 46vw; height: 46vw; max-width: 620px; max-height: 620px; top: -22%; left: -8%;
-  background: radial-gradient(circle, var(--primaria) 0%, transparent 68%);
+/* Fundo do hero: a grade de agenda desenhada em publicas.js, inclinada e
+   esmaecida para o fundo da pagina pela esquerda (onde fica o titulo) e por
+   baixo. As cores sao tokens, entao a mesma regra serve aos tres temas. */
+.heroi { position: relative; isolation: isolate; overflow: hidden; }
+.heroi-fundo {
+  position: absolute; inset: -10% -6% -10% 18%; z-index: -1; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 22%, rgba(0,0,0,.45) 42%, #000 68%),
+    linear-gradient(to bottom, #000 50%, transparent 92%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent 22%, rgba(0,0,0,.45) 42%, #000 68%),
+    linear-gradient(to bottom, #000 50%, transparent 92%);
+  mask-composite: intersect;
+  animation: heroi-fundo-entrar 1.4s var(--mola) both;
 }
-.heroi-brilho-b {
-  width: 38vw; height: 38vw; max-width: 520px; max-height: 520px; bottom: -30%; right: -6%;
-  background: radial-gradient(circle, var(--acento) 0%, transparent 66%);
-}
-.heroi-grade {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--borda) 70%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--borda) 70%, transparent) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 10%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 10%, transparent 75%);
-  opacity: .7;
-}
-/* Grao sem mix-blend-mode: a mistura obrigava a recompor o hero inteiro
-   a cada quadro de qualquer animacao por baixo dele. */
-.heroi::after {
-  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-  background-image: var(--grao); opacity: .05;
-}
+.heroi-fundo svg { width: 100%; height: 100%; display: block; transform: rotate(-12deg) scale(1.15); }
+.heroi-fundo .af-livre { fill: none; stroke: var(--primaria); stroke-opacity: .22; stroke-width: 2; }
+.heroi-fundo .af-ocupado { fill: var(--primaria); fill-opacity: .1; }
+.heroi-fundo .af-vago { fill: var(--primaria); fill-opacity: .32; }
+.heroi-fundo .af-peca { fill: var(--acento); fill-opacity: .7; }
+@keyframes heroi-fundo-entrar { from { opacity: 0; transform: translateY(16px); } }
 
 .heroi-interno {
-  max-width: var(--largura); margin: 0 auto; padding: var(--e8) var(--e5);
-  display: grid; grid-template-columns: 1.08fr .92fr; gap: var(--e7); align-items: center;
+  max-width: var(--largura); margin: 0 auto; padding: var(--e7) var(--e5) var(--e6);
+  display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: var(--e7); align-items: center;
 }
-.heroi-texto { max-width: 35rem; }
-
-.etiqueta {
-  display: inline-flex; align-items: center; gap: var(--e2);
-  padding: 6px 14px 6px 11px; border-radius: var(--pilula);
-  background: var(--superficie); border: 1px solid var(--borda);
-  box-shadow: var(--sombra);
-  font-size: var(--txt-peq); font-weight: 600; color: var(--texto-fraco);
-  margin-bottom: var(--e5);
-}
-.etiqueta b { color: var(--texto); font-weight: 750; }
-a.etiqueta:hover { text-decoration: none; border-color: var(--borda-forte); color: var(--texto); }
-.ponto-vivo {
-  width: 7px; height: 7px; border-radius: 50%; background: var(--ok);
-  animation: farol 2.2s ease-out infinite; flex-shrink: 0;
-}
-@keyframes farol {
-  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ok) 60%, transparent); }
-  70%  { box-shadow: 0 0 0 9px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
-
 .heroi h1 {
-  margin: 0 0 var(--e4);
-  font-size: clamp(2.3rem, 4.9vw, 3.45rem);
-  line-height: 1.05; letter-spacing: -.042em; font-weight: 800;
+  margin: 0 0 var(--e5);
+  font-size: var(--txt-display); line-height: 1.04; letter-spacing: -.036em; font-weight: 800;
 }
-.heroi h1 em {
-  font-style: normal;
-  background: linear-gradient(105deg, var(--primaria) 8%, var(--acento) 92%);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
+.heroi-chamada { font-size: var(--txt-lg); line-height: 1.5; margin: 0 0 var(--e6); max-width: 36ch; }
+.heroi-busca { margin-bottom: var(--e4); max-width: 34rem; }
+.heroi-busca .busca-principal input { font-size: var(--txt-md); }
+.heroi-atalhos { display: flex; flex-wrap: wrap; gap: var(--e2); align-items: center; max-width: 34rem; }
+.heroi-atalhos .rotulo-atalhos { font-size: var(--txt-peq); color: var(--texto-fraco); margin-right: 2px; }
+.heroi-prestador {
+  margin: var(--e6) 0 0; padding-top: var(--e5); max-width: 34rem;
+  box-shadow: inset 0 1px 0 var(--borda); color: var(--texto-fraco);
 }
-.heroi-chamada {
-  font-size: var(--txt-md); line-height: 1.62; color: var(--texto-fraco);
-  margin: 0 0 var(--e5); max-width: 46ch;
-}
-.heroi-busca { margin-bottom: var(--e3); }
-.heroi-atalhos { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: var(--e5); }
-.heroi-atalhos .rotulo-atalhos { font-size: var(--txt-mini); color: var(--texto-tenue); margin-right: 2px; }
-.heroi-acoes { display: flex; gap: var(--e3); flex-wrap: wrap; align-items: center; }
+.heroi-prestador a { font-weight: 650; }
 
-.heroi-numeros {
-  display: flex; gap: var(--e6); flex-wrap: wrap;
-  margin: var(--e6) 0 0; padding-top: var(--e5);
-  border-top: 1px solid var(--borda);
-}
-.heroi-numeros div { margin: 0; }
-.heroi-numeros dt { font-size: var(--txt-xl); font-weight: 800; letter-spacing: -.035em; }
-.heroi-numeros dd { margin: 2px 0 0; font-size: var(--txt-mini); color: var(--texto-fraco); }
-
-.heroi-arte { position: relative; }
-.heroi-moldura {
-  position: relative; margin: 0;
-  border-radius: var(--raio-g); overflow: hidden;
-  border: 1px solid var(--borda);
-  box-shadow: var(--sombra-flutuante);
-  aspect-ratio: 4 / 5;
-  background: linear-gradient(140deg,
-    color-mix(in srgb, var(--primaria) 22%, var(--superficie)) 0%,
-    var(--superficie-2) 48%,
-    color-mix(in srgb, var(--acento) 18%, var(--superficie)) 100%);
-  transform: rotate(1.4deg);
-  transition: transform .6s var(--mola);
-}
-@media (hover: hover) {
-  .heroi-arte:hover .heroi-moldura { transform: rotate(0deg) translateY(-4px); }
-}
-.heroi-moldura img { width: 100%; height: 100%; object-fit: cover; object-position: 60% 38%; display: block; }
-.heroi-moldura::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  /* Escurece o canto inferior esquerdo: e onde o cartao de preco branco pousa. */
-  background: linear-gradient(to top right, rgba(0,0,0,.34), transparent 55%);
-}
-
-.cartao-flutuante {
-  position: absolute; left: -26px; bottom: 34px; z-index: 2;
+.agenda-aberta {
   background: var(--superficie); border: 1px solid var(--borda);
-  border-radius: var(--raio); padding: 14px 16px; min-width: 238px;
-  box-shadow: var(--sombra-flutuante);
-  animation: boiar 6s ease-in-out infinite;
-  will-change: transform;
+  border-radius: var(--raio-g); padding: var(--e5) var(--e5) var(--e4);
 }
-.cartao-flutuante-alto {
-  left: auto; right: -22px; bottom: auto; top: 30px;
-  min-width: 0; padding: 11px 14px; animation-delay: -3s;
+.agenda-aberta-cabeca { display: flex; justify-content: space-between; align-items: baseline; gap: 2px var(--e3); flex-wrap: wrap; margin-bottom: var(--e4); }
+.agenda-aberta-cabeca h2 { margin: 0; font-size: var(--txt-lg); }
+.agenda-aberta-cabeca p { margin: 0; color: var(--texto-fraco); font-size: var(--txt-peq); }
+.agenda-aberta-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.agenda-aberta-dia { font-size: var(--txt-peq); font-weight: 700; color: var(--texto-fraco); padding: var(--e3) 0 2px; }
+.agenda-aberta-dia:first-child { padding-top: 0; }
+.agenda-aberta-link {
+  display: grid; grid-template-columns: 3.4rem minmax(0, 1fr) 6.75rem; align-items: stretch; gap: 6px;
+  color: var(--texto); border-radius: 12px;
 }
-@keyframes boiar {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-9px); }
+.agenda-aberta-link:hover { text-decoration: none; }
+.agenda-aberta-hora { align-self: center; font-weight: 750; font-size: var(--txt-md); letter-spacing: -.02em; }
+.agenda-aberta-faixa {
+  display: flex; flex-direction: column; justify-content: center; min-width: 0;
+  padding: 10px 14px; border-radius: 12px; background: var(--primaria-fraca);
+  transition: background var(--rapido);
 }
-.cartao-flutuante .antes { color: var(--texto-tenue); text-decoration: line-through; font-size: var(--txt-peq); }
-.cartao-flutuante .agora { font-size: 1.6875rem; font-weight: 800; letter-spacing: -.035em; line-height: 1.15; }
-.contagem { font-family: var(--fonte-mono); font-size: var(--txt-mini); color: var(--desconto); font-weight: 700; }
+.agenda-aberta-servico { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agenda-aberta-onde { font-size: var(--txt-peq); color: var(--texto-fraco); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A peca do preco: a mesma do logo, que entra na folga do E. */
+.agenda-aberta-preco {
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-end;
+  padding: 8px 14px; border-radius: 12px;
+  background: var(--desconto-fraco); color: var(--desconto);
+  transition: transform var(--medio);
+}
+.agenda-aberta-preco strong { font-size: var(--txt-md); font-weight: 750; color: var(--texto); letter-spacing: -.02em; white-space: nowrap; }
+.agenda-aberta-preco span { font-size: var(--txt-mini); font-weight: 700; white-space: nowrap; }
+.agenda-aberta-preco.cheio { background: var(--superficie-2); color: var(--texto-fraco); }
+@media (hover: hover) {
+  .agenda-aberta-link:hover .agenda-aberta-faixa { background: color-mix(in srgb, var(--primaria) 17%, var(--superficie)); }
+  .agenda-aberta-link:hover .agenda-aberta-preco { transform: translateX(-4px); }
+}
+.agenda-aberta-rodape {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--e2) var(--e3); flex-wrap: wrap;
+  margin-top: var(--e4); padding-top: var(--e4); box-shadow: inset 0 1px 0 var(--borda);
+  font-size: var(--txt-peq); color: var(--texto-fraco);
+}
+.agenda-aberta-rodape a { font-weight: 650; }
 
 /* ==============================================================
    20b. CONFIGURACOES DA CONTA (SPEC-030)
@@ -1142,13 +1211,13 @@ fieldset.sem-borda + fieldset.sem-borda { margin-top: var(--e5); }
 }
 .amostra i { border-radius: 4px; }
 .amostra i:nth-child(3) { grid-column: 1 / -1; }
-.amostra-claro { background: #f5f6fa; }
+.amostra-claro { background: #f7f5ef; }
 .amostra-claro i { background: #ffffff; } .amostra-claro i:nth-child(3) { background: #3b41c5; }
-.amostra-azul { background: #0f1426; }
-.amostra-azul i { background: #172038; } .amostra-azul i:nth-child(3) { background: #8b90ff; }
+.amostra-azul { background: #0a1122; }
+.amostra-azul i { background: #101a31; } .amostra-azul i:nth-child(3) { background: #8b90ff; }
 .amostra-preto { background: #000000; }
 .amostra-preto i { background: #16161a; } .amostra-preto i:nth-child(3) { background: #8b90ff; }
-.amostra-sistema { background: linear-gradient(90deg, #f5f6fa 50%, #0f1426 50%); }
+.amostra-sistema { background: linear-gradient(90deg, #f7f5ef 50%, #0a1122 50%); }
 .amostra-sistema i:nth-child(1) { background: #ffffff; }
 .amostra-sistema i:nth-child(2) { background: #172038; }
 .amostra-sistema i:nth-child(3) { background: linear-gradient(90deg, #3b41c5 50%, #8b90ff 50%); }
@@ -1189,22 +1258,156 @@ fieldset.sem-borda + fieldset.sem-borda { margin-top: var(--e5); }
 ${SEM_MOVIMENTO_ESCOLHIDO}
 
 /* ==============================================================
+   21b. VIDRO (EXPERIMENTO, etapa 67)
+   Pedido do Enzo para avaliar no navegador: barras e botoes com cara
+   de vidro, no espirito do "liquid glass" do iOS. O expo-glass-effect
+   e nativo do iOS (React Native) e nao roda na web, entao e CSS puro.
+   Bloco isolado de proposito: apagar daqui ate o fim da secao desfaz.
+   Atencao: o backdrop-filter do cabecalho fixo ja foi removido uma vez
+   por travar a rolagem em PC fraco.
+   ============================================================== */
+:root {
+  --vidro-brilho: rgba(255,255,255,.55);
+  --vidro-sombra: 0 1px 2px rgba(20,20,40,.06), 0 8px 24px -10px rgba(20,20,40,.18);
+}
+:root[data-tema="azul"], :root[data-tema="preto"] {
+  --vidro-brilho: rgba(255,255,255,.14);
+  --vidro-sombra: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -10px rgba(0,0,0,.6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema]) {
+    --vidro-brilho: rgba(255,255,255,.14);
+    --vidro-sombra: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px -10px rgba(0,0,0,.6);
+  }
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  /* Barra do topo: a pagina passa por baixo, desfocada. */
+  .topo {
+    background: color-mix(in srgb, var(--fundo) 62%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.7);
+    backdrop-filter: blur(18px) saturate(1.7);
+  }
+  .topo.rolado { border-bottom-color: color-mix(in srgb, var(--borda-forte) 50%, transparent); }
+
+  /* Barra de busca: vidro claro com borda de luz. */
+  .busca-principal {
+    background: color-mix(in srgb, var(--superficie) 55%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    backdrop-filter: blur(14px) saturate(1.6);
+    border-color: color-mix(in srgb, var(--borda-forte) 60%, transparent);
+    box-shadow: inset 0 1px 0 var(--vidro-brilho), var(--vidro-sombra);
+  }
+
+  /* Botoes: vidro tingido, nao plastico. O que faz vidro e a borda: um fio
+     de luz no alto, uma refracao clara no pe e o contorno quase invisivel;
+     o miolo fica translucido e sem degrade. A tinta e a cor forte da marca
+     a 74%: e o minimo que mantem o texto acima de 5:1 nos dois temas. */
+  .botao, .nav a.nav-acao {
+    background: color-mix(in srgb, var(--primaria-forte) 74%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(1.8) brightness(1.05);
+    backdrop-filter: blur(16px) saturate(1.8) brightness(1.05);
+    border-color: rgba(255,255,255,.28);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.5),
+      inset 0 -1px 0 rgba(255,255,255,.14),
+      inset 0 -10px 18px -12px rgba(255,255,255,.35),
+      0 6px 18px -10px color-mix(in srgb, var(--primaria-forte) 60%, transparent);
+  }
+  .botao:hover, .nav a.nav-acao:hover {
+    background: color-mix(in srgb, var(--primaria-forte) 84%, transparent);
+  }
+  .botao-secundario, .chip-ir {
+    -webkit-backdrop-filter: blur(16px) saturate(1.8);
+    backdrop-filter: blur(16px) saturate(1.8);
+    box-shadow:
+      inset 0 1px 0 var(--vidro-brilho),
+      inset 0 -1px 0 color-mix(in srgb, var(--vidro-brilho) 40%, transparent),
+      inset 0 0 0 1px color-mix(in srgb, var(--vidro-brilho) 35%, transparent),
+      var(--vidro-sombra);
+  }
+  .botao-secundario {
+    background: color-mix(in srgb, var(--superficie) 35%, transparent);
+    border-color: color-mix(in srgb, var(--borda-forte) 55%, transparent);
+  }
+  .botao-secundario:hover { background: color-mix(in srgb, var(--superficie) 60%, transparent); }
+  .botao-perigo { background: color-mix(in srgb, var(--perigo) 86%, transparent); }
+  .botao.botao-fantasma, .botao.botao-fantasma:hover {
+    background: transparent; box-shadow: none; border-color: transparent;
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+
+/* Luz que segue o mouse: um foco suave por dentro e um brilho que corre
+   pela borda, os dois centrados em --mx/--my (postos pelo interacoes.js).
+   Sem JS as variaveis nao existem e a luz nasce no meio, so no hover. */
+.botao, .nav a.nav-acao, .chip-ir { position: relative; isolation: isolate; }
+.botao::before, .nav a.nav-acao::before, .chip-ir::before,
+.botao::after, .nav a.nav-acao::after, .chip-ir::after {
+  content: ""; position: absolute; pointer-events: none;
+  border-radius: inherit; opacity: 0; transition: opacity var(--medio);
+}
+/* Foco por dentro, abaixo do texto. */
+.botao::before, .nav a.nav-acao::before, .chip-ir::before {
+  inset: 0; z-index: -1;
+  background: radial-gradient(150px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255,255,255,.12), rgba(255,255,255,0) 70%);
+}
+/* Brilho so na borda: a mascara recorta o miolo e deixa o anel de 1px. */
+.botao::after, .nav a.nav-acao::after, .chip-ir::after {
+  inset: -1px; padding: 1px;
+  background: radial-gradient(90px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(255,255,255,.45), rgba(255,255,255,0) 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* No botao claro, luz branca some: usa a cor da marca. */
+.botao-secundario::before, .chip-ir::before {
+  background: radial-gradient(120px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--primaria) 8%, transparent), transparent 70%);
+}
+.botao-secundario::after, .chip-ir::after {
+  background: radial-gradient(90px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--primaria) 45%, transparent), transparent 70%);
+}
+.botao-fantasma::before { display: none; }
+/* Botao fantasma: so texto. No hover um sublinhado cresce da esquerda
+   para a direita, no lugar do fundo e do contorno. Reusa o ::after. */
+.botao.botao-fantasma::after {
+  inset: auto 20px 7px; height: 2px; padding: 0; border-radius: 2px;
+  background: currentColor; -webkit-mask: none; mask: none;
+  opacity: 1; transform: scaleX(0); transform-origin: 100% 50%;
+  transition: transform var(--medio);
+}
+.botao.botao-fantasma.botao-pequeno::after { inset: auto 15px 5px; }
+.botao.botao-fantasma.botao-grande::after { inset: auto 26px 9px; }
+.botao.botao-fantasma:hover::after, .botao.botao-fantasma:focus-visible::after { transform: scaleX(1); transform-origin: 0 50%; }
+.botao.botao-fantasma:active { transform: none; }
+@media (hover: hover) {
+  .botao:hover::before, .nav a.nav-acao:hover::before, .chip-ir:hover::before,
+  .botao:hover::after, .nav a.nav-acao:hover::after, .chip-ir:hover::after { opacity: 1; }
+  .botao:disabled::before, .botao:disabled::after { opacity: 0; }
+}
+
+/* ==============================================================
    22. RESPONSIVO
    Larguras pensadas de baixo para cima: o celular nao recebe a
    grade do desktop espremida, recebe outra composicao.
    ============================================================== */
 @media (max-width: 980px) {
-  .heroi-interno { grid-template-columns: 1fr; gap: var(--e7); padding: var(--e7) var(--e5); }
-  .heroi-texto { max-width: none; }
-  .heroi-arte { width: 100%; max-width: 460px; margin-inline: auto; }
-  /* Recorte 4:3 alto o bastante para caber o rosto da profissional e o da
-     cliente; o 38% do desktop cortava a profissional na testa. */
-  .heroi-moldura { aspect-ratio: 4 / 3; transform: none; }
-  .heroi-moldura img { object-position: 50% 14%; }
-  .cartao-flutuante { left: 0; bottom: -18px; }
-  /* left/bottom repetidos: sem eles o cartao alto herdava os da regra de cima
-     e se esticava por cima da foto inteira. */
-  .cartao-flutuante-alto { left: auto; bottom: auto; right: 0; top: -18px; }
+  .grade-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grade-filtros > .campo-fim { grid-column: 1 / -1; }
+  /* A agenda aberta desce para baixo do titulo e continua inteira: no
+     celular ela e a primeira coisa que se toca depois da busca. */
+  .heroi-interno { grid-template-columns: minmax(0, 1fr); gap: var(--e6); padding: var(--e6) var(--e5) var(--e5); }
+  .heroi-chamada, .heroi-busca, .heroi-atalhos, .heroi-prestador { max-width: none; }
+  .par, .bloco-prestador { grid-template-columns: minmax(0, 1fr); gap: var(--e6); }
+  /* A foto do prestador vira faixa larga: em 4:5 ela ocupava a tela toda. */
+  .bloco-prestador figure { aspect-ratio: 16 / 10; }
+  .bloco-prestador img { object-position: 50% 30%; }
+  .categorias { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .categorias-outras { grid-column: 1 / -1; }
   .rodape-interno { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
 }
 
@@ -1274,26 +1477,28 @@ ${SEM_MOVIMENTO_ESCOLHIDO}
   .vaga-lado form, .vaga-lado .botao { width: 100%; }
   .vaga-lado .botao { padding: 13px 18px; font-size: var(--txt-corpo); }
 
-  /* Os tres numeros numa linha so: soltos, o terceiro caia sozinho embaixo. */
-  .heroi-numeros {
-    display: grid; grid-template-columns: repeat(3, auto);
-    justify-content: space-between; gap: var(--e3);
-  }
-  .heroi-numeros dt { font-size: var(--txt-lg); white-space: nowrap; }
-  .heroi-numeros dd { line-height: 1.35; }
-  .faixa { padding: var(--e6) var(--e5); }
-  .faixa h2 { font-size: var(--txt-xl); }
-  /* Os cartoes continuam por cima da foto, como no desktop: sozinha, a foto
-     parecia solta na pagina. Ficam dentro da moldura (a tela nao tem sobra
-     lateral) e menores, e param de boiar para nao pesar no celular. */
-  .heroi-moldura { aspect-ratio: 4 / 5; }
-  .cartao-flutuante {
-    left: var(--e3); bottom: var(--e3); min-width: 0;
-    padding: 10px 13px; animation: none;
-  }
-  .cartao-flutuante .agora { font-size: var(--txt-xl); }
-  /* No canto esquerdo: a direita, na tela estreita, cobria o rosto da profissional. */
-  .cartao-flutuante-alto { left: var(--e3); bottom: auto; right: auto; top: var(--e3); padding: 8px 12px; }
+  :root { --e9: 80px; }
+  /* No celular o titulo ocupa a largura toda: a grade fica so no alto e mais fraca. */
+  .heroi-fundo { inset: -4% -30% auto -10%; height: 420px; opacity: .45; -webkit-mask-image: linear-gradient(to bottom, #000 20%, transparent 100%); mask-image: linear-gradient(to bottom, #000 20%, transparent 100%); }
+  .heroi-chamada { font-size: var(--txt-md); }
+  .agenda-aberta { padding: var(--e4) var(--e3) var(--e3); margin-inline: calc(var(--e2) * -1); }
+  .agenda-aberta-link { grid-template-columns: 3rem minmax(0, 1fr) 6rem; }
+  /* No celular a agenda aberta faz o papel dos atalhos: eles empurravam a agenda para fora da tela. */
+  .heroi-atalhos { display: none; }
+  .heroi-prestador { margin-top: var(--e4); padding-top: 0; box-shadow: none; }
+  .agenda-aberta-faixa { padding: 9px 11px; }
+  .agenda-aberta-preco { padding: 8px 10px; }
+  /* Duas fotos por linha; a lista das outras categorias fecha embaixo. */
+  .categorias { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4) var(--e3); }
+  .categoria-nome { font-size: var(--txt-corpo); }
+  .bloco-prestador { padding: var(--e4); }
+  .vantagens, .regras-lista, .chamada-final { grid-template-columns: minmax(0, 1fr); }
+  /* Filtros dois a dois: empilhados, eles ocupavam a primeira tela inteira do celular. */
+  .grade-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e3); }
+  .grade-filtros > .campo-fim { grid-column: 1 / -1; }
+  .chamada-final > div + div { padding-left: 0; padding-top: var(--e6); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+  .campo-marca { padding: var(--e6) var(--e5); }
+  .termos div { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 
   .regua-degrau { gap: var(--e2); padding: 9px 10px; }
 
@@ -1303,18 +1508,18 @@ ${SEM_MOVIMENTO_ESCOLHIDO}
 }
 
 @media (max-width: 390px) {
-  .heroi h1 { font-size: 2.05rem; }
-  /* Em 320 px a etiqueta quebrava e deixava "24 h" sozinho na segunda linha. */
-  .etiqueta { font-size: var(--txt-mini); padding: 5px 12px 5px 10px; }
-  .busca-principal { flex-direction: column; }
+  /* Empilhada, a busca deixa de ser pilula: um retangulo de pilula com dois
+     andares parecia um botao deformado. */
+  .busca-principal { flex-direction: column; border-radius: var(--raio); }
   .busca-principal .botao { width: 100%; }
+  .agenda-aberta-onde { white-space: normal; }
   .regua { grid-template-columns: 1fr auto; }
   .regua-degrau .regua-barra { display: none; }
 }
 
 /* Impressao: quem imprimir a tela nao leva o cromo junto. */
 @media print {
-  .topo, .rodape, .progresso, .heroi-fundo, .botao, .pular { display: none !important; }
+  .topo, .rodape, .progresso, .botao, .pular { display: none !important; }
   body { background: #fff; }
   .cartao { box-shadow: none; border-color: #ccc; break-inside: avoid; }
 }

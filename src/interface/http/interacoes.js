@@ -142,6 +142,19 @@ export const JS = `
     });
   });
 
+  // ------------------------------------ luz que segue o mouse (vidro)
+  // So entrega ao CSS onde o ponteiro esta dentro do botao (--mx, --my);
+  // o desenho da luz e todo do CSS. Um ouvinte so, no documento.
+  if (window.matchMedia('(hover: hover)').matches) {
+    document.addEventListener('pointermove', function (evento) {
+      var alvo = evento.target.closest && evento.target.closest('.botao, .nav-acao, .chip-ir');
+      if (!alvo) return;
+      var caixa = alvo.getBoundingClientRect();
+      alvo.style.setProperty('--mx', (evento.clientX - caixa.left) + 'px');
+      alvo.style.setProperty('--my', (evento.clientY - caixa.top) + 'px');
+    }, { passive: true });
+  }
+
   // -------------------------------- imagem do hero ausente nao quebra
   // Sem o arquivo em public/, o gradiente da moldura fica no lugar dela.
   var arte = document.querySelector('.heroi-moldura img');
