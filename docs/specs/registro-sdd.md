@@ -1006,3 +1006,39 @@
 - **Verificação:** `npm test`: 467/467 (17 testes novos `T-SPEC030-*`). Telas conferidas no navegador
   em 1366, 800, 412, 390 e 320 px e nos temas branco, azul-escuro e preto; o envio de foto foi testado
   pelo navegador com uma imagem real.
+
+### Etapa 67 — Redesign do front-end (em andamento: piloto) · 2026-11-06
+
+- **Pedido do Enzo:** redesign seguindo um briefing de direção de arte (preservar a identidade, tirar a cara
+  de template, sem mudar regra, estado, cálculo nem contrato). Segunda tentativa: a primeira (direção
+  "A tabela da parede") foi reprovada e apagada.
+- **Direção:** refinar a identidade existente, sem trocá-la. Ficam o "E de agenda", o índigo com laranja e a
+  Bricolage. Saem os sinais de template: título em degradê, manchas de brilho e grade no hero, foto girada
+  com cartões flutuantes, rótulo em caixa alta acima de cada título, passos "01 02 03" em mono, faixa em
+  degradê, sombra em todo cartão e o cinza-lavanda frio.
+- **Ideia:** a agenda do dia vira o hero. A coluna "Agenda aberta agora" lista os próximos horários
+  publicados de verdade, com o preço vigente calculado pelo domínio; cada linha é uma faixa da marca com a
+  peça laranja do preço na ponta, como no logo.
+- **Imagens:** as quatro fotos geradas por IA pelo Enzo (salão, barbearia, treino, oficina), em
+  `public/foto-*.jpg` (~100 KB cada), ilustram categorias reais do catálogo; nenhuma é apresentada como
+  um prestador. O fundo do hero é uma grade de agenda desenhada em SVG (blocos livres, ocupados e
+  vagos com a peça laranja do logo), inclinada e esmaecida. Uma foto esmaecida foi testada antes e
+  reprovada pelo Enzo ("ficou ruim"), porque no tema escuro virava uma mancha escura.
+- **Ajustes pedidos no navegador (2026-11-07):** tema claro um passo para a areia; tema azul mais
+  navy e mais escuro. Botões e barras com efeito de vidro em CSS (o `expo-glass-effect` pedido é
+  nativo do iOS e não roda na web, além de ferir o ADR-001), com uma luz discreta que segue o mouse.
+  O bloco é experimental e isolado em `estilo.js`; risco registrado: `backdrop-filter` no cabeçalho
+  fixo já foi removido uma vez por travar a rolagem em PC fraco. Todo item de texto do cabeçalho e
+  o botão fantasma seguem um padrão só: sem fundo nem contorno, sublinhado que cresce da esquerda no
+  hover. A chamada final passou a usar `--campo-marca` (no escuro o texto branco ficava ilegível).
+  O sublinhado parecia "não implementado" porque o Windows estava com os efeitos de animação
+  desligados, e o site corta animações nesse caso (RF-093); não é defeito.
+- **Textos corrigidos por honestidade:** saem "−25% e caindo" (nem todo horário tem degrau pela frente),
+  "publique em menos de um minuto", os preços inventados quando a vitrine está vazia e "clínicas" (não há
+  essa categoria). "Preço cheio: o desconto começa mais perto" só aparece quando a régua tem degrau.
+- **Bug corrigido:** iniciais do avatar de "Paulo (admin)" saíam "P(".
+- **Premissas do agente:** nenhuma regra, rota, estado ou dado persistido muda; as fotos são decoração de
+  categoria e somem sozinhas se o arquivo faltar; o rodapé ganhou a palavra da marca como fechamento.
+- **Pendente:** aprovação do piloto (home, busca e página do horário) no navegador antes de estender aos
+  painéis do prestador, do cliente e do admin; atualizar `public/LEIAME.md`, `docs/imagem-hero.md` e o
+  `og.jpg`.

@@ -63,7 +63,8 @@ export function pagina({
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${paraTexto(titulo)} - Encaixe</title>
 <meta name="description" content="${paraTexto(descricao)}">
-<meta name="theme-color" content="#3b41c5">
+<meta name="theme-color" content="#f7f5ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a1122" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="pt_BR">
 <meta property="og:site_name" content="Encaixe">
@@ -106,7 +107,7 @@ function topo(usuario, naoLidas, caminho) {
   if (!usuario) {
     links.push(['/buscar', 'Buscar horários']);
     links.push(['/entrar', 'Entrar']);
-    links.push(['/cadastrar', 'Criar conta']);
+    links.push(['/cadastrar', 'Criar conta', 'nav-acao']);
   } else if (usuario.perfil === 'CLIENTE') {
     links.push(['/buscar', 'Buscar horários']);
     links.push(['/meus-agendamentos', 'Meus agendamentos']);
@@ -132,9 +133,9 @@ function topo(usuario, naoLidas, caminho) {
   const casaCom = (href) => caminho === href || caminho.startsWith(`${href}/`);
   const atual = links.map(([href]) => href).filter(casaCom)
     .sort((a, b) => b.length - a.length)[0];
-  const navegacao = juntar(links.map(([href, texto]) => {
+  const navegacao = juntar(links.map(([href, texto, classe]) => {
     const aqui = href === atual;
-    return html`<a href="${href}"${aqui ? cru(' aria-current="page"') : cru('')}>${texto}</a>`;
+    return html`<a href="${href}"${classe ? cru(` class="${classe}"`) : cru('')}${aqui ? cru(' aria-current="page"') : cru('')}>${texto}</a>`;
   }));
 
   const areaConta = usuario
@@ -196,8 +197,8 @@ function rodape() {
     <div>
       <h2>Como funciona</h2>
       <ul>
-        <li><a href="/#como-funciona">Os três passos</a></li>
-        <li><a href="/#preco">Preço que cai</a></li>
+        <li><a href="/#como-funciona">Do horário vago ao atendimento</a></li>
+        <li><a href="/#preco">Por que o preço cai</a></li>
         <li><a href="/#regras">Regras e confiança</a></li>
       </ul>
     </div>
@@ -217,6 +218,7 @@ function rodape() {
     Os códigos <code>RN</code>, <code>RF</code> e <code>INV</code> que aparecem nas telas
     apontam a regra que governa cada comportamento.
   </div>
+  <div class="rodape-assinatura" aria-hidden="true">${cru(PALAVRA_SVG.replace('class="marca-palavra"', 'class="assinatura"'))}</div>
 </footer>`;
 }
 
@@ -231,7 +233,8 @@ export function avatar(usuario, { tamanho = 'p' } = {}) {
   if (usuario?.foto) {
     return html`<img class="${classe}" src="/fotos/${usuario.foto}" alt="" width="64" height="64" decoding="async">`;
   }
-  const partes = String(usuario?.nome ?? '').trim().split(/\s+/).filter(Boolean);
+  // So palavras que comecam por letra: "Paulo (admin)" virava "P(".
+  const partes = String(usuario?.nome ?? '').trim().split(/\s+/).filter((p) => /^\p{L}/u.test(p));
   const iniciais = ((partes[0]?.[0] ?? '') + (partes.length > 1 ? partes.at(-1)[0] : '')).toUpperCase();
   return html`<span class="${classe}" aria-hidden="true">${iniciais || '?'}</span>`;
 }
@@ -304,6 +307,36 @@ export function seloReputacao(valor) {
   return html`<span class="selo selo-${cor}" title="Reputação do prestador, de 0 a 100 (RN-23)">Reputação ${valor}</span>`;
 }
 
+/**
+ * Icones da interface: traco unico, cantos redondos, desenhados no mesmo
+ * quadro de 24. Sempre decorativos (aria-hidden) - o rotulo escrito ao lado
+ * e quem carrega o significado.
+ */
+const ICONES = {
+  relogio: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  local: '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/>',
+  reputacao: '<path d="M12 3.5 5 6.2v5.3c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6.2L12 3.5Z"/><path d="m9 12 2 2 4-4"/>',
+  confirmacao: '<circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.3 2.3 4.7-4.8"/>',
+  espera: '<path d="M7 3.5h10M7 20.5h10M8 3.5c0 4 4 5.2 4 8.5s-4 4.5-4 8.5M16 3.5c0 4-4 5.2-4 8.5s4 4.5 4 8.5"/>',
+  agenda: '<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/>',
+  desconto: '<path d="M20 12.6 12.6 20a1.6 1.6 0 0 1-2.2 0L4 13.6V4h9.6l6.4 6.4a1.6 1.6 0 0 1 0 2.2Z"/><circle cx="8.5" cy="8.5" r="1.3"/>',
+  seguranca: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V7.8a3.5 3.5 0 0 1 7 0v2.7"/>',
+};
+
+export function icone(nome, { grande = false } = {}) {
+  return cru(`<svg class="icone${grande ? ' icone-g' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" `
+    + `stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ICONES[nome]}</svg>`);
+}
+
+/**
+ * Sinal de reputacao dentro do cartao de horario. Cor so quando ela diz algo:
+ * abaixo do limiar de revisao (RN-21/RN-23) o numero fica vermelho ou ambar.
+ */
+function sinalReputacao(valor) {
+  const tom = valor < 40 ? ' sinal-alerta' : (valor < 50 ? ' sinal-atencao' : '');
+  return html`<li class="sinal${cru(tom)}" title="Reputação do prestador, de 0 a 100 (RN-23)">${icone('reputacao')}Reputação ${valor}/100</li>`;
+}
+
 /** Nota de 1 a 5 em estrelas, com alternativa textual (RN-24). */
 export function estrelas(nota) {
   const cheias = '★'.repeat(nota);
@@ -328,7 +361,7 @@ export function blocoDePreco(preco) {
     </div>
     ${preco.economia > 0
     ? html`<div class="preco-nota">Você economiza <strong>${formatarBRL(preco.economia)}</strong>${preco.pisoAtingido ? ' — desconto máximo do prestador atingido' : ''}</div>`
-    : html`<div class="preco-nota">Preço cheio: o desconto começa mais perto do horário</div>`}
+    : html`<div class="preco-nota">${preco.proximoDegrau ? 'Preço cheio por enquanto' : 'Preço cheio: a régua deste horário não tem desconto'}</div>`}
     ${preco.proximoDegrau
     ? html`<div class="preco-nota">Cai para −${preco.proximoDegrau.percentual}% em ${humanizarMinutos(preco.proximoDegrau.emMinutos)}</div>`
     : cru('')}
@@ -422,11 +455,11 @@ export function cartaoDeVaga(vaga, { acao = null, href = null } = {}) {
           ${vaga.bairro ? html`<span class="ponto">·</span><span>${vaga.bairro}</span>` : cru('')}
           <span class="ponto">·</span><span>${vaga.categoria_nome}</span>
         </p>
-        <div class="vaga-sinais">
-          ${seloReputacao(vaga.prestador_reputacao)}
-          <span class="selo selo-neutro">Começa em ${humanizarMinutos(vaga.preco.antecedenciaMin)}</span>
-          <span class="selo selo-info">${politica}</span>
-        </div>
+        <ul class="vaga-sinais">
+          <li class="sinal">${icone('relogio')}Começa em ${humanizarMinutos(vaga.preco.antecedenciaMin)}</li>
+          <li class="sinal">${icone(vaga.politica_expiracao === 'AUTOCONFIRMAR' ? 'confirmacao' : 'espera')}${politica}</li>
+          ${sinalReputacao(vaga.prestador_reputacao)}
+        </ul>
       </div>
 
       <div class="vaga-lado">
