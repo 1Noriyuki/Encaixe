@@ -9,7 +9,7 @@
  */
 
 import { createServer } from 'node:http';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { criarRoteador } from './roteador.js';
 import { CSS } from './estilo.js';
 import { JS } from './interacoes.js';
-import { pagina } from './views/layout.js';
+import { pagina, SCRIPT_INICIAL } from './views/layout.js';
 import { html, paraTexto } from './html.js';
 import {
   carregarSessao, csrfValido, guardarAviso, consumirAvisos,
@@ -351,11 +351,29 @@ function paginaDeErro(status, titulo, texto, usuario = null, regra = null, apare
   });
 }
 
+/**
+ * P6 (seguranca.md, etapa 68): tudo vem do proprio site. Script so o arquivo de
+ * /estatico e o inline do layout, liberado pelo hash; um <script> injetado nao
+ * roda mesmo que escape do html``. Estilo inline continua permitido porque
+ * ha atributos style= nas telas (larguras de barra calculadas no servidor).
+ */
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'sha256-${createHash('sha256').update(SCRIPT_INICIAL).digest('base64')}'`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "object-src 'none'",
+  "base-uri 'none'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
+
 function responder(res, status, corpo) {
   res.writeHead(status, {
     'Content-Type': 'text/html; charset=utf-8',
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'same-origin',
+    'Content-Security-Policy': CSP,
   });
   res.end(paraTexto(corpo));
 }

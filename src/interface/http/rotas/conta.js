@@ -13,6 +13,7 @@ import {
   html, cru, juntar, campoCsrf, selo, notaDeRegra, avatar, reputacao, metrica, vazio, plural,
 } from '../views/layout.js';
 import { TEMAS, MOVIMENTOS, cookieDeAparencia } from '../aparencia.js';
+import { cookieDeSaida } from '../sessao.js';
 import { formatarDataHora, partesLocais, agoraIso } from '../../../dominio/tempo.js';
 import { TIPO_EVENTO } from '../../../dominio/reputacao.js';
 
@@ -37,6 +38,9 @@ export function registrar(r) {
 
   r.get('/conta/privacidade', telaPrivacidade, LOGADO);
   r.post('/conta/privacidade/exportar', exportarDados, LOGADO);
+  // RF-097: o admin nao tem a acao (§4.5); a regra repete a recusa (RF-098).
+  r.post('/conta/excluir', excluirConta, { perfil: ['CLIENTE', 'PRESTADOR'] });
+  r.get('/conta/excluida', telaContaExcluida);
 
   r.get('/conta/reputacao', telaReputacao, { perfil: ['CLIENTE', 'PRESTADOR'] });
 
@@ -66,7 +70,6 @@ function moldura(ctx, conteudo, { titulo, descricao }) {
 
   return ctx.render(html`
     <div class="cabecalho-pagina">
-      <span class="olho">Configurações</span>
       <h1>${titulo}</h1>
       <p>${descricao}</p>
     </div>
@@ -150,7 +153,7 @@ function telaPerfil(ctx) {
       <div class="linha acima-4">
         <button class="botao" type="submit">Salvar dados</button>
         ${eu.perfil === 'PRESTADOR' ? html`
-          <a class="botao botao-secundario" href="/prestador/perfil">Dados do negócio <span class="seta">→</span></a>`
+          <a class="botao botao-fantasma" href="/prestador/perfil">Dados do negócio <span class="seta">→</span></a>`
     : cru('')}
       </div>
       ${notaDeRegra('RF-087', 'Trocar o e-mail com segurança exigiria confirmar o endereço novo, e o '
@@ -233,7 +236,6 @@ function telaAparencia(ctx) {
   if (!ctx.usuario) {
     return ctx.render(html`
       <div class="cabecalho-pagina">
-        <span class="olho">Configurações</span>
         <h1>Aparência</h1>
         <p>Tema e animações do site neste navegador.</p>
       </div>
@@ -342,8 +344,59 @@ function tabelaDeDados() {
     </div>`;
 }
 
+/** RF-097 / RF-098 - a exclusao mostra o que impede antes de pedir a senha. */
+function blocoDeExclusao(ctx) {
+  if (ctx.usuario.perfil === 'ADMIN') {
+    return html`
+      <section class="cartao cartao-calmo">
+        <h2 class="sem-topo">Excluir minha conta</h2>
+        <p class="fraco medida">Conta de administrador só é criada e removida pela implantação.</p>
+        ${notaDeRegra('RF-098', 'O administrador não exclui a própria conta pelo site.')}
+      </section>`;
+  }
+
+  const motivos = conta.impedimentosParaExcluir(ctx.usuario.id);
+  const consequencias = html`
+    <ul class="medida">
+      <li>Seu nome, e-mail, telefone, região e foto são apagados${ctx.usuario.perfil === 'PRESTADOR'
+    ? ', e o nome do seu negócio deixa de aparecer' : ''}.</li>
+      <li>Os agendamentos encerrados, as avaliações e as comissões continuam, sem identificar você:
+      a outra parte e a apuração dependem deles.</li>
+      ${ctx.usuario.perfil === 'PRESTADOR'
+    ? html`<li>Os horários ainda livres são cancelados e os serviços saem da busca.</li>` : ''}
+      <li>Você sai de todos os aparelhos e não há como desfazer. O mesmo e-mail pode criar uma conta nova.</li>
+    </ul>`;
+
+  if (motivos.length > 0) {
+    return html`
+      <section class="cartao">
+        <h2 class="sem-topo">Excluir minha conta</h2>
+        <p class="fraco medida">Antes de excluir, falta resolver:</p>
+        <ul class="medida">${juntar(motivos.map((m) => html`<li>${m}</li>`))}</ul>
+        ${notaDeRegra('RF-098', 'A exclusão fica bloqueada enquanto houver agendamento em aberto, disputa '
+    + 'ou comissão do mês em apuração.')}
+      </section>`;
+  }
+
+  return html`
+    <form class="cartao" method="post" action="/conta/excluir">
+      ${campoCsrf(ctx.csrf)}
+      <h2 class="sem-topo">Excluir minha conta</h2>
+      <p class="fraco medida">O que acontece:</p>
+      ${consequencias}
+      <div class="campo">
+        <label for="senhaExclusao">Sua senha</label>
+        <input id="senhaExclusao" name="senha" type="password" autocomplete="current-password" required>
+      </div>
+      <label class="marcar"><input type="checkbox" name="confirmacao" value="sim" required>
+        Entendo que a exclusão não tem volta.</label>
+      <div class="linha acima-4"><button class="botao botao-perigo" type="submit">Excluir minha conta</button></div>
+      ${notaDeRegra('RF-097', 'A conta é anonimizada, não apagada: o que a apuração e a auditoria exigem '
+    + 'fica, sem identificar você (LGPD, art. 18, VI).')}
+    </form>`;
+}
+
 function telaPrivacidade(ctx) {
-  const contato = contatoDeSuporte();
   return moldura(ctx, html`
     <section class="cartao">
       <h2 class="sem-topo">O que guardamos sobre você</h2>
@@ -363,14 +416,33 @@ function telaPrivacidade(ctx) {
     + 'na trilha de auditoria.')}
     </form>
 
-    <section class="cartao cartao-calmo">
-      <h2 class="sem-topo">Excluir minha conta</h2>
-      <p class="fraco medida">A exclusão pelo próprio site ainda não está disponível: ela vai apagar seus
-      dados pessoais e manter só o que a apuração financeira e a auditoria exigem, sem identificar você.
-      Até lá, peça pelo e-mail <a href="mailto:${contato}">${contato}</a>.</p>
-      <span class="selo selo-neutro">SPEC-030 · fase 2</span>
+    ${blocoDeExclusao(ctx)}
+  `, { titulo: 'Privacidade e LGPD', descricao: 'Seus dados, quem vê, como levar uma cópia e como sair.' });
+}
+
+function excluirConta(ctx) {
+  conta.excluirConta({
+    usuarioId: ctx.usuario.id,
+    senha: ctx.corpo.senha,
+    confirmacao: ctx.corpo.confirmacao === 'sim',
+  });
+  // A sessao ja nao existe no banco; o cookie sai junto para o navegador esquecer.
+  return ctx.redirecionar('/conta/excluida', null, { 'Set-Cookie': cookieDeSaida() });
+}
+
+function telaContaExcluida(ctx) {
+  return ctx.render(html`
+    <div class="cabecalho-pagina">
+      <h1>Sua conta foi excluída</h1>
+      <p>Seus dados pessoais foram apagados e você saiu de todos os aparelhos.</p>
+    </div>
+    <section class="cartao">
+      <p class="medida">Os registros que a outra parte e a apuração precisam continuam, sem o seu nome.
+      Se quiser voltar, o mesmo e-mail pode criar uma conta nova.</p>
+      <div class="linha acima-4"><a class="botao botao-fantasma" href="/">Ir para o início</a></div>
+      ${notaDeRegra('RF-097', 'Exclusão por anonimização (SPEC-030, fase 2).')}
     </section>
-  `, { titulo: 'Privacidade e LGPD', descricao: 'Seus dados, quem vê e como levar uma cópia.' });
+  `, { titulo: 'Conta excluída', estreita: true });
 }
 
 function exportarDados(ctx) {
@@ -437,7 +509,6 @@ function telaSobre(ctx) {
   const p = params();
   return ctx.render(html`
     <div class="cabecalho-pagina">
-      <span class="olho">Sobre</span>
       <h1>O Encaixe</h1>
       <p>Um mercado para o horário que ia ficar vazio.</p>
     </div>
@@ -492,7 +563,6 @@ function telaAjuda(ctx) {
 
   return ctx.render(html`
     <div class="cabecalho-pagina">
-      <span class="olho">Ajuda</span>
       <h1>Perguntas frequentes</h1>
       <p>Cada resposta cita a regra da especificação que decide aquele comportamento.</p>
     </div>
@@ -512,7 +582,6 @@ function telaPoliticaDePrivacidade(ctx) {
   const contato = contatoDeSuporte();
   return ctx.render(html`
     <div class="cabecalho-pagina">
-      <span class="olho">Privacidade e LGPD</span>
       <h1>Política de privacidade</h1>
       <p>O que o Encaixe guarda, por quê, quem vê e como você exerce seus direitos.</p>
     </div>
@@ -537,8 +606,9 @@ function telaPoliticaDePrivacidade(ctx) {
         <li><strong>Acesso e portabilidade:</strong> baixe seus dados em
         <a href="/conta/privacidade">Minha conta › Privacidade e LGPD</a>.</li>
         <li><strong>Correção:</strong> nome, telefone, região e foto em <a href="/conta">Minha conta</a>.</li>
-        <li><strong>Exclusão:</strong> pelo e-mail <a href="mailto:${contato}">${contato}</a>, enquanto a
-        exclusão pelo próprio site não fica pronta.</li>
+        <li><strong>Exclusão:</strong> em <a href="/conta/privacidade">Minha conta › Privacidade e LGPD</a>.
+        A conta é anonimizada: o que a apuração e a auditoria exigem fica, sem identificar você. Conta
+        suspensa pede pelo e-mail <a href="mailto:${contato}">${contato}</a>.</li>
       </ul>
     </section>
     ${notaDeRegra('RNF-04', 'Dados de contato só ficam visíveis entre as partes de um agendamento confirmado.')}

@@ -6,7 +6,7 @@
 import * as catalogoRepo from '../infra/repositorios/catalogo.js';
 import * as auditoria from '../infra/auditoria.js';
 import { transacao } from '../infra/db/conexao.js';
-import { ErroDeValidacao, NaoEncontrado, ErroDeAutorizacao } from '../dominio/erros.js';
+import { ErroDeRegra, ErroDeValidacao, NaoEncontrado, ErroDeAutorizacao } from '../dominio/erros.js';
 import { validarRegua, projetarRegua } from '../dominio/precificacao.js';
 import { paraCentavos } from '../dominio/dinheiro.js';
 import { params } from './parametros.js';
@@ -104,6 +104,14 @@ export function salvarRegua({ prestadorId, reguaId = null, nome, faixas }) {
       const existente = catalogoRepo.reguaPorId(reguaId);
       if (!existente) throw new NaoEncontrado('Régua não encontrada.');
       if (existente.prestador_id !== prestadorId) throw new ErroDeAutorizacao();
+      // RN-05: as faixas sao lidas pelo horario na hora; mexer nelas mudaria a
+      // regua de um horario ja reservado. Criar outra regua continua livre.
+      const reservados = catalogoRepo.horariosReservadosDaRegua(reguaId);
+      if (reservados.length > 0) {
+        throw new ErroDeRegra('RN-05',
+          'Esta régua está em uso por um horário já reservado e não pode mudar até a reserva terminar. '
+          + 'Para os próximos horários, crie uma régua nova.', { horarios: reservados });
+      }
 
       catalogoRepo.renomearRegua(reguaId, titulo);
       catalogoRepo.substituirFaixas(reguaId, validadas);

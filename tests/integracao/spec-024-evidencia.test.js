@@ -8,7 +8,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { prepararBanco, encerrar, cenarioBasico, viajarPara, publicarDaquiA } from '../apoio/cenario.js';
-import { adicionarHoras, adicionarDias, agoraIso } from '../../src/dominio/tempo.js';
+import { adicionarHoras, adicionarDias, agoraIso, partesLocais } from '../../src/dominio/tempo.js';
 import * as agendamentos from '../../src/aplicacao/agendamentos.js';
 import * as contas from '../../src/aplicacao/contas.js';
 import * as catalogo from '../../src/aplicacao/catalogo.js';
@@ -176,4 +176,30 @@ test('T-SPEC024-08 | RNF-03: acesso a extrato de outro prestador é recusado', a
   // Cliente não acessa a área do prestador.
   const doCliente = await pegar('/prestador/extrato', await entrar('cliente@teste.dev'));
   assert.equal(doCliente.status, 403);
+});
+
+test('T-SPEC024-09 | RF-061: a tela do extrato filtra pelo período escolhido, em data local', async () => {
+  const c = cenarioBasico({ horasAteHorario: 3 });
+  concluir(c);
+  const hoje = partesLocais(agoraIso()).data;
+  const amanha = partesLocais(adicionarDias(agoraIso(), 1)).data;
+  const r = await fetch(`${base}/entrar`, {
+    method: 'POST', redirect: 'manual',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ email: 'prestador@teste.dev', senha: 'senha1234' }),
+  });
+  const cookie = r.headers.getSetCookie()[0].split(';')[0];
+  const tela = async (q) => (await fetch(`${base}/prestador/extrato${q}`, { headers: { Cookie: cookie } })).text();
+
+  const doDia = await tela(`?de=${hoje}&ate=${hoje}`);
+  assert.match(doDia, /70,40/, 'o lançamento de hoje entra no período de hoje');
+  assert.match(doDia, /concluídos no período/);
+
+  const futuro = await tela(`?de=${amanha}`);
+  assert.doesNotMatch(futuro, /70,40/);
+  assert.match(futuro, /Nenhum lançamento no período/);
+
+  // Data invertida ou inválida não vira extrato vazio enganoso: mostra tudo e avisa.
+  assert.match(await tela(`?de=${amanha}&ate=${hoje}`), /vem depois da final[\s\S]*70,40/);
+  assert.match(await tela('?de=2026-02-31'), /Data inválida[\s\S]*70,40/);
 });

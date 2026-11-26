@@ -107,6 +107,7 @@ Testes em `tests/integracao/spec-024-evidencia.test.js`, com os IDs propostos.
 | `T-SPEC024-06 \| RF-061: total zero usa estrutura válida sem nan ou divisão inválida` | CA-06 |
 | `T-SPEC024-07 \| RN-33: estados de cobrança e comissão são apresentados separadamente` | CA-07 |
 | `T-SPEC024-08 \| RNF-03: acesso a extrato de outro prestador é recusado` | CA-08, INV-002 |
+| `T-SPEC024-09 \| RF-061: a tela do extrato filtra pelo período escolhido, em data local` | CA-05 pela tela (etapa 68: o repositório já filtrava, a tela não oferecia o período) |
 | `T-SPEC026-CA09 \| RF-081: lançamentos antigos mantêm percentual e valores originais` | INV-001 (lançamento antigo não muda com a comissão nova) |
 
 **Evidência (etapa 33, 2026-10-29).** Todos os testes acima existem e passam em `npm test` no Node 24.

@@ -123,5 +123,8 @@ test('INV-01: os estados que ocupam o horario sao exatamente os nao terminais at
 test('a conta suspensa so volta por decisao do admin', () => {
   assert.equal(podeTransicionar('conta', 'SUSPENSO', 'ATIVO'), true);
   assert.equal(podeTransicionar('conta', 'SUSPENSO', 'RESTRITO'), false);
-  assert.equal(ehTerminal('conta', 'REPROVADO'), true);
+  // RF-097: a conta reprovada so sai para EXCLUIDO, que e terminal.
+  assert.equal(podeTransicionar('conta', 'REPROVADO', 'ATIVO'), false);
+  assert.equal(podeTransicionar('conta', 'REPROVADO', 'EXCLUIDO'), true);
+  assert.equal(ehTerminal('conta', 'EXCLUIDO'), true);
 });

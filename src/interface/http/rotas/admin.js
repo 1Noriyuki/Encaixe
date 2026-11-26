@@ -56,9 +56,9 @@ function painel(ctx) {
     ? 'Nenhuma fila aberta no momento.'
     : `${plural(pendencias, 'item aguarda', 'itens aguardam')} sua decisão.`}</p>
       </div>
-      <div class="linha">
+      <div class="abas-texto" role="group" aria-label="Período">
         ${juntar(PERIODOS.map(([d, texto]) => html`
-          <a class="chip${dias === d ? '' : ' chip-neutro'}"
+          <a
              href="/admin?dias=${d}"${dias === d ? cru(' aria-current="true"') : cru('')}>${texto}</a>`))}
       </div>
     </div>
@@ -93,7 +93,6 @@ function painel(ctx) {
     ${dados.prestadoresPendentes.length ? html`
       <div class="secao-titulo">
         <div>
-          <span class="olho">Fila de moderação</span>
           <h2>Aguardando aprovação</h2>
         </div>
       </div>
@@ -108,7 +107,7 @@ function painel(ctx) {
                 </div>
               </div>
               <div class="linha">
-                <a class="botao botao-secundario botao-pequeno" href="/admin/contas/${p.id}">Analisar</a>
+                <a class="botao botao-fantasma botao-pequeno" href="/admin/contas/${p.id}">Analisar</a>
                 <form method="post" action="/admin/contas/${p.id}/aprovar">
                   ${campoCsrf(ctx.csrf)}
                   <button class="botao botao-pequeno" type="submit">Aprovar</button>
@@ -121,10 +120,9 @@ function painel(ctx) {
     ${dados.disputas.length ? html`
       <div class="secao-titulo">
         <div>
-          <span class="olho">Fila de disputas</span>
           <h2>Casos abertos</h2>
         </div>
-        <a class="botao botao-secundario botao-pequeno" href="/admin/disputas">
+        <a class="botao botao-fantasma botao-pequeno" href="/admin/disputas">
           Ver a fila inteira <span class="seta">→</span>
         </a>
       </div>
@@ -200,7 +198,7 @@ function filaDisputas(ctx) {
         <h1 class="sem-topo sem-fundo">Fila de disputas</h1>
         <p>Ordenada por prazo de SLA e, no empate, por valor do agendamento ${seloRegra('RF-074')}</p>
       </div>
-      <a class="botao botao-secundario botao-pequeno" href="/admin/disputas${todas ? '' : '?todas=1'}">
+      <a class="botao botao-fantasma botao-pequeno" href="/admin/disputas${todas ? '' : '?todas=1'}">
         ${todas ? 'Ver só as abertas' : 'Ver todas, inclusive resolvidas'}
       </a>
     </div>

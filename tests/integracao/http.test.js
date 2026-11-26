@@ -9,6 +9,8 @@ import assert from 'node:assert/strict';
 import { prepararBanco, encerrar, cenarioBasico } from '../apoio/cenario.js';
 import { criarAplicacao } from '../../src/interface/http/servidor.js';
 import * as auditoria from '../../src/infra/auditoria.js';
+import { createHash } from 'node:crypto';
+import { SCRIPT_INICIAL } from '../../src/interface/http/views/layout.js';
 
 let servidor;
 let base;
@@ -166,4 +168,20 @@ test('a pagina inicial nao vaza HTML escapado por engano', async () => {
   assert.match(corpo, /^<!doctype html>/);
   assert.doesNotMatch(corpo, /&lt;div class/, 'sintoma do bug de duplo escape');
   assert.match(corpo, /<header class="topo">/);
+});
+
+test('T-SEG-P6 | RNF-03: toda página sai com CSP restrito, e o único script inline é o liberado pelo hash', async () => {
+  const resposta = await pegar('/');
+  const csp = resposta.headers.get('content-security-policy') ?? '';
+  assert.match(csp, /default-src 'self'/);
+  assert.match(csp, /object-src 'none'/);
+  assert.match(csp, /frame-ancestors 'none'/);
+  assert.doesNotMatch(csp, /script-src[^;]*unsafe-inline/, 'script inline não é liberado em bloco');
+
+  const corpo = await resposta.text();
+  const inline = [...corpo.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  assert.deepEqual(inline, [SCRIPT_INICIAL], 'um script inline só, e é o do layout');
+  const hash = createHash('sha256').update(SCRIPT_INICIAL).digest('base64');
+  assert.ok(csp.includes(`'sha256-${hash}'`), 'o hash do CSP bate com o script servido');
+  assert.equal((await pegar('/rota-que-nao-existe')).headers.get('content-security-policy'), csp, 'até a página de erro');
 });

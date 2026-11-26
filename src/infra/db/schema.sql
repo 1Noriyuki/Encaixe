@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS usuario (
   senha_hash    TEXT NOT NULL,
   perfil        TEXT NOT NULL CHECK (perfil IN ('CLIENTE','PRESTADOR','ADMIN')),
   estado_conta  TEXT NOT NULL CHECK (estado_conta IN
-                  ('PENDENTE_APROVACAO','ATIVO','RESTRITO','EM_REVISAO','SUSPENSO','REPROVADO')),
+                  ('PENDENTE_APROVACAO','ATIVO','RESTRITO','EM_REVISAO','SUSPENSO','REPROVADO','EXCLUIDO')),
   reputacao     INTEGER NOT NULL DEFAULT 70 CHECK (reputacao BETWEEN 0 AND 100),
   criado_em     TEXT NOT NULL,
   -- RN-00/RN-23: a P-08 vigente na criacao fica travada na conta; mudar a P-08
@@ -72,7 +72,11 @@ CREATE TABLE IF NOT EXISTS usuario (
   -- sistema. O formato fica preso aqui tambem, nao so no codigo: um nome que
   -- escape da pasta nem chega a ser gravado. Bancos antigos ganham em migrar().
   foto TEXT CHECK (foto IS NULL OR (substr(foto, 1, 32) NOT GLOB '*[^0-9a-f]*'
-    AND length(foto) IN (36, 37) AND substr(foto, 33) IN ('.jpg', '.png', '.webp')))
+    AND length(foto) IN (36, 37) AND substr(foto, 33) IN ('.jpg', '.png', '.webp'))),
+  -- SPEC-030 INV-004 (RF-097): conta excluida nao guarda foto nem o e-mail de
+  -- ninguem. O mesmo vale no codigo (dominio/exclusao.js); bancos antigos ganham
+  -- esta definicao em migrar(), que reconstroi a tabela.
+  CHECK (estado_conta <> 'EXCLUIDO' OR (foto IS NULL AND email LIKE 'excluida-%@encaixe.invalid'))
 );
 
 -- SPEC-002 INV-004 tambem no banco (C-VI): um CHECK nao serve, porque o estado

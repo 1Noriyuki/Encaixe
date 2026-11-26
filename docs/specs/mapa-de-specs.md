@@ -536,12 +536,12 @@ Todas estão registradas na **seção 3**. Nenhuma foi resolvida silenciosamente
 
 - **Objetivo:** página `/conta` com dados pessoais e foto, aparência, troca de senha e sessões, cópia dos dados (LGPD) e histórico de reputação; páginas públicas de ajuda, sobre e privacidade.
 - **Valor:** o usuário passa a controlar a própria conta; fecha a lacuna de acesso e portabilidade de `seguranca.md` §6.
-- **RF:** RF-087 a RF-096
+- **RF:** RF-087 a RF-096; RF-097 e RF-098 na fase 2 (etapa 68)
 - **RB:** RN-23 (só exibição)
 - **RNF:** RNF-02, RNF-03, RNF-04, RNF-11
 - **UC/fluxo:** sem UC próprio
 - **Entidades:** `Usuario` (atributo `foto`), `PerfilCliente`, `EventoReputacao`
-- **Invariantes:** SPEC-030 INV-001 a INV-003
+- **Invariantes:** SPEC-030 INV-001 a INV-004
 - **ADRs:** ADR-007
 - **Dependências:** SPEC-002, SPEC-003, SPEC-006, SPEC-009
 - **Justificativa da posição:** só lê e edita o que as Specs anteriores criaram; nenhuma outra depende dela.
@@ -574,7 +574,7 @@ Nenhum item abaixo foi resolvido neste mapa. Para cada um, a decisão pertence �
 | OPEN-18 | Lacuna · **resolvida em 2026-10-30 (etapa 63):** converter cancelamento em no-show fica fora do MVP, registrado na RN-18 (spec v0.1.11) | RN-18 (faixa total): "o prestador pode converter em no-show se já estava a caminho". Não há RF nem UC para isso | SPEC-017, SPEC-019 |
 | OPEN-19 | Lacuna · **resolvida em 2026-10-30 (etapa 63):** sem limiar automático no MVP; o dossiê mostra as taxas e o admin julga (SPEC-025) | UC-07: "repetidas expirações contam como sinal de baixa responsividade, exibido ao admin em UC-13", sem métrica nem limiar definidos | SPEC-016, SPEC-025 |
 | ~~OPEN-20~~ | Divergência código × spec · **resolvida na spec v0.1.7:** P-07 segue a spec; P-12a/b, P-16a/b e P-21 entram | Faixas de parâmetros em `src/dominio/parametros.js` diferentes da spec §6.1: P-07 mínimo de 1 h (spec: 0,5 h); P-12 dividido em P-12a/P-12b com janela de 7 a 90 dias (spec: fixa em 30); P-16 dividido em P-16a (5–60 min) e P-16b (6–72 h) (spec: sem faixa); limite do RNF-13 de 20/dia (1–200), ainda não definido na spec | SPEC-001, 018, 019, 028 |
-| OPEN-301 | Escopo · **adiada por decisão (D5, 2026-11-06)** | Fase 2 da SPEC-030: exclusão de conta por anonimização, com estado novo `EXCLUIDO` na §9.6 e bloqueio enquanto houver agendamento em aberto, disputa aberta ou comissão a pagar (D4). Até lá, a privacidade indica o e-mail de suporte | SPEC-030, §9.6 |
+| ~~OPEN-301~~ | Escopo · **resolvida na etapa 68 (2026-11-26)** | Fase 2 da SPEC-030 entregue: exclusão por anonimização, estado `EXCLUIDO` na §9.6, bloqueio por agendamento ativo, disputa, comissão da competência corrente ou revisão (RF-097, RF-098, spec v0.1.13) | SPEC-030, §9.6 |
 | OPEN-21 | Ambiguidade | O prefixo `T-` designa tanto **tarefas** (`T-01`..`T-87` em `tasks.md`) quanto **testes** (`T-PRECO-01`, `T-CANCEL-04i`) | rastreabilidade |
 
 ---

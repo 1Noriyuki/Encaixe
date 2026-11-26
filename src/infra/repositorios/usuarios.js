@@ -238,3 +238,41 @@ export function avaliacoesFeitas(usuarioId) {
     usuarioId,
   );
 }
+
+// ------------------------------------------------- exclusao (SPEC-030, fase 2)
+
+/** RF-098 - o que ainda prende a conta. Contagens, para a regra decidir no dominio. */
+export function pendenciasDeExclusao(usuarioId, competencia) {
+  return um(
+    `SELECT
+       (SELECT COUNT(*) FROM agendamento
+         WHERE (cliente_id = ? OR prestador_id = ?)
+           AND estado IN ('PENDENTE_CONFIRMACAO','CONFIRMADO','EM_DISPUTA')) AS agendamentosAtivos,
+       (SELECT COUNT(*) FROM disputa d JOIN agendamento a ON a.id = d.agendamento_id
+         WHERE (a.cliente_id = ? OR a.prestador_id = ?) AND d.estado <> 'RESOLVIDA') AS disputasAbertas,
+       (SELECT COUNT(*) FROM lancamento_comissao l JOIN agendamento a ON a.id = l.agendamento_id
+         WHERE a.prestador_id = ? AND l.competencia = ?
+           AND l.estado IN ('EFETIVADO','RETIDO')) AS comissoesDaCompetencia`,
+    usuarioId, usuarioId, usuarioId, usuarioId, usuarioId, competencia,
+  );
+}
+
+/**
+ * RF-097 - troca os dados pessoais pelos anonimos, na mesma transacao de quem
+ * chama. Agendamentos, avaliacoes, reputacao, comissoes e auditoria ficam: so
+ * deixam de apontar para alguem identificavel.
+ */
+export function anonimizar(usuarioId, { nome, email, senha_hash, nome_exibicao }) {
+  executar(
+    `UPDATE usuario SET nome = ?, email = ?, senha_hash = ?, foto = NULL, estado_conta = 'EXCLUIDO'
+      WHERE id = ?`,
+    nome, email, senha_hash, usuarioId,
+  );
+  executar("UPDATE perfil_cliente SET telefone = '', regiao_preferida_id = NULL WHERE usuario_id = ?", usuarioId);
+  executar("UPDATE perfil_prestador SET nome_exibicao = ?, descricao = '' WHERE usuario_id = ?", nome_exibicao, usuarioId);
+  executar('UPDATE servico SET ativo = 0 WHERE prestador_id = ?', usuarioId);
+  executar('DELETE FROM sessao WHERE usuario_id = ?', usuarioId);
+  executar('DELETE FROM notificacao WHERE usuario_id = ?', usuarioId);
+  // P9 de seguranca.md: o texto livre da busca e o dado mais pessoal da trilha.
+  executar("UPDATE interpretacao_busca SET texto_original = '' WHERE cliente_id = ?", usuarioId);
+}

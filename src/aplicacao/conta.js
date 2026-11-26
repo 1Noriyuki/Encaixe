@@ -3,19 +3,23 @@
  *
  * Tudo aqui age sobre a conta de quem esta autenticado: o id vem da sessao,
  * nunca do formulario, entao nao ha titularidade a conferir alem dela (RF-006).
- * A exclusao de conta e a fase 2 da SPEC-030 e ainda nao mora aqui.
+ * A exclusao (fase 2, RF-097/RF-098) tambem: so o titular exclui a propria conta.
  */
 
 import * as usuarios from '../infra/repositorios/usuarios.js';
 import * as catalogo from '../infra/repositorios/catalogo.js';
 import * as agendamentosRepo from '../infra/repositorios/agendamentos.js';
 import * as social from '../infra/repositorios/social.js';
+import * as horariosRepo from '../infra/repositorios/horarios.js';
 import * as fotos from '../infra/fotos.js';
 import * as auditoria from '../infra/auditoria.js';
 import { gerarHash, verificar, validarForca } from '../infra/senha.js';
 import { transacao } from '../infra/db/conexao.js';
 import { ErroDeRegra, ErroDeValidacao, NaoEncontrado } from '../dominio/erros.js';
 import { agoraIso } from '../dominio/tempo.js';
+import { assegurarTransicao } from '../dominio/estados.js';
+import { competenciaDe } from '../dominio/comissao.js';
+import { impedimentosDeExclusao, dadosAnonimos } from '../dominio/exclusao.js';
 
 /**
  * ADR-007: teto do arquivo da foto. E limite tecnico de upload, como o teto do
@@ -261,4 +265,62 @@ function resumoDeAgendamento(a, papel) {
     valor_travado_centavos: a.valor_travado,
     contraparte: papel === 'cliente' ? (a.nome_exibicao ?? a.prestador_nome) : a.cliente_nome,
   };
+}
+
+// ------------------------------------------------- exclusao (SPEC-030, fase 2)
+
+/** RF-098 - o que impede a exclusao agora; lista vazia quando ela pode seguir. */
+export function impedimentosParaExcluir(usuarioId) {
+  const usuario = carregar(usuarioId);
+  const pendencias = usuarios.pendenciasDeExclusao(usuarioId, competenciaDe(agoraIso()));
+  return impedimentosDeExclusao(usuario, pendencias);
+}
+
+/**
+ * RF-097 - anonimiza a conta do titular. Pede a senha pelo mesmo motivo da
+ * troca de senha (uma sessao esquecida aberta nao basta) e uma confirmacao
+ * explicita, porque nao ha volta: nao existe transicao saindo de EXCLUIDO.
+ */
+export function excluirConta({ usuarioId, senha, confirmacao }) {
+  const usuario = carregar(usuarioId);
+
+  if (!verificar(String(senha ?? ''), usuario.senha_hash)) {
+    throw new ErroDeRegra('RF-097', 'A senha não confere. Sua conta continua como estava.');
+  }
+  if (!confirmacao) {
+    throw new ErroDeValidacao('Marque a confirmação de que entende que a exclusão não tem volta.', 'confirmacao');
+  }
+
+  const horariosCancelados = transacao(() => {
+    // Dentro da transacao: uma reserva que chegue entre a tela e o clique tambem barra.
+    const motivos = impedimentosParaExcluir(usuarioId);
+    if (motivos.length > 0) {
+      throw new ErroDeRegra('RF-098', `Sua conta ainda não pode ser excluída: ${motivos.join(' ')}`, { motivos });
+    }
+    assegurarTransicao('conta', usuario.estado_conta, 'EXCLUIDO');
+
+    // INV-13: cada horario livre cancelado deixa o proprio rastro, como no RF-022.
+    const livres = usuario.perfil === 'PRESTADOR'
+      ? horariosRepo.doPrestador(usuarioId, { estados: ['PUBLICADO'] })
+      : [];
+    for (const h of livres) {
+      assegurarTransicao('horario', h.estado, 'CANCELADO');
+      horariosRepo.atualizarEstado(h.id, 'CANCELADO');
+      auditoria.registrar({
+        atorId: usuarioId, acao: 'HORARIO_CANCELADO', entidade: 'horario', entidadeId: h.id,
+        de: h.estado, para: 'CANCELADO', detalhe: { motivo: 'RF-097' },
+      });
+    }
+
+    usuarios.anonimizar(usuarioId, dadosAnonimos(usuarioId));
+    auditoria.registrar({
+      atorId: usuarioId, acao: 'CONTA_EXCLUIDA', entidade: 'conta', entidadeId: usuarioId,
+      de: usuario.estado_conta, para: 'EXCLUIDO',
+      detalhe: { horariosCancelados: livres.length, regra: 'RF-097' },
+    });
+    return livres.length;
+  });
+  // O arquivo sai depois do COMMIT: se a transacao falhar, a foto continua valida.
+  fotos.apagar(usuario.foto);
+  return { horariosCancelados };
 }
