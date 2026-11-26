@@ -78,7 +78,7 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   anonimização (RF-097, RF-098, estado terminal `EXCLUIDO` na §9.6), fechou a OPEN-301. As 107 issues
   estão fechadas. Resolvidas na etapa 68: a lacuna da RN-05 (a régua de horário reservado não muda
   mais), o teste nomeado da RN-17, o período do extrato (RF-061) e a P6 (CSP). Falta só fora do
-  código: validar a QA-01 (e a QA-07) com o professor. As pendências P1 a P5 e P7 a P11 de
+  código: validar a QA-01 com o professor. As pendências P1 a P5 e P7 a P11 de
   `docs/seguranca.md` são riscos aceitos do escopo local, cada um com justificativa.
 - **Redesign do front-end (etapas 67 e 68, concluído).** O professor reprovou o visual por "parecer
   template genérico". O piloto (home, busca, página do horário) entrou pelo PR #154; a etapa 68 o

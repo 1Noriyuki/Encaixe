@@ -27,7 +27,7 @@ Atualizado em 2026-11-26 (etapa 68). As linhas das etapas anteriores estão no d
 | Redesign do front-end | Piloto (etapa 67) na `main` pelo PR #154; estendido aos painéis, às telas de conta e ao `og.jpg` na etapa 68 |
 | Lacunas de teste antigas | RN-05 (régua de horário reservado) corrigida no código e com teste; RN-17 com teste nomeado (etapa 68) |
 | Segurança | P6 (CSP) resolvida na etapa 68; P1 a P5, P7 a P10 e a nova P11 seguem como riscos aceitos do escopo local, com justificativa em `seguranca.md` §4 |
-| Pendente fora do código | Validar a QA-01 (e a QA-07) com o professor |
+| Pendente fora do código | Validar a QA-01 com o professor (a QA-07 foi resolvida na v0.1.10) |
 | Documento de passagem | `docs/proximos-passos.docx`, regenerado com o estado de 2026-11-26 (etapa 68) |
 
 ### Decisões humanas pendentes
@@ -1085,4 +1085,4 @@ Atualizado em 2026-11-26 (etapa 68). As linhas das etapas anteriores estão no d
 - **Verificação:** `npm test` 480/480. Telas conferidas no Chrome em 1366, 390 e 320 px e nos temas
   claro, azul e preto.
 - **Documento de passagem:** `docs/proximos-passos.docx` regenerado com o estado de 2026-11-26.
-- **Fica para a equipe:** validar a QA-01 (e a QA-07) com o professor.
+- **Fica para a equipe:** validar a QA-01 com o professor.

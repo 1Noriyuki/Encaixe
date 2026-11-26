@@ -139,7 +139,7 @@ Ratificadas por `2dart5` em 2026-10-18, no exercício da Trilha C:
 
 | ID | Tarefa | Rastreio | Aceite | Estado |
 |---|---|---|---|:--:|
-| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra. **Issue fechada, lacuna aberta:** a RN-05 tem um teste só e não barra a edição da régua de horário reservado; a RN-17 não aparece no nome de nenhum teste (etapa 64) | 🔄 |
+| T-68 | Suíte de testes de domínio | RNF-06 | Toda regra da §6 com teste nomeado pela regra. Lacunas da etapa 64 fechadas na etapa 68: a RN-05 barra a edição da régua de horário reservado (`T-AGENDA-06`) e a RN-17 tem teste nomeado (`T-DISPUTA-16`). Conferido por script em 2026-11-26: RN-00 a RN-33 aparecem todas no título de algum teste | ✅ |
 | T-69 | Testes de integração dos fluxos completos | AC-03 a AC-12 | UC-03 → UC-12 ponta a ponta | ✅ |
 | T-70 | Testes da camada HTTP | AC-01, RF-006, RF-007 | Autorização, CSRF e escape de saída | ✅ |
 | T-71 | `plan.md` e `tasks.md` | §7 enunciado | Derivados da spec, com rastreabilidade | ✅ |
