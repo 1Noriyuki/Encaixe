@@ -146,5 +146,5 @@ Sem isso, o sistema roda completo com o provedor simulado — inclusive a busca 
 
 ## Estado do projeto
 
-MVP funcional, com as 29 Specs do processo SDD concluídas e a fase 1 da SPEC-030 (configurações da conta). Suíte de testes: **467 testes automatizados**, todos verdes
+MVP funcional, com as 30 Specs do processo SDD concluídas, incluindo a SPEC-030 inteira (configurações da conta e exclusão de conta pelo titular). Suíte de testes: **480 testes automatizados**, todos verdes
 (`npm test`). Cobertura por regra e evidências em [`docs/testes.md`](docs/testes.md).

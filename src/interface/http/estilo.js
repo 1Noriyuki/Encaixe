@@ -631,6 +631,10 @@ input, select, textarea {
   font: inherit; font-size: var(--txt-peq);
   transition: border-color var(--rapido), box-shadow var(--rapido);
 }
+/* Caixa de marcar ao lado do texto: a regra geral de input (largura cheia,
+   padding) a deixava sozinha numa linha, longe da frase que ela confirma. */
+.marcar { display: flex; gap: var(--e2); align-items: flex-start; font-weight: 600; margin: var(--e3) 0; cursor: pointer; }
+.marcar input { width: 18px; height: 18px; padding: 0; margin: 3px 0 0; flex: none; accent-color: var(--perigo); }
 input::placeholder, textarea::placeholder { color: var(--texto-tenue); }
 /* Campo so de leitura (o e-mail na conta, RF-087) nao pode parecer editavel. */
 input:disabled { background: var(--superficie-2); color: var(--texto-fraco); border-style: dashed; cursor: not-allowed; }
@@ -841,7 +845,10 @@ legend { font-size: var(--txt-peq); font-weight: 650; padding: 0 6px; }
 /* ==============================================================
    14. TABELAS
    ============================================================== */
-.tabela-rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* position: relative prende o .so-leitor (absoluto) dentro da rolagem: sem
+   isso o rotulo oculto da coluna Acoes ficava fora e a pagina rolava para o
+   lado em 390 px (/admin/contas, etapa 68). */
+.tabela-rolagem { overflow-x: auto; -webkit-overflow-scrolling: touch; position: relative; }
 table { width: 100%; border-collapse: collapse; font-size: var(--txt-peq); }
 th, td { padding: 11px 13px; text-align: left; border-bottom: 1px solid var(--borda); vertical-align: top; }
 th { font-size: var(--txt-mini); color: var(--texto-fraco); font-weight: 700; white-space: nowrap; }
@@ -859,19 +866,20 @@ tbody tr { transition: background var(--rapido); }
 /* ==============================================================
    15. METRICAS, REPUTACAO, ESTRELAS
    ============================================================== */
+/* Etapa 67, paineis: a metrica deixou de ser caixa com numero gigante (o
+   painel de template). Vira uma coluna de livro-razao: regua fina no topo,
+   numero e rotulo, lado a lado como as colunas da agenda. */
 .metrica {
-  background: var(--superficie); border-radius: var(--raio);
-  padding: var(--e4) var(--e5) 18px;
-  border: 1px solid var(--borda);
+  background: none; border: none; border-radius: 0;
+  border-top: 1.5px solid var(--borda-forte);
+  padding: var(--e3) 0 var(--e1);
 }
-.cartao .metrica { background: var(--superficie-2); border-color: transparent; }
-/* Metrica que pede acao: a unica do painel com a cor do acento. */
-.metrica-destaque {
-  background: var(--acento-fraco);
-  border-color: color-mix(in srgb, var(--acento) 35%, transparent);
-}
+.cartao .metrica { background: none; }
+/* Metrica que pede acao: a unica com a regua e o numero na cor do acento,
+   a mesma peca laranja do logo. */
+.metrica-destaque { border-top: 3px solid var(--acento); padding-top: calc(var(--e3) - 1.5px); }
 .metrica-destaque .valor { color: var(--acento-forte); }
-.metrica .valor { font-size: var(--txt-2xl); font-weight: 750; letter-spacing: -.035em; line-height: 1.15; }
+.metrica .valor { font-size: var(--txt-xl); font-weight: 750; letter-spacing: -.03em; line-height: 1.15; }
 .metrica .rotulo { font-size: var(--txt-peq); color: var(--texto); font-weight: 650; margin-top: 4px; }
 .metrica .detalhe { font-size: var(--txt-mini); color: var(--texto-tenue); margin-top: 3px; }
 
@@ -886,6 +894,21 @@ tbody tr { transition: background var(--rapido); }
 /* Estrelas de verdade; a alternativa textual vai no aria-label do HTML. */
 .estrelas { display: inline-flex; gap: 1px; color: var(--acento); font-size: var(--txt-corpo); }
 .estrelas .apagada { color: var(--borda-forte); }
+
+/* Escolha de periodo: texto com sublinhado, como a navegacao, no lugar das
+   pilulas. O atual fica sublinhado e em negrito. */
+.abas-texto { display: flex; gap: var(--e4); flex-wrap: wrap; }
+.abas-texto a {
+  color: var(--texto-fraco); font-weight: 650; font-size: var(--txt-peq);
+  padding: 4px 0; border-bottom: 2px solid transparent; text-decoration: none;
+}
+.abas-texto a:hover { color: var(--texto); text-decoration: none; }
+.abas-texto a[aria-current] { color: var(--texto); border-bottom-color: currentColor; }
+
+/* RF-061: periodo do extrato numa linha so, campos estreitos (datas nao
+   precisam de largura cheia). Quebra sozinho no celular. */
+.filtro-periodo { display: flex; flex-wrap: wrap; gap: var(--e3); align-items: flex-end; margin: 0 0 var(--e5); }
+.filtro-periodo .campo { margin: 0; width: min(180px, 100%); }
 
 /* ==============================================================
    16. LISTAS E ESTADO VAZIO
@@ -1428,6 +1451,8 @@ ${SEM_MOVIMENTO_ESCOLHIDO}
 }
 
 @media (max-width: 680px) {
+  /* Metricas em duas colunas: uma por linha alongava o painel no celular. */
+  .grade:has(> .metrica) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e4) var(--e3); }
   :root { --e5: 18px; --e6: 26px; --e7: 36px; --e8: 52px; }
 
   /* minmax(0, ...): com 1fr a tabela da privacidade alargava a coluna e a pagina rolava para o lado. */
@@ -1513,7 +1538,10 @@ ${SEM_MOVIMENTO_ESCOLHIDO}
   .busca-principal { flex-direction: column; border-radius: var(--raio); }
   .busca-principal .botao { width: 100%; }
   .agenda-aberta-onde { white-space: normal; }
-  .regua { grid-template-columns: 1fr auto; }
+  /* minmax(0, ...): em 320 px o rótulo do degrau quebra a linha em vez de empurrar a página (etapa 68). */
+  .regua { grid-template-columns: minmax(0, 1fr) auto; }
+  .regua-degrau { gap: var(--e2); padding-inline: 10px; }
+  .regua-quando { white-space: normal; }
   .regua-degrau .regua-barra { display: none; }
 }
 

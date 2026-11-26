@@ -59,7 +59,46 @@ export function migrar() {
   acrescentarPrazoAutoconclusao();
   acrescentarPrazoAvaliacao();
   acrescentarFotoDePerfil();
+  if (aceitarContaExcluida(sql)) bd().exec(sql); // o gatilho da conta cai junto com a tabela antiga
   return bd();
+}
+
+/**
+ * RF-097 (SPEC-030, fase 2): bancos anteriores a spec v0.1.13 tem um CHECK de
+ * `estado_conta` sem `EXCLUIDO`, e o SQLite nao altera CHECK. A tabela e
+ * reconstruida pelo roteiro oficial (criar a nova, copiar, apagar a antiga,
+ * renomear) com as chaves estrangeiras desligadas, para o DROP nao cascatear
+ * nas sessoes e perfis. A definicao nova vem do proprio schema.sql, entao nao
+ * ha uma segunda copia dela para envelhecer.
+ *
+ * @returns {boolean} true quando reconstruiu (e o schema precisa ser reaplicado)
+ */
+function aceitarContaExcluida(sql) {
+  const banco = bd();
+  const atual = banco.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'usuario'").get()?.sql ?? '';
+  if (atual.includes("'EXCLUIDO'")) return false;
+
+  const definicao = sql.match(/CREATE TABLE IF NOT EXISTS usuario \([\s\S]*?\r?\n\);/)?.[0];
+  if (!definicao) throw new Error('schema.sql sem a tabela usuario');
+  const colunas = banco.prepare('PRAGMA table_info(usuario)').all().map((c) => c.name).join(', ');
+
+  banco.exec('PRAGMA foreign_keys = OFF');
+  try {
+    banco.exec('BEGIN');
+    banco.exec(definicao.replace('CREATE TABLE IF NOT EXISTS usuario', 'CREATE TABLE usuario_novo'));
+    banco.exec(`INSERT INTO usuario_novo (${colunas}) SELECT ${colunas} FROM usuario`);
+    banco.exec('DROP TABLE usuario');
+    banco.exec('ALTER TABLE usuario_novo RENAME TO usuario');
+    const quebradas = banco.prepare('PRAGMA foreign_key_check').all();
+    if (quebradas.length > 0) throw new Error(`migracao de usuario quebrou ${quebradas.length} chave(s) estrangeira(s)`);
+    banco.exec('COMMIT');
+  } catch (erro) {
+    try { banco.exec('ROLLBACK'); } catch { /* ja desfeita */ }
+    throw erro;
+  } finally {
+    banco.exec('PRAGMA foreign_keys = ON');
+  }
+  return true;
 }
 
 /**

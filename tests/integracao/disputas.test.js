@@ -203,3 +203,29 @@ test('RF-074 | a fila do admin ordena por SLA', () => {
   viajarPara(adicionarHoras(c.horario.inicio, 24 * 4));
   assert.equal(disputas.fila()[0].foraDoSla, true);
 });
+
+test('T-DISPUTA-16 | RN-17: a comissão em disputa fica RETIDA, sai do total do extrato e volta só com a resolução', () => {
+  const c = cenarioBasico({ horasAteHorario: 2 });
+  const ag = concluido(c);
+  const antes = financeiroRepo.totaisPrestador(c.prestador.id);
+  assert.equal(antes.qtd, 1);
+
+  const d = disputas.abrir({
+    usuarioId: c.cliente.id, agendamentoId: ag.id, motivo: 'COBRANCA_DIVERGENTE',
+    evidencia: 'O valor cobrado no balcão foi maior que o travado na reserva.',
+  });
+  assert.equal(financeiroRepo.porAgendamento(ag.id).estado, 'RETIDO');
+  const durante = financeiroRepo.totaisPrestador(c.prestador.id);
+  assert.equal(durante.qtd, 0, 'retido não entra no total efetivado');
+  assert.equal(durante.retido_qtd, 1, 'aparece separado como retido');
+  assert.equal(durante.retido_liquido, antes.liquido);
+
+  disputas.resolver({
+    adminId: c.adminId, disputaId: d.id, desfecho: 'MANTIDO',
+    justificativa: 'O valor cobrado confere com o recibo apresentado pelo prestador.',
+  });
+  assert.equal(financeiroRepo.porAgendamento(ag.id).estado, 'EFETIVADO');
+  const depois = financeiroRepo.totaisPrestador(c.prestador.id);
+  assert.equal(depois.qtd, 1);
+  assert.equal(depois.retido_qtd, 0);
+});

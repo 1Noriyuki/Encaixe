@@ -15,25 +15,20 @@
 
 ## Estado atual (resumo)
 
+Atualizado em 2026-11-26 (etapa 68). As linhas das etapas anteriores estão no diário abaixo.
+
 | Item | Situação |
 |---|---|
-| Mapa de Specs | **Aprovado** (v1.0.0, etapa 11), na ordem original |
-| SPEC-001 Fundação | **Concluída** (v1.2.0, etapa 28): aprovada na etapa 11, decisões na 22, código conferido e com teste para todos os CA, INV e RNF. Issues #80 e #9 fechadas |
-| SPEC-002 Cadastro e autenticação | **Aprovada**; v1.2.0 com as decisões das OPEN-12/202/203 (etapa 12) e OPEN-01/02/210 (etapa 14). **Código conferido e corrigido** (etapa 15): CA-01 a CA-12 com teste |
-| SPEC-003 Autorização por perfil e titularidade | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-003-autorizacao-por-perfil-e-titularidade.md`](SPEC-003-autorizacao-por-perfil-e-titularidade.md); questões da §13 seguem abertas |
-| SPEC-004 Notificações por evento e central do usuário | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-004-notificacoes-por-evento-e-central-do-usuario.md`](SPEC-004-notificacoes-por-evento-e-central-do-usuario.md); questões da §13 seguem abertas |
-| SPEC-005 Aprovação e reprovação de prestador | **Aprovada** (v1.0.0, etapa 21) em [`SPEC-005-aprovacao-e-reprovacao-de-prestador.md`](SPEC-005-aprovacao-e-reprovacao-de-prestador.md); questões da §13 seguem abertas |
-| SPEC-006 a 009, 011, 020, 021, 024 e 026 | **Rascunhos, não aprovados** (etapa 27). Na `main` pelos PRs #122, #126 e #127; o merge não aprova. Aprovação pela equipe, uma Spec por vez |
-| Próxima etapa | Conferir o código contra as SPEC-003, 004 e 005 (Trilha C, 2dart5). Trilha A: levar a SPEC-006 (rascunho) à aprovação |
-| Layout da SPEC-002 | 8 telas de celular, [canvas](https://claude.ai/artifact/RNxkqRrx1kn9TQ3F8wuZrW) e fontes em `docs/specs/layouts/SPEC-002/`; **aprovado** (etapa 23); canal de contato definido na etapa 25 |
-| Layout da SPEC-001 | Não se aplica: a Fundação não tem tela (SPEC-001 §8) |
-| Identidade visual | **Aprovada e aplicada no site** (etapa 10). [Guia](https://claude.ai/artifact/5Nzrg1ZKrp2H8EREk4p9YX) e arquivos em `docs/identidade-visual/` |
-| Código (`src/interface/http/`, `public/`) | Marca nova (etapa 10) e fonte da marca no site inteiro (etapa 11). Suíte: 235/235 na etapa 28 |
-| Baseline (`spec.md`, ADRs) | `docs/spec.md` v0.1.9; histórico das alterações nas etapas 7, 12, 14, 22, 24 e 25 |
-| Código (`src/`, `tests/`) | Commitado na branch (`a653fa7`). Conferido Spec por Spec contra as Specs aprovadas e corrigido onde diverge (OPEN-01, etapa 14) |
-| Commits do processo SDD | Na `main`: branch SDD pelo PR #109, Trilha A pelos PRs #110 e #114 (etapa 20); SPEC-003 a 005 vindas da branch `specs-duarte` (etapa 21) |
-| Issues no GitHub | 59 fechadas, 48 abertas em 2026-10-20 (gostislavs 18, 2dart5 30, porque assumiu também a Trilha C); #79 decisões, #80–#108 uma por Spec (etapas 13 e 20) |
-| Documento de passagem | `docs/proximos-passos.docx`, reescrito com o estado de 2026-10-22 (etapa 28) |
+| Mapa de Specs | **Aprovado** (v1.0.0, etapa 11); a SPEC-030 entrou depois, na etapa 66 |
+| SPEC-001 a SPEC-029 | **Concluídas**, com a §12 de cada uma conferida por `grep` (etapa 65). As 107 issues estão fechadas |
+| SPEC-030 Configurações da conta | **Concluída**: fase 1 na etapa 66, fase 2 (exclusão de conta, OPEN-301) na etapa 68 |
+| Baseline | `docs/spec.md` **v0.1.13** (RF-097, RF-098 e `EXCLUIDO` na §9.6) |
+| Suíte | `npm test`: **480/480** em 2026-11-26 |
+| Redesign do front-end | Piloto (etapa 67) na `main` pelo PR #154; estendido aos painéis, às telas de conta e ao `og.jpg` na etapa 68 |
+| Lacunas de teste antigas | RN-05 (régua de horário reservado) corrigida no código e com teste; RN-17 com teste nomeado (etapa 68) |
+| Segurança | P6 (CSP) resolvida na etapa 68; P1 a P5, P7 a P10 e a nova P11 seguem como riscos aceitos do escopo local, com justificativa em `seguranca.md` §4 |
+| Pendente fora do código | Validar a QA-01 (e a QA-07) com o professor |
+| Documento de passagem | `docs/proximos-passos.docx`, regenerado com o estado de 2026-11-26 (etapa 68) |
 
 ### Decisões humanas pendentes
 
@@ -1007,7 +1002,7 @@
   em 1366, 800, 412, 390 e 320 px e nos temas branco, azul-escuro e preto; o envio de foto foi testado
   pelo navegador com uma imagem real.
 
-### Etapa 67 — Redesign do front-end (em andamento: piloto) · 2026-11-06
+### Etapa 67 — Redesign do front-end (piloto; estendido na etapa 68) · 2026-11-06
 
 - **Pedido do Enzo:** redesign seguindo um briefing de direção de arte (preservar a identidade, tirar a cara
   de template, sem mudar regra, estado, cálculo nem contrato). Segunda tentativa: a primeira (direção
@@ -1039,6 +1034,55 @@
 - **Bug corrigido:** iniciais do avatar de "Paulo (admin)" saíam "P(".
 - **Premissas do agente:** nenhuma regra, rota, estado ou dado persistido muda; as fotos são decoração de
   categoria e somem sozinhas se o arquivo faltar; o rodapé ganhou a palavra da marca como fechamento.
-- **Pendente:** aprovação do piloto (home, busca e página do horário) no navegador antes de estender aos
-  painéis do prestador, do cliente e do admin; atualizar `public/LEIAME.md`, `docs/imagem-hero.md` e o
-  `og.jpg`.
+- **Desfecho:** o piloto entrou na `main` pelo PR #154 (2026-11-07). A extensão aos painéis, à conta e
+  ao `og.jpg` foi feita na etapa 68, por ordem do Enzo ("sobe o redesign na main já").
+
+### Etapa 68 — Exclusão de conta, redesign dos painéis e lacunas restantes · 2026-11-26
+
+- **Pedido do Enzo:** "faça tudo que falta agora. sobe o redesign na main já. pode excluir a conta OPEN e
+  SPEC". Lido como: executar a fase 2 da SPEC-030 (OPEN-301) com as decisões D4 e D5 já tomadas, estender o
+  redesign às telas que faltavam e fechar as lacunas levantadas na verificação do mesmo dia.
+- **Exclusão de conta (SPEC-030 fase 2, spec v0.1.13):**
+  - spec primeiro: RF-097 e RF-098 na §7.10, `EXCLUIDO` na §9.6 (terminal; `REPROVADO` passa a sair
+    para ele), linha nova na §4.5 e `estado_conta` na §9.2;
+  - domínio puro em `dominio/exclusao.js` (lista de impedimentos e dados anônimos); caso de uso em
+    `aplicacao/conta.js` na ordem do projeto: senha, impedimentos dentro da transação, máquina de
+    estados, gravação, auditoria;
+  - banco: o `CHECK` de `estado_conta` ganha `EXCLUIDO` e um `CHECK` novo impede conta excluída com
+    foto ou e-mail real (SPEC-030 INV-004). Bancos antigos são reconstruídos em `migrar()`, pelo roteiro
+    oficial do SQLite; provado contra um banco gerado pelo código da `main` (10 contas, 7 perfis,
+    gatilho recriado, nenhuma chave estrangeira quebrada);
+  - tela em `/conta/privacidade`: com impedimento, lista todos e esconde o formulário; sem, pede senha e
+    confirmação; depois, `/conta/excluida`. Nove testes `T-SPEC030-CA16..21`, `INV04`, `UN02`, `MIG01`.
+- **Premissas do agente** (registradas na SPEC-030 §13): "comissão a pagar" virou lançamento da
+  competência corrente; `EM_REVISAO` barra; o admin não exclui a própria conta; o e-mail fica livre para
+  recadastro (risco P11 em `seguranca.md`); avaliações e relatos ficam com o texto, autor anonimizado.
+- **RN-05 (lacuna antiga):** editar a régua de um horário reservado mudava a projeção dele. Era o código
+  divergindo da spec, então o código mudou: `salvarRegua` recusa com a RN-05 quando a régua está num
+  horário com reserva pendente ou confirmada. Teste novo `T-AGENDA-06`; o `T-RESERVA-12`, que editava
+  essa régua e só olhava o valor travado, passou a esperar a recusa.
+- **RN-17 (lacuna antiga):** teste nomeado `T-DISPUTA-16` (comissão retida sai do total do extrato e volta
+  com a resolução).
+- **RF-061, período do extrato:** a spec pede o extrato "para um período" e a tela não oferecia o campo
+  (o repositório já filtrava; era o item 6 do documento de passagem de 30/10). A tela ganhou "De" e
+  "Até" em data local; data inválida ou invertida mostra tudo e avisa, em vez de um extrato vazio
+  enganoso. Teste `T-SPEC024-09`, acrescentado à §12 da SPEC-024.
+- **Segurança, P6:** `Content-Security-Policy` em toda página HTML, com o único script inline liberado
+  pelo hash. A pendência dizia "não há JavaScript inline", o que já não era verdade; o script foi para a
+  constante `SCRIPT_INICIAL` para o hash acompanhar qualquer mudança. Teste `T-SEG-P6`; conferido no
+  Chrome sem nenhuma violação no console.
+- **Redesign estendido (painéis do prestador, cliente e admin, telas de conta):** métricas viram colunas
+  com régua no topo (sem caixa nem número gigante; duas por linha no celular); sai o rótulo acima dos
+  títulos de seção (fica a categoria do horário, como no piloto); links de navegação e ações secundárias
+  em lista viram texto com sublinhado (`botao-fantasma`), conforme a preferência do Enzo; o período do
+  painel do admin vira abas de texto.
+- **Largura mínima:** `/admin/contas` rolava para o lado em 390 px (o `.so-leitor` escapava da tabela)
+  e a régua passava 9 px em 320 px na home e no catálogo. Os três vinham de antes desta etapa e foram
+  corrigidos. Conferido por script em 1366, 390 e 320 px: nenhuma tela rola para o lado.
+- **Imagens:** `hero.jpg` apagado (não era usado desde a etapa 67). `og.jpg` refeito como cartão da marca
+  (logo, frase da home e três linhas de agenda), renderizado de HTML com a Bricolage, sem foto;
+  `og:image:alt` atualizado. `public/LEIAME.md` e `docs/imagem-hero.md` reescritos para o estado atual.
+- **Verificação:** `npm test` 480/480. Telas conferidas no Chrome em 1366, 390 e 320 px e nos temas
+  claro, azul e preto.
+- **Documento de passagem:** `docs/proximos-passos.docx` regenerado com o estado de 2026-11-26.
+- **Fica para a equipe:** validar a QA-01 (e a QA-07) com o professor.

@@ -90,11 +90,11 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 | P3 | Cookie sem `Secure` | Interceptação | O MVP roda em HTTP local; `Secure` quebraria o desenvolvimento | Ligar junto com HTTPS ao publicar |
 | P4 | Sem recuperação de senha | Indisponibilidade para o usuário | Depende de serviço de e-mail, fora do escopo (§2.2) | T-82 |
 | P5 | Evidência de disputa aceita apenas texto/URL | URL pode apontar para conteúdo malicioso | Decisão QA-09; upload real exigiria armazenamento e varredura | T-83 |
-| P6 | Sem `Content-Security-Policy` | XSS residual | Não há JavaScript inline nem script de terceiros; o escape é a defesa primária | Adicionar CSP restritiva |
 | P7 | Banco sem criptografia em repouso | Acesso físico ao arquivo | Ambiente local, dados fictícios | Cifrar volume em produção |
 | P8 | `estado_cobranca` é declaratório | Prestador pode marcar "pago" indevidamente | Consequência direta do [ADR-005](adr/ADR-005-escopo-financeiro.md) | Pagamento intermediado |
 | P10 | Foto guardada com metadados (EXIF) | Localização embutida na foto de celular | Sem dependência não há como reprocessar a imagem (ADR-001, ADR-007) | Remover metadados ao receber, com biblioteca ou recompressão |
-| P9 | Sem retenção da trilha de auditoria nem das interpretações | O texto livre que o cliente digitou na busca fica guardado sem prazo | Decisão da SPEC-029 §13 (etapa 63): dados fictícios e ambiente local; a trilha completa é o que permite reconstruir decisões (RF-085) | Prazo de retenção e anonimização do `texto_original` antes de publicar |
+| P9 | Sem retenção da trilha de auditoria nem das interpretações | O texto livre que o cliente digitou na busca fica guardado sem prazo enquanto a conta existe | Decisão da SPEC-029 §13 (etapa 63): dados fictícios e ambiente local; a trilha completa é o que permite reconstruir decisões (RF-085). Desde a etapa 68 a exclusão da conta apaga o `texto_original` dela (RF-097) | Prazo de retenção para as contas ativas antes de publicar |
+| P11 | Quem exclui a conta pode se cadastrar de novo com o mesmo e-mail | A reputação recomeça na P-08 e escapa da restrição da RN-12 | LGPD: guardar o e-mail ou um hash dele para barrar o recadastro seria manter dado pessoal de quem pediu exclusão. A exclusão exige não estar `EM_REVISAO` (RF-098), então quem já está sob análise não foge dela | Verificação de identidade no cadastro, se o sistema for publicado |
 
 ---
 
@@ -138,5 +138,15 @@ Registradas explicitamente porque um documento de segurança que só lista acert
 **Implementado na SPEC-030 (etapa 66):** cópia dos dados pessoais em JSON (acesso e portabilidade, RF-094),
 correção pelo próprio titular (RF-087) e política de privacidade pública (RF-096).
 
-**Não implementado:** exclusão de conta pelo próprio titular (fase 2 da SPEC-030, OPEN-301). Até lá, a
-página de privacidade indica o e-mail de suporte para o pedido. Seria obrigatória em produção.
+**Implementado na fase 2 da SPEC-030 (etapa 68):** exclusão pelo próprio titular (RF-097, LGPD art. 18, VI),
+por anonimização: nome, e-mail, telefone, região, foto, nome do negócio, notificações e texto das buscas com
+IA saem; agendamentos, avaliações, reputação, comissões e auditoria ficam, ligados a uma conta que não
+identifica ninguém. Bloqueada enquanto houver agendamento ativo, disputa, comissão do mês ou revisão
+(RF-098). O banco recusa conta `EXCLUIDO` com foto ou e-mail real (SPEC-030 INV-004). Conta suspensa
+não entra no sistema e continua pedindo pelo e-mail de suporte.
+
+**Controle acrescentado na etapa 68:** `Content-Security-Policy` em toda página HTML (antiga P6):
+`default-src 'self'`, script só do próprio site e o único inline liberado pelo hash SHA-256 calculado na
+inicialização (`SCRIPT_INICIAL` em `views/layout.js`), sem `object`, sem moldura alheia
+(`frame-ancestors 'none'`) e formulários só para o próprio site. Estilo inline segue permitido por causa
+dos atributos `style=` das telas. Teste: `T-SEG-P6`.

@@ -31,7 +31,7 @@ deixaria de funcionar igual sem internet, e cada visita avisaria um terceiro.
 - Licença: SIL Open Font License 1.1, que permite redistribuir junto com o software. O texto da licença está
   em `docs/identidade-visual/OFL-bricolage-grotesque.txt`.
 
-Isso **não altera o ADR-001**: a fonte é um arquivo de dados, como `hero.jpg`, e não uma dependência.
+Isso **não altera o ADR-001**: a fonte é um arquivo de dados, como as fotos em `public/`, e não uma dependência.
 Nada é instalado, nada roda em build e nada é buscado fora do servidor.
 
 ## Consequências

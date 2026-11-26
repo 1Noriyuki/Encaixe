@@ -76,7 +76,7 @@ function meusAgendamentos(ctx) {
         <h2 class="sem-topo">Em aberto (${abertos.length})</h2>
         <p>Reservas aguardando confirmação e atendimentos já confirmados.</p>
       </div>
-      <a class="botao botao-secundario botao-pequeno" href="/buscar">
+      <a class="botao botao-fantasma botao-pequeno" href="/buscar">
         Buscar horários <span class="seta">→</span>
       </a>
     </div>
@@ -254,7 +254,7 @@ function blocoDeAcoes(ctx, ag, { souCliente, souPrestador }) {
   }
 
   if ((souCliente || souPrestador) && ag.podeCancelar) {
-    acoes.push(html`<a class="botao botao-secundario" href="/agendamentos/${ag.id}/cancelar">
+    acoes.push(html`<a class="botao botao-fantasma" href="/agendamentos/${ag.id}/cancelar">
       Cancelar agendamento</a>`);
   }
 
@@ -520,11 +520,11 @@ function telaCancelar(ctx) {
             <button class="botao botao-perigo" type="submit">
               ${semPenalidade ? 'Cancelar sem penalidade' : `Cancelar assumindo ${previa.delta} pontos`}
             </button>
-            <a class="botao botao-secundario" href="/agendamentos/${ag.id}">Voltar sem cancelar</a>
+            <a class="botao botao-fantasma" href="/agendamentos/${ag.id}">Voltar sem cancelar</a>
           </div>
         </form>`
     : html`<p class="acima-4 sem-fundo">
-        <a class="botao botao-secundario" href="/agendamentos/${ag.id}">Voltar ao agendamento</a>
+        <a class="botao botao-fantasma" href="/agendamentos/${ag.id}">Voltar ao agendamento</a>
       </p>`}
     </div>
 

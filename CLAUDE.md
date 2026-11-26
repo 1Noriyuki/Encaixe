@@ -17,7 +17,7 @@ coluna e chave de lookup continuam sem acento.
 ```bash
 npm start            # servidor em http://127.0.0.1:3000 (NÃO recarrega sozinho)
 npm run dev          # node --watch — use este durante desenvolvimento
-npm test             # suíte completa (node --test), 467 testes, ~15 s
+npm test             # suíte completa (node --test), 480 testes, ~15 s
 npm run db:seed      # cria o banco e popula demonstração
 npm run db:migrar    # cria as 22 tabelas (idempotente, com backfill RN-00)
 npm run db:reset     # apaga dados/encaixe.db e recomeça do zero
@@ -73,22 +73,27 @@ Consequências práticas disso no dia a dia:
 O projeto seguiu o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
 Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
-- **Estado em 2026-11-06 (etapa 66, PR #153 mergeado):** spec v0.1.12. As 29 Specs originais estão
-  **concluídas** (evidência na §12 conferida por `grep`); as 107 issues estão fechadas. A **SPEC-030**
-  (configurações da conta, `/conta`) teve a fase 1 concluída; a **fase 2, exclusão de conta**, é a
-  OPEN-301, com as decisões já tomadas (D4/D5: anonimizar, estado novo `EXCLUIDO` na §9.6, bloqueio
-  com agendamento em aberto, disputa ou comissão a pagar). Também falta: validar a QA-01 com o
-  professor, a lacuna da RN-05, a RN-17 sem teste nomeado e as pendências P1 a P10 de
-  `docs/seguranca.md`. O `docs/proximos-passos.docx` parou em 30/10 e não cobre as etapas 65 e 66.
-- **Redesign do front-end em aberto (será a etapa 67).** O professor reprovou o visual por "parecer
-  template genérico". A primeira tentativa (direção "A tabela da parede", serifada, foto fixa numa
-  metade da página) foi reprovada pelo Enzo, revertida e apagada. Lições: **nada de foto de acervo aberto** (Wikimedia
-  "parece filme de terror"); imagens só **geradas por IA**, que o Enzo gera a partir dos prompts que
-  receber; mostrar o site rodando no navegador cedo, porque ele julga por ali, não por captura. As
-  capturas "antes" da Fase 0 estão em `docs/review/redesign/antes/` (fora do git).
+- **Estado em 2026-11-26 (etapa 68):** spec v0.1.13. As 30 Specs estão **concluídas** (evidência na
+  §12 conferida por `grep`), inclusive a **SPEC-030** inteira: a fase 2, exclusão de conta por
+  anonimização (RF-097, RF-098, estado terminal `EXCLUIDO` na §9.6), fechou a OPEN-301. As 107 issues
+  estão fechadas. Resolvidas na etapa 68: a lacuna da RN-05 (a régua de horário reservado não muda
+  mais), o teste nomeado da RN-17, o período do extrato (RF-061) e a P6 (CSP). Falta só fora do
+  código: validar a QA-01 (e a QA-07) com o professor. As pendências P1 a P5 e P7 a P11 de
+  `docs/seguranca.md` são riscos aceitos do escopo local, cada um com justificativa.
+- **Redesign do front-end (etapas 67 e 68, concluído).** O professor reprovou o visual por "parecer
+  template genérico". O piloto (home, busca, página do horário) entrou pelo PR #154; a etapa 68 o
+  estendeu aos painéis do prestador, cliente e admin e às telas de conta (métricas em colunas com
+  régua, sem rótulo acima dos títulos, links como texto sublinhado, período em abas de texto), apagou
+  o `hero.jpg` e refez o `og.jpg` como cartão da marca. Mantém logo, índigo + laranja e Bricolage; o
+  hero mostra a "Agenda aberta agora" com horários reais sobre uma grade de agenda em SVG
+  (`FUNDO_DE_AGENDA` em `rotas/publicas.js`). Preferências do Enzo: **nada de foto de acervo aberto** (Wikimedia "parece filme de terror") nem foto esmaecida
+  no hero; imagens só **geradas por IA** a partir de prompts que ele recebe; botão de texto é só
+  texto com sublinhado que cresce da esquerda, nunca pílula com fundo; vidro sem reflexo forte
+  ("parece plástico"). Mostre o site rodando no navegador cedo: ele julga por ali, não por captura.
+  As capturas ficam em `docs/review/redesign/` (fora do git).
 - **Mudança nova segue o mesmo rito:** regra que muda altera a `spec.md` primeiro, com linha no
   histórico de versões; bug corrigido vira teste de regressão; a etapa vai para
-  `docs/specs/registro-sdd.md` (a próxima é a 67), inclusive as premissas do agente.
+  `docs/specs/registro-sdd.md` (a última é a 68; a próxima é a 69), inclusive as premissas do agente.
 - **Regra fundamental:** conflito entre código, Spec e modelagem nunca é resolvido em silêncio.
   Registra-se e escolhe-se: corrigir o código ou propor mudança na spec. A equipe autorizou atualizar
   a baseline (spec, ADRs, README, este arquivo) a cada ação; **decisões de mérito** exigem aprovação
@@ -188,12 +193,17 @@ o intervalo falhar.
   fica com duas curvas, é descartada pelo navegador e o efeito aparece de uma vez, sem erro nenhum.
   E animação que "não aparece" pode ser o Windows com "Efeitos de animação" desligado: o site corta
   movimento nesse caso (RF-093).
-- **Efeito caro trava o hero em PC fraco:** `filter: blur()` animado, `mix-blend-mode` sobre área
-  grande e `backdrop-filter` no cabeçalho fixo foram removidos por isso. Anime só `transform` e
-  `opacity`.
+- **Efeito caro trava o hero em PC fraco:** `filter: blur()` animado e `mix-blend-mode` sobre área
+  grande foram removidos por isso. Anime só `transform` e `opacity`. O `backdrop-filter` voltou no
+  cabeçalho e nos botões com o bloco "VIDRO (EXPERIMENTO)" de `estilo.js`, a pedido do Enzo; se a
+  rolagem travar de novo, é ali. Apagar o bloco inteiro desfaz o vidro.
+- **Vidro sobre cor cheia satura.** `backdrop-filter: saturate()` num botão translúcido sobre o
+  `.campo-marca` virou um azul berrante; ali os botões ficam chapados. E regra de vidro em
+  `.botao:hover` ganha de `.botao-fantasma` por especificidade: variante nova precisa se defender.
 - **Tema escuro inverte a polaridade da marca.** `--primaria` clareia no escuro, então texto branco
   sobre ela cai para ~2,8:1. Texto sobre cor cheia usa `--sobre-primaria` / `--sobre-acento` /
-  `--sobre-perigo`, que trocam de lado junto com o tema.
+  `--sobre-perigo`, que trocam de lado junto com o tema. Bloco que precisa ficar escuro nos três
+  temas usa token próprio, como `--campo-marca` (a chamada final ficava ilegível no escuro).
 - **`vazio(texto)` escapa o que recebe.** Passar uma string com `<a>` renderiza a tag como texto na
   tela; use `vazio(html\`...\`)`. A assinatura completa é
   `vazio(texto, { titulo, acoes: [[href, rótulo]] })` — estado vazio sem ação é um beco.
@@ -223,9 +233,17 @@ o intervalo falhar.
 - **Servidor de teste em segundo plano pode sobreviver** e segurar a porta (o novo cai com
   `EADDRINUSE` e as capturas saem do código antigo). Confira com `curl` qual porta responde antes de
   confiar num print; na dúvida, suba noutra porta.
-- **"Tudo verde" não é "toda regra coberta".** A RN-05 tem um teste só e não barra a edição da régua de
-  um horário já reservado (o preço segue travado pela RN-04, mas a projeção muda); a RN-17 não aparece
-  no nome de nenhum teste. A issue T-68 foi fechada com essas lacunas abertas.
+- **"Tudo verde" não é "toda regra coberta".** A RN-05 não barrava a edição da régua de um horário já
+  reservado e a RN-17 não aparecia no nome de nenhum teste, com a suíte toda verde; a issue T-68 foi
+  fechada assim. Corrigido na etapa 68 (`T-AGENDA-06`, `T-DISPUTA-16`). Para conferir uma Spec, compare
+  os títulos da §12 com os testes por script, não a olho.
+- **Mudar um `CHECK` exige reconstruir a tabela.** O SQLite não altera `CHECK`. `aceitarContaExcluida()`
+  em `infra/db/conexao.js` mostra o roteiro: chaves estrangeiras desligadas, criar a nova a partir do
+  próprio `schema.sql`, copiar, apagar, renomear, `foreign_key_check`, e reaplicar o schema para
+  recriar os gatilhos que caem junto. Teste contra um banco gerado pelo código da `main`.
+- **O CSP libera o script inline pelo hash.** Mexeu no `SCRIPT_INICIAL` de `views/layout.js`, o hash
+  acompanha sozinho; um `<script>` inline novo em outro lugar **não roda** e não dá erro visível fora
+  do console. Ponha o código no `interacoes.js`. O `T-SEG-P6` falha se aparecer um segundo inline.
 - **Prazo é gravado quando o fato acontece.** P-01 na reserva; na confirmação, o prazo de conclusão
   automática (o maior entre P-17 e P-16b); P-14 e P-13 na conclusão. Prazo calculado na leitura com o
   parâmetro atual retroage em silêncio: foi o defeito da P-14 (etapa 32).
@@ -269,7 +287,7 @@ servidor real em porta efêmera. Mudança de texto exibido pode quebrar asserç�
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.12): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.13): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca, foto e aparência |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (30 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |
@@ -279,7 +297,7 @@ servidor real em porta efêmera. Mudança de texto exibido pode quebrar asserç�
 | `docs/testes.md` | estratégia de testes e evidências |
 | `docs/seguranca.md` | modelo de ameaças e controles |
 | `docs/review/` | revisão multidimensional periódica, com achados e ações |
-| `docs/imagem-hero.md` | briefing da foto do hero, recorte no celular e `og:image` |
+| `docs/imagem-hero.md` | imagens da home: hero sem foto, fotos de categoria geradas por IA e o cartão do `og:image` |
 
 ## Configuração
 

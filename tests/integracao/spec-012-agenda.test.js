@@ -13,6 +13,7 @@ import { criarAplicacao } from '../../src/interface/http/servidor.js';
 import * as agendamentos from '../../src/aplicacao/agendamentos.js';
 import * as busca from '../../src/aplicacao/busca.js';
 import * as horarios from '../../src/aplicacao/horarios.js';
+import * as catalogo from '../../src/aplicacao/catalogo.js';
 import * as auditoria from '../../src/infra/auditoria.js';
 import * as horariosRepo from '../../src/infra/repositorios/horarios.js';
 import { um } from '../../src/infra/db/conexao.js';
@@ -128,4 +129,22 @@ test('T-AGENDA-05 | RF-023: a tela do lote mostra cada recusa com a regra', asyn
   assert.match(tela, /1 horário publicado/);
   assert.match(tela, /09:30 \(RN-06: /);
   assert.match(tela, /25:00 \(Data ou hora inválida/);
+});
+
+test('T-AGENDA-06 | RN-05: a régua de um horário reservado não muda; liberada a reserva, muda', () => {
+  const c = cenarioBasico({ horasAteHorario: 5 });
+  const novas = [{ antecedencia_min: 240, percentual_desconto: 50 }];
+  const reservado = agendamentos.reservar({ clienteId: c.cliente.id, horarioId: c.horario.id });
+  const projecaoAntes = horarios.detalhe(c.horario.id).regua;
+
+  assert.throws(
+    () => catalogo.salvarRegua({ prestadorId: c.prestador.id, reguaId: c.regua.id, nome: 'Outra', faixas: novas }),
+    (e) => e.regra === 'RN-05' && e.detalhes.horarios.includes(c.horario.id),
+  );
+  assert.deepEqual(horarios.detalhe(c.horario.id).regua, projecaoAntes, 'a projeção do horário reservado não mudou');
+
+  // Criar outra régua continua livre, e a edição volta quando a reserva termina.
+  assert.ok(catalogo.salvarRegua({ prestadorId: c.prestador.id, nome: 'Nova', faixas: novas }).id);
+  agendamentos.recusar({ prestadorId: c.prestador.id, agendamentoId: reservado.id, motivo: 'Agenda indisponivel' });
+  assert.ok(catalogo.salvarRegua({ prestadorId: c.prestador.id, reguaId: c.regua.id, nome: 'Outra', faixas: novas }));
 });

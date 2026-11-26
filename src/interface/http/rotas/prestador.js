@@ -18,6 +18,7 @@ import {
 import { formatarBRL, centavosParaCampo } from '../../../dominio/dinheiro.js';
 import {
   formatarDataHora, formatarHora, formatarDiaLongo, partesLocais, agoraIso, humanizarMinutos,
+  deLocalParaUtc, adicionarDias,
 } from '../../../dominio/tempo.js';
 import { params } from '../../../aplicacao/parametros.js';
 
@@ -57,7 +58,6 @@ function painel(ctx) {
   return ctx.render(html`
     <div class="painel-topo">
       <div class="cabecalho-pagina sem-fundo">
-        <span class="olho">Painel do prestador</span>
         <h1>Olá, ${prestador.nome_exibicao}</h1>
         <p>
           ${prestador.bairro ? `${prestador.bairro} — ${prestador.cidade}` : 'Região não definida'}
@@ -67,7 +67,7 @@ function painel(ctx) {
       </div>
       <div class="linha">
         <a class="botao" href="/prestador/horarios">Publicar horário <span class="seta">→</span></a>
-        <a class="botao botao-secundario" href="/prestador/catalogo">Serviços e régua</a>
+        <a class="botao botao-fantasma" href="/prestador/catalogo">Serviços e régua</a>
       </div>
     </div>
 
@@ -95,7 +95,6 @@ function painel(ctx) {
     ${aguardando.length ? html`
       <div class="secao-titulo">
         <div>
-          <span class="olho">Agora</span>
           <h2>${plural(aguardando.length, 'reserva precisa', 'reservas precisam')} de resposta</h2>
         </div>
       </div>
@@ -115,7 +114,7 @@ function painel(ctx) {
                 </div>
               </div>
               <div class="linha">
-                <a class="botao botao-secundario botao-pequeno" href="/agendamentos/${a.id}">Analisar</a>
+                <a class="botao botao-fantasma botao-pequeno" href="/agendamentos/${a.id}">Analisar</a>
                 <form method="post" action="/agendamentos/${a.id}/confirmar">
                   ${campoCsrf(ctx.csrf)}
                   <button class="botao botao-pequeno" type="submit">Confirmar</button>
@@ -128,7 +127,6 @@ function painel(ctx) {
     ${aConcluir.length ? html`
       <div class="secao-titulo">
         <div>
-          <span class="olho">Já aconteceram</span>
           <h2>${plural(aConcluir.length, 'atendimento a fechar', 'atendimentos a fechar')}</h2>
           <p>Fechar o atendimento apura a comissão e libera a avaliação das duas partes.</p>
         </div>
@@ -160,11 +158,10 @@ function painel(ctx) {
     ${naVitrine.length ? html`
       <div class="secao-titulo">
         <div>
-          <span class="olho">Na vitrine agora</span>
           <h2>O que o cliente está vendo</h2>
           <p>Preço deste instante. Ele cai sozinho pela régua conforme o horário chega.</p>
         </div>
-        <a class="botao botao-secundario botao-pequeno" href="/prestador/horarios">
+        <a class="botao botao-fantasma botao-pequeno" href="/prestador/horarios">
           Agenda completa <span class="seta">→</span>
         </a>
       </div>
@@ -190,7 +187,6 @@ function painel(ctx) {
 
     <div class="secao-titulo">
       <div>
-        <span class="olho">Sua conta</span>
         <h2>Reputação e política</h2>
       </div>
     </div>
@@ -211,7 +207,7 @@ function painel(ctx) {
           </tbody>
         </table>
         <div class="linha acima-4">
-          <a class="botao botao-secundario botao-pequeno" href="/prestador/perfil">
+          <a class="botao botao-fantasma botao-pequeno" href="/prestador/perfil">
             Ajustar minha política <span class="seta">→</span>
           </a>
           <a class="botao botao-fantasma botao-pequeno" href="/prestador/extrato">Ver extrato</a>
@@ -363,7 +359,7 @@ function telaHorarios(ctx) {
                   ${h.estado === 'PUBLICADO' ? html`
                     <form method="post" action="/prestador/horarios/${h.id}/cancelar">
                       ${campoCsrf(ctx.csrf)}
-                      <button class="botao botao-secundario botao-pequeno botao-largo" type="submit">
+                      <button class="botao botao-fantasma botao-pequeno" type="submit">
                         Retirar da busca
                       </button>
                     </form>` : cru('')}
@@ -662,9 +658,38 @@ function telaAgendamentos(ctx) {
 
 // --------------------------------------------------------------- extrato
 
+/**
+ * RF-061 - "extrato para um periodo". As datas chegam no fuso de Sao Paulo
+ * (RNF-08) e viram o intervalo UTC fechado [inicio do primeiro dia, fim do
+ * ultimo], o mesmo formato ISO gravado em `criado_em`. Data invalida ou
+ * invertida nao filtra nada e avisa, em vez de devolver um extrato vazio
+ * que pareceria verdadeiro.
+ */
+function periodoDoExtrato(ctx) {
+  const dataDe = String(ctx.query.de ?? '').trim();
+  const dataAte = String(ctx.query.ate ?? '').trim();
+  if (!dataDe && !dataAte) return { de: null, ate: null, dataDe, dataAte, filtrado: false };
+  try {
+    const de = dataDe ? deLocalParaUtc(dataDe, '00:00') : null;
+    const ate = dataAte
+      ? new Date(Date.parse(adicionarDias(deLocalParaUtc(dataAte, '00:00'), 1)) - 1).toISOString()
+      : null;
+    if (de && ate && de > ate) {
+      ctx.avisar({ tipo: 'atencao', texto: 'A data inicial vem depois da final. Mostrando o extrato inteiro.' });
+      return { de: null, ate: null, dataDe, dataAte, filtrado: false };
+    }
+    return { de, ate, dataDe, dataAte, filtrado: true };
+  } catch {
+    ctx.avisar({ tipo: 'atencao', texto: 'Data inválida no período. Mostrando o extrato inteiro.' });
+    return { de: null, ate: null, dataDe, dataAte, filtrado: false };
+  }
+}
+
 function telaExtrato(ctx) {
-  const linhas = financeiroRepo.extratoPrestador(ctx.usuario.id);
-  const totais = financeiroRepo.totaisPrestador(ctx.usuario.id);
+  const periodo = periodoDoExtrato(ctx);
+  const filtro = { de: periodo.de, ate: periodo.ate };
+  const linhas = financeiroRepo.extratoPrestador(ctx.usuario.id, filtro);
+  const totais = financeiroRepo.totaisPrestador(ctx.usuario.id, filtro);
   const efetivados = linhas.filter((l) => l.estado === 'EFETIVADO');
   const retidos = linhas.filter((l) => l.estado === 'RETIDO');
 
@@ -675,8 +700,23 @@ function telaExtrato(ctx) {
         e só existe quando o atendimento é concluído.</p>
     </div>
 
+    <form class="filtro-periodo" method="get" action="/prestador/extrato">
+      <div class="campo">
+        <label for="de">De</label>
+        <input id="de" name="de" type="date" value="${periodo.dataDe}">
+      </div>
+      <div class="campo">
+        <label for="ate">Até</label>
+        <input id="ate" name="ate" type="date" value="${periodo.dataAte}">
+      </div>
+      <div class="linha">
+        <button class="botao botao-secundario" type="submit">Filtrar</button>
+        ${periodo.filtrado ? html`<a class="botao botao-fantasma" href="/prestador/extrato">Ver tudo</a>` : cru('')}
+      </div>
+    </form>
+
     <div class="grade grade-4">
-      ${metrica('Atendimentos', totais.qtd, 'concluídos no total')}
+      ${metrica('Atendimentos', totais.qtd, periodo.filtrado ? 'concluídos no período' : 'concluídos no total')}
       ${metrica('Bruto', formatarBRL(totais.bruto), 'soma dos valores travados')}
       ${metrica('Comissão da plataforma', formatarBRL(totais.comissao))}
       ${metrica('Líquido para você', formatarBRL(totais.liquido))}
@@ -696,7 +736,7 @@ function telaExtrato(ctx) {
     ? vazio(
       html`A comissão só existe em atendimento concluído. Reserva expirada, recusada ou cancelada
       não gera cobrança nenhuma para você.`,
-      { titulo: 'Nenhum lançamento ainda' },
+      { titulo: periodo.filtrado ? 'Nenhum lançamento no período' : 'Nenhum lançamento ainda' },
     )
     : html`
       <div class="cartao tabela-rolagem">

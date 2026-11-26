@@ -21,6 +21,15 @@ const DESCRICAO_PADRAO = 'Encaixe: horários ociosos de prestadores locais, '
  * agenda. A do meio, na cor de acento, e o horario vago entrando no lugar.
  * As cores vem dos tokens, entao a marca acompanha o tema escuro.
  */
+/**
+ * O unico script inline do site. Fica numa constante porque o CSP do servidor
+ * o libera pelo hash (P6 de seguranca.md): mudar um caractere aqui muda o hash
+ * junto, sem lista para esquecer de atualizar.
+ */
+export const SCRIPT_INICIAL = "document.body.classList.remove('sem-js');"
+  // Rede de seguranca: se /estatico/interacoes.js nao rodar, nada pode ficar invisivel.
+  + "setTimeout(function(){if(!document.documentElement.dataset.animado){document.body.classList.add('sem-js');}},2000);";
+
 const MARCA_SVG = `<svg class="marca-simbolo" viewBox="10 10 44 44" aria-hidden="true" focusable="false">
   <rect x="14" y="12" width="11" height="40" rx="3.5" fill="var(--primaria)"/>
   <rect x="14" y="12" width="36" height="11" rx="3.5" fill="var(--primaria)"/>
@@ -74,7 +83,7 @@ export function pagina({
 <meta property="og:image" content="${paraTexto(origem)}/estatico/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Cabeleireira penteando uma cliente em um salão de bairro">
+<meta property="og:image:alt" content="Logo do Encaixe ao lado da frase: o horário vago de hoje, mais barato quanto mais perto, e uma agenda com três horários e seus preços">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="${paraTexto(origem)}${paraTexto(caminho)}">
 <link rel="preload" href="/estatico/bricolage-grotesque.woff2" as="font" type="font/woff2" crossorigin>
@@ -82,9 +91,7 @@ export function pagina({
 <link rel="icon" href="${FAVICON}">
 </head>
 <body class="sem-js">
-<script>document.body.classList.remove('sem-js');
-// Rede de segurança: se /estatico/interacoes.js não rodar, nada pode ficar invisível.
-setTimeout(function(){if(!document.documentElement.dataset.animado){document.body.classList.add('sem-js');}},2000);</script>
+<script>${SCRIPT_INICIAL}</script>
 <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 <div class="progresso" aria-hidden="true"></div>
 ${paraTexto(topo(usuario, naoLidas, caminho))}
@@ -482,7 +489,7 @@ export function vazio(texto, { titulo = null, acoes = [] } = {}) {
     <p>${texto}</p>
     ${acoes.length
     ? html`<div class="vazio-acoes">${juntar(acoes.map(([href, rot]) => html`
-        <a class="botao botao-secundario botao-pequeno" href="${href}">${rot}</a>`))}</div>`
+        <a class="botao botao-fantasma botao-pequeno" href="${href}">${rot}</a>`))}</div>`
     : cru('')}
   </div>`;
 }

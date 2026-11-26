@@ -148,6 +148,20 @@ export function faixasDaRegua(reguaId) {
   );
 }
 
+/**
+ * RN-05 - horarios com reserva pendente ou confirmada que leem as faixas desta
+ * regua. O horario nao copia as faixas, entao editar a regua mudaria a projecao
+ * de um horario ja reservado.
+ */
+export function horariosReservadosDaRegua(reguaId) {
+  return varios(
+    `SELECT DISTINCT h.id FROM horario_vago h
+       JOIN agendamento a ON a.horario_id = h.id
+      WHERE h.regua_id = ? AND a.estado IN ('PENDENTE_CONFIRMACAO','CONFIRMADO')`,
+    reguaId,
+  ).map((h) => h.id);
+}
+
 export function reguaPorId(id) {
   const regua = um('SELECT * FROM regua_desconto WHERE id = ?', id);
   if (!regua) return null;

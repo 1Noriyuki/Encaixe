@@ -53,13 +53,17 @@ export const HORARIO_OCUPA_AGENDA = ['PUBLICADO', 'BLOQUEADO', 'OCUPADO'];
 
 // -------------------------------------------------------------------- conta
 
+// RF-097 (SPEC-030, fase 2): EXCLUIDO e terminal e so o titular chega nele.
+// EM_REVISAO e SUSPENSO nao saem para EXCLUIDO: a decisao do admin vem antes
+// (RF-098). REPROVADO deixa de ser terminal apenas para essa saida.
 export const ESTADOS_CONTA = {
-  PENDENTE_APROVACAO: ['ATIVO', 'REPROVADO', 'SUSPENSO'],
-  ATIVO: ['RESTRITO', 'EM_REVISAO', 'SUSPENSO'],
-  RESTRITO: ['ATIVO', 'EM_REVISAO', 'SUSPENSO'],
+  PENDENTE_APROVACAO: ['ATIVO', 'REPROVADO', 'SUSPENSO', 'EXCLUIDO'],
+  ATIVO: ['RESTRITO', 'EM_REVISAO', 'SUSPENSO', 'EXCLUIDO'],
+  RESTRITO: ['ATIVO', 'EM_REVISAO', 'SUSPENSO', 'EXCLUIDO'],
   EM_REVISAO: ['ATIVO', 'SUSPENSO'],
   SUSPENSO: ['ATIVO'],
-  REPROVADO: [],
+  REPROVADO: ['EXCLUIDO'],
+  EXCLUIDO: [],
 };
 
 /** Contas que podem operar normalmente. */
@@ -146,6 +150,7 @@ export const ROTULOS = {
   EM_REVISAO: 'Em revisão',
   SUSPENSO: 'Suspensa',
   REPROVADO: 'Reprovada',
+  EXCLUIDO: 'Excluída',
   // disputa
   ABERTA: 'Aberta',
   EM_ANALISE: 'Em análise',
@@ -178,6 +183,7 @@ export const TOM_DO_ESTADO = {
   RESTRITO: 'aviso',
   SUSPENSO: 'perigo',
   REPROVADO: 'perigo',
+  EXCLUIDO: 'neutro',
   NO_SHOW_CLIENTE: 'perigo',
   NO_SHOW_PRESTADOR: 'perigo',
   CANCELADO_CLIENTE: 'neutro',

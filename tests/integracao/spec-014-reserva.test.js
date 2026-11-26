@@ -147,10 +147,11 @@ test('T-RESERVA-12 | RF-017/RN-04: editar servico ou regua depois da reserva nao
     prestadorId: c.prestador.id, servicoId: c.servico.id, nome: 'Corte', categoriaId: c.categoria.id,
     duracaoMin: 120, precoBase: '300,00', precoMinimo: '200,00',
   });
-  catalogo.salvarRegua({
+  // RN-05 (etapa 68): a regua de um horario reservado nem chega a mudar.
+  assert.throws(() => catalogo.salvarRegua({
     prestadorId: c.prestador.id, reguaId: c.regua.id, nome: 'Regua nova',
     faixas: [{ antecedencia_min: 240, percentual_desconto: 50 }],
-  });
+  }), (e) => e.regra === 'RN-05');
 
   const horario = horariosRepo.porId(c.horario.id);
   assert.equal(horario.duracao_min, 60);

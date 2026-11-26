@@ -7,8 +7,8 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.12 |
-| Data | 2026-11-06 |
+| Versão da spec | 0.1.13 |
+| Data | 2026-11-26 |
 | Status | Em validação com o grupo e com o professor |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
@@ -16,6 +16,7 @@
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.13 | 2026-11-26 | Equipe | Exclusão de conta, fase 2 da SPEC-030 (OPEN-301, etapa 68; decisões D4 e D5 de 2026-11-06, execução autorizada por Enzo em 2026-11-26). **§7.10:** RF-097 (o titular exclui a própria conta, confirmando a senha; a conta é anonimizada, não apagada) e RF-098 (a exclusão é barrada enquanto houver agendamento ativo, disputa não resolvida, comissão da competência corrente, conta em revisão ou perfil de administrador). **§9.6:** estado terminal `EXCLUIDO`, alcançável de `PENDENTE_APROVACAO`, `ATIVO`, `RESTRITO` e `REPROVADO`; `REPROVADO` deixa de ser terminal só para essa saída. **§4.5:** linha "Excluir a própria conta". **§9.2:** `estado_conta` inclui `EXCLUIDO` |
 | 0.1.12 | 2026-11-06 | Equipe | Configurações da conta, fase 1 (SPEC-030, etapa 66; decisões D1 a D5 aprovadas por Enzo). **§7.10 nova:** RF-087 a RF-096 (dados pessoais, foto de perfil, troca de senha, sair dos outros aparelhos, aparência, cópia dos dados pela LGPD, histórico de reputação e páginas de ajuda). **§4.5:** linhas para editar e baixar os próprios dados. **RNF-04:** a foto do prestador, quando enviada, passa a ser pública no perfil dele. **§9.2:** `Usuario` ganha `foto`. **§5.1:** E1 inclui as configurações da conta. **§11:** nota de que os RF da §7.10 não têm caso de uso próprio. A exclusão de conta (fase 2) fica registrada como OPEN-301 no mapa de Specs e não muda a §9.6 nesta versão. Técnica no ADR-007 |
 | 0.1.11 | 2026-10-30 | Equipe | Decisões da §13 das Specs das Trilhas B e C (etapa 63). **§4.5:** o admin não cancela agendamento no MVP (OPEN-09) e não tem extrato próprio. **RN-18:** converter cancelamento em no-show fica fora do MVP (OPEN-18). **RN-19 e RN-21:** só as faixas parcial e total são ocorrência; a contagem é acumulada na janela e recomeça na reativação pelo admin. **§6.1:** P-11 vira P-11a/P-11b e P-12a passa a dizer "acumuladas". **RN-28:** a suspensão expira na hora as reservas pendentes, sem penalizar o cliente, e o admin não suspende a própria conta. **RF-006:** a negação por titularidade também é auditada. **RF-060:** a conclusão automática espera o maior entre P-17 e P-16b. **RN-32:** a interpretação que exige confirmação nasce descartada. **RNF-13:** refinar a mesma busca não gasta interpretação. **RF-086:** edição de parâmetros pelo admin (OPEN-09). **QA-09** resolvida: evidência em texto ou link |
 | 0.1.10 | 2026-10-29 | Equipe | Decisões da aprovação das Specs da Trilha A (etapa 32). **§9.2 e QA-07:** a régua é do prestador e cada horário escolhe uma ao ser publicado (OPEN-10). **RF-010 e RF-011:** as categorias atendidas derivam dos serviços ativos e "perfil completo" é a lista da RN-08 (OPEN-16). **§9.2 `Regiao` e `CategoriaServico`:** no MVP são listas carregadas pela implantação (OPEN-11). **RN-03:** o teto P-05 vale no cálculo de horário ainda não reservado; a reserva trava o preço (RN-04). **RN-00 e §9.2 `Agendamento`:** a conclusão trava o prazo de avaliação (P-14), em `avaliacao_prazo_em`; `autoconclusao_prazo_em` (P-17) passa a constar da tabela |
@@ -190,6 +191,7 @@ e **cobra comissão percentual sobre cada agendamento efetivamente concluído**.
 | Ver métricas consolidadas da plataforma | Não | Não | Sim |
 | Editar os próprios dados, foto e senha (RF-087 a RF-092) | Sim (próprio) | Sim (próprio) | Sim (próprio) |
 | Baixar os próprios dados (RF-094) | Sim (próprio) | Sim (próprio) | Sim (próprio) |
+| Excluir a própria conta (RF-097, RF-098) | Sim (próprio) | Sim (próprio) | Não (conta de admin só sai pela implantação) |
 | Ver extrato próprio de comissão | Não | Sim (próprio) | Não se aplica: vê as métricas consolidadas e o dossiê da conta |
 ---
 
@@ -743,6 +745,8 @@ Cada requisito traz o rastreio para a regra de negócio (`RN`), o caso de uso (`
 - **RF-093** *(Opcional)* — **ONDE** o usuário escolher uma aparência, o sistema DEVE aplicar o tema (seguir o sistema, branco, azul-escuro ou preto) e a opção de reduzir animações em todas as páginas daquele navegador, com ou sem conta, sem depender de JavaScript. ↳ *RNF-11, ADR-007*
 - **RF-094** *(Evento)* — **QUANDO** um usuário autenticado pedir uma cópia dos seus dados, o sistema DEVE entregar um arquivo estruturado (JSON) com sua conta, seu perfil, seus agendamentos, as avaliações que fez e recebeu, seus eventos de reputação e suas notificações, sem o hash da senha e sem dados de contato de outras pessoas, e registrar o pedido na trilha de auditoria. ↳ *RNF-04, RNF-07, LGPD art. 18*
 - **RF-095** *(Ubíquo)* — O sistema DEVE mostrar a cada cliente e prestador os eventos que formaram a sua reputação, com tipo, efeito, data e a indicação dos eventos desfeitos. ↳ *RN-23*
+- **RF-097** *(Evento)* — **QUANDO** um cliente ou prestador autenticado pedir a exclusão da própria conta, confirmando a senha atual, e nenhum impedimento do RF-098 se aplicar, o sistema DEVE anonimizar a conta em vez de apagá-la: substituir nome, e-mail, telefone, região preferida, nome de exibição e descrição por valores que não identificam ninguém, apagar a foto, tornar a senha inutilizável, encerrar todas as sessões, apagar as notificações, apagar o texto digitado nas buscas com IA, cancelar os horários ainda livres e desativar os serviços, e levar a conta a `EXCLUIDO`. Agendamentos, avaliações, eventos de reputação, lançamentos de comissão e trilha de auditoria continuam, ligados à conta anonimizada, porque sustentam as métricas e a reconstrução de decisões (RF-085, INV-13). O e-mail antigo fica livre para um cadastro novo. ↳ *LGPD art. 18, VI; RNF-04; RNF-07*
+- **RF-098** *(Indesejado)* — **SE** a conta tiver agendamento em `PENDENTE_CONFIRMACAO`, `CONFIRMADO` ou `EM_DISPUTA`, disputa não resolvida em que seja parte, lançamento de comissão da competência corrente (prestador), estiver `EM_REVISAO` ou for de administrador, **ENTÃO** o sistema DEVE recusar a exclusão, listar cada impedimento e não alterar nada. ↳ *RN-17, RN-28, RF-079*
 - **RF-096** *(Ubíquo)* — O sistema DEVE publicar, sem exigir conta, páginas de ajuda, sobre e política de privacidade; a política descreve o que é coletado, para quê, quem vê e como o titular exerce seus direitos. ↳ *RNF-04*
 
 ---
@@ -786,7 +790,7 @@ negócio se materializam, e é o seu estado que o sistema protege.
 
 | Entidade | Atributos | Observações |
 |---|---|---|
-| `Usuario` | `id`, `nome`, `email` (único), `senha_hash`, `perfil` (`CLIENTE`\|`PRESTADOR`\|`ADMIN`), `estado_conta`, `reputacao` (0–100), `reputacao_inicial` (P-08 na criação), `criado_em`, `foto` (opcional, nome gerado pelo sistema; RF-088) | Reputação é **derivada** de `EventoReputacao`, nunca editada à mão (`RN-23`) |
+| `Usuario` | `id`, `nome`, `email` (único), `senha_hash`, `perfil` (`CLIENTE`\|`PRESTADOR`\|`ADMIN`), `estado_conta` (os da §9.6, incluindo `EXCLUIDO`), `reputacao` (0–100), `reputacao_inicial` (P-08 na criação), `criado_em`, `foto` (opcional, nome gerado pelo sistema; RF-088) | Reputação é **derivada** de `EventoReputacao`, nunca editada à mão (`RN-23`) |
 | `PerfilPrestador` | `usuario_id`, `nome_exibicao`, `descricao`, `regiao_id`, `plano` (`BASICO`\|`PREMIUM`), `janela_confirmacao_min` (P-01), `politica_expiracao` (P-02), `aprovado_em`, `aprovado_por` | Extensão 1–1 de `Usuario` quando o perfil é Prestador |
 | `PerfilCliente` | `usuario_id`, `telefone`, `regiao_preferida_id` | Extensão 1–1 de `Usuario` quando o perfil é Cliente |
 | `Regiao` | `id`, `cidade`, `bairro` | Lista controlada; substitui geolocalização no MVP. Carregada pela implantação; manutenção pelo admin fica fora do MVP (OPEN-11) |
@@ -980,7 +984,12 @@ stateDiagram-v2
     ATIVO --> SUSPENSO : admin suspende com justificativa (RN-28)
     RESTRITO --> SUSPENSO : admin suspende com justificativa (RN-28)
     SUSPENSO --> ATIVO : admin reativa
+    PENDENTE_APROVACAO --> EXCLUIDO : titular exclui a conta (RF-097)
+    ATIVO --> EXCLUIDO : titular exclui a conta (RF-097)
+    RESTRITO --> EXCLUIDO : titular exclui a conta (RF-097)
+    REPROVADO --> EXCLUIDO : titular exclui a conta (RF-097)
     REPROVADO --> [*]
+    EXCLUIDO --> [*]
 ```
 
 ### 9.7 Máquina de estados — `Disputa`

@@ -52,11 +52,15 @@ assert.equal(penalidade.delta, -6);
 ```
 $ npm test
 
-ℹ tests 208
-ℹ pass 208
+ℹ tests 480
+ℹ pass 480
 ℹ fail 0
-ℹ duration_ms ~3000
+ℹ duration_ms ~15000
 ```
+
+Execução de 2026-11-26 (etapa 68), Node 24. A tabela abaixo é a da primeira versão da suíte e mostra a
+organização por arquivo; desde então cada Spec ganhou o próprio arquivo `integracao/spec-0NN-*.test.js`,
+e a ligação de cada critério ao seu teste está na §12 de cada Spec em `docs/specs/`.
 
 | Arquivo | Testes | Cobre |
 |---|:--:|---|
@@ -96,7 +100,7 @@ Reprodução: `npm test` (suíte completa) ou `node --test tests/integracao/disp
 | RN-14 | `T-COMISSAO-01/03` | Base é o valor descontado, não o preço-base; arredondamento meio para cima |
 | RN-15 | `T-COMISSAO-04` | 8 e 15 aceitos; 7, 16, 0, negativo e fracionário recusados |
 | RN-16 | `T-COMISSAO-05` | Todos os estados que **não** geram comissão |
-| RN-17 | `T-DISPUTA-01` | Lançamento vai a `RETIDO` na abertura |
+| RN-17 | `T-DISPUTA-01`, `T-DISPUTA-16` | Lançamento vai a `RETIDO` na abertura, sai do total do extrato e volta com a resolução |
 | RN-18/19 | `T-CANCEL-01..05` | Três faixas × dois papéis + após o início |
 | RN-20 | `T-NOSHOW-01..04` | Cedo demais, tarde demais, cada lado, acusação mútua |
 | RN-21 | `T-REVISAO-01` | Terceira ocorrência bloqueia publicação |
@@ -136,6 +140,10 @@ estão fazendo trabalho real.
 | 3 | **Duplo escape de HTML.** A página inteira era servida como texto escapado | Verificação manual do HTML servido; hoje coberto por `a pagina inicial nao vaza HTML escapado por engano` | `pagina()` passou a devolver HTML já marcado como seguro |
 | 4 | **Rotas com parâmetro respondiam 404.** O escape de regex destruía o `:id`, então nenhuma rota `/agendamentos/:id/...` funcionava | Fluxo manual via `curl` | Roteador reescrito segmento a segmento + `tests/unidade/roteador.test.js` inteiro como regressão |
 | 5 | **Login com senha errada redirecionava sem mensagem.** O aviso pós-redirect depende de sessão, que ainda não existe no login | `RF-005 \| credencial invalida devolve mensagem generica` recebeu corpo vazio | Erro em POST sem sessão passou a ser renderizado na hora |
+
+| 6 | **RN-05 não protegia a régua.** Editar a régua de um horário reservado mudava a projeção dele (o preço travado não mudava, pela RN-04) | Lacuna apontada na revisão da etapa 65: a suíte estava verde e a regra, descoberta | `salvarRegua` recusa com a RN-05 (etapa 68); `T-AGENDA-06`. O `T-RESERVA-12`, que fazia essa edição, passou a esperar a recusa |
+| 7 | **Extrato sem período na tela.** A RF-061 pede o extrato "para um período"; o repositório filtrava, a tela não oferecia o campo | Verificação do que faltava (etapa 68) | Campos "De" e "Até" em data local; `T-SPEC024-09` |
+| 8 | **Página rolando para o lado no celular.** `/admin/contas` em 390 px (o texto oculto para leitor de tela escapava da tabela) e a régua em 320 px | Script de captura que mede `scrollWidth` em cada tela (etapa 68) | `position: relative` na `.tabela-rolagem` e coluna da régua que encolhe |
 
 Os bugs 1 e 2 são os mais relevantes para a disciplina: **os dois foram corrigidos primeiro na spec e
 só depois no código**, que é exatamente o fluxo que o projeto exige.
