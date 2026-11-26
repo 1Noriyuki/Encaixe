@@ -7,15 +7,16 @@
 | Campo | Valor |
 |---|---|
 | Nome do produto (provisório) | **Encaixe** |
-| Versão da spec | 0.1.13 |
+| Versão da spec | 0.1.14 |
 | Data | 2026-11-26 |
-| Status | Em validação com o grupo e com o professor |
+| Status | Validada pela equipe (v0.1.14). Única questão da §13 sem solução no MVP: a QA-06, fora do escopo por decisão |
 | Documentos derivados | `docs/plan.md`, `docs/tasks.md`, `docs/adr/`, `docs/specs/` (mapa de Specs, Specs individuais e registro do processo SDD) |
 
 ### Histórico de versões
 
 | Versão | Data | Autor | Mudança |
 |---|---|---|---|
+| 0.1.14 | 2026-11-26 | Equipe | **QA-01 resolvida pela equipe** (etapa 69, aprovada por Enzo): ficam as duas políticas de expiração como escolha do prestador (P-02), com `LIBERAR` como padrão. A validação com o professor deixa de ser condição: o sistema atende às duas leituras do enunciado e trocar o padrão é mudar um parâmetro, não código. **RN-10:** a nota de decisão registra o fechamento. **Status** e **§15** atualizados (a §15 ainda mandava fechar a QA-07, resolvida na v0.1.10). Nenhuma regra, estado ou código muda |
 | 0.1.13 | 2026-11-26 | Equipe | Exclusão de conta, fase 2 da SPEC-030 (OPEN-301, etapa 68; decisões D4 e D5 de 2026-11-06, execução autorizada por Enzo em 2026-11-26). **§7.10:** RF-097 (o titular exclui a própria conta, confirmando a senha; a conta é anonimizada, não apagada) e RF-098 (a exclusão é barrada enquanto houver agendamento ativo, disputa não resolvida, comissão da competência corrente, conta em revisão ou perfil de administrador). **§9.6:** estado terminal `EXCLUIDO`, alcançável de `PENDENTE_APROVACAO`, `ATIVO`, `RESTRITO` e `REPROVADO`; `REPROVADO` deixa de ser terminal só para essa saída. **§4.5:** linha "Excluir a própria conta". **§9.2:** `estado_conta` inclui `EXCLUIDO` |
 | 0.1.12 | 2026-11-06 | Equipe | Configurações da conta, fase 1 (SPEC-030, etapa 66; decisões D1 a D5 aprovadas por Enzo). **§7.10 nova:** RF-087 a RF-096 (dados pessoais, foto de perfil, troca de senha, sair dos outros aparelhos, aparência, cópia dos dados pela LGPD, histórico de reputação e páginas de ajuda). **§4.5:** linhas para editar e baixar os próprios dados. **RNF-04:** a foto do prestador, quando enviada, passa a ser pública no perfil dele. **§9.2:** `Usuario` ganha `foto`. **§5.1:** E1 inclui as configurações da conta. **§11:** nota de que os RF da §7.10 não têm caso de uso próprio. A exclusão de conta (fase 2) fica registrada como OPEN-301 no mapa de Specs e não muda a §9.6 nesta versão. Técnica no ADR-007 |
 | 0.1.11 | 2026-10-30 | Equipe | Decisões da §13 das Specs das Trilhas B e C (etapa 63). **§4.5:** o admin não cancela agendamento no MVP (OPEN-09) e não tem extrato próprio. **RN-18:** converter cancelamento em no-show fica fora do MVP (OPEN-18). **RN-19 e RN-21:** só as faixas parcial e total são ocorrência; a contagem é acumulada na janela e recomeça na reativação pelo admin. **§6.1:** P-11 vira P-11a/P-11b e P-12a passa a dizer "acumuladas". **RN-28:** a suspensão expira na hora as reservas pendentes, sem penalizar o cliente, e o admin não suspende a própria conta. **RF-006:** a negação por titularidade também é auditada. **RF-060:** a conclusão automática espera o maior entre P-17 e P-16b. **RN-32:** a interpretação que exige confirmação nasce descartada. **RNF-13:** refinar a mesma busca não gasta interpretação. **RF-086:** edição de parâmetros pelo admin (OPEN-09). **QA-09** resolvida: evidência em texto ou link |
@@ -428,7 +429,8 @@ ao início do horário. Esgotado o prazo sem resposta, o desfecho segue a polít
 `LIBERAR` devolve o horário para a busca e encerra o agendamento como `EXPIRADO`;
 `AUTOCONFIRMAR` promove o agendamento a `CONFIRMADO`. Em qualquer caso, o cliente é notificado e **não** é penalizado.
 *Nota de decisão:* o enunciado admite as duas leituras; o MVP entrega as duas como política do prestador,
-com `LIBERAR` como padrão por ser a mais conservadora para quem não respondeu. Ver QA-01 na seção 13.
+com `LIBERAR` como padrão por ser a mais conservadora para quem não respondeu. Decisão fechada pela equipe na
+v0.1.14 (QA-01 na seção 13).
 *Rastreio:* RF-045, RF-046, UC-07.
 
 **RN-11 — Recusa pelo prestador.** A recusa exige motivo, encerra o agendamento como `RECUSADO`, devolve o
@@ -1446,7 +1448,7 @@ fechadas até o marco indicado — e as marcadas com **ADR** viram registro form
 
 | ID | Questão | Encaminhamento proposto | Prazo | Situação |
 |---|---|---|---|---|
-| QA-01 | Expiração da reserva deve liberar o horário ou autoconfirmar? | Entregar as duas como política do prestador (P-02), padrão `LIBERAR`; validar com o professor | M1 | Aberta (validação com o professor) |
+| QA-01 | Expiração da reserva deve liberar o horário ou autoconfirmar? | Entregar as duas como política do prestador (P-02), padrão `LIBERAR` | M1 | **Resolvida na v0.1.14 pela equipe:** as duas leituras do enunciado ficam atendidas, e `LIBERAR` é o padrão porque, num horário de última hora, confirmar sem resposta do prestador pode mandar o cliente a um atendimento que ninguém garantiu. Trocar o padrão é mudar a P-02, sem código |
 | QA-02 | Stack técnica (linguagem, framework, banco) | **ADR-001** e **ADR-002**, na próxima etapa do fluxo | M0 | Resolvida: ADR-001 e ADR-002 aceitos |
 | QA-03 | Provedor de LLM e formato de saída estruturada | **ADR-003**, com interface própria (RNF-12) e provedor simulado nos testes | M0/M3 | Resolvida: ADR-003 aceito |
 | QA-04 | Modelo de autenticação (sessão x token) e granularidade de permissão | **ADR-004** | M1 | Resolvida: ADR-004 aceito (ver `OPEN-12` em `docs/specs/` sobre a expiração da sessão) |
@@ -1486,7 +1488,7 @@ código ou justificada com atualização desta spec e ADR correspondente.
 
 Já concluídos: ADR-001 a ADR-005, `docs/plan.md`, `docs/tasks.md` e o mapa de Specs.
 
-1. **Validação desta spec** com o grupo e com o professor (fechar QA-01 e QA-07).
+1. ~~**Validação desta spec**~~ concluída: a QA-07 foi fechada na v0.1.10 e a QA-01 na v0.1.14, pela equipe.
 2. **Aprovação do mapa de Specs** ([`docs/specs/mapa-de-specs.md`](specs/mapa-de-specs.md)) e decisão das
    questões `OPEN-XX` que bloqueiam as primeiras Specs.
 3. **Geração das Specs uma a uma**, cada uma aprovada antes da implementação correspondente.
