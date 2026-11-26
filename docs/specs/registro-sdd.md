@@ -15,19 +15,19 @@
 
 ## Estado atual (resumo)
 
-Atualizado em 2026-11-26 (etapa 68). As linhas das etapas anteriores estão no diário abaixo.
+Atualizado em 2026-11-26 (etapa 69). As linhas das etapas anteriores estão no diário abaixo.
 
 | Item | Situação |
 |---|---|
 | Mapa de Specs | **Aprovado** (v1.0.0, etapa 11); a SPEC-030 entrou depois, na etapa 66 |
 | SPEC-001 a SPEC-029 | **Concluídas**, com a §12 de cada uma conferida por `grep` (etapa 65). As 107 issues estão fechadas |
 | SPEC-030 Configurações da conta | **Concluída**: fase 1 na etapa 66, fase 2 (exclusão de conta, OPEN-301) na etapa 68 |
-| Baseline | `docs/spec.md` **v0.1.13** (RF-097, RF-098 e `EXCLUIDO` na §9.6) |
+| Baseline | `docs/spec.md` **v0.1.14**, validada pela equipe (a v0.1.13 trouxe RF-097, RF-098 e `EXCLUIDO`; a v0.1.14 fechou a QA-01) |
 | Suíte | `npm test`: **480/480** em 2026-11-26 |
 | Redesign do front-end | Piloto (etapa 67) na `main` pelo PR #154; estendido aos painéis, às telas de conta e ao `og.jpg` na etapa 68 |
 | Lacunas de teste antigas | RN-05 (régua de horário reservado) corrigida no código e com teste; RN-17 com teste nomeado (etapa 68) |
 | Segurança | P6 (CSP) resolvida na etapa 68; P1 a P5, P7 a P10 e a nova P11 seguem como riscos aceitos do escopo local, com justificativa em `seguranca.md` §4 |
-| Pendente fora do código | Validar a QA-01 com o professor (a QA-07 foi resolvida na v0.1.10) |
+| Pendências | Nenhuma. A QA-01 foi fechada pela equipe na etapa 69; a QA-06 (multa) segue fora do MVP por decisão |
 | Documento de passagem | `docs/proximos-passos.docx`, regenerado com o estado de 2026-11-26 (etapa 68) |
 
 ### Decisões humanas pendentes
@@ -1086,3 +1086,22 @@ Atualizado em 2026-11-26 (etapa 68). As linhas das etapas anteriores estão no d
   claro, azul e preto.
 - **Documento de passagem:** `docs/proximos-passos.docx` regenerado com o estado de 2026-11-26.
 - **Fica para a equipe:** validar a QA-01 com o professor.
+
+### Etapa 69 — QA-01 resolvida pela equipe · 2026-11-26
+
+- **Pergunta do Enzo:** por que a QA-01 precisava do professor e qual o melhor caminho. Resposta: nada
+  obrigava; a própria spec registrava "validar com o professor" porque o enunciado admite as duas leituras
+  (nota da RN-10). O agente recomendou fechar pela equipe mantendo o que já existe; o Enzo aprovou
+  ("então pode fazer").
+- **Decisão:** ficam as duas políticas de expiração como escolha do prestador (P-02), com `LIBERAR` como
+  padrão. Motivos: o sistema já atende às duas leituras do enunciado, com teste; trocar o padrão, se o
+  professor preferir, é mudar um parâmetro, não código; e num horário de última hora confirmar sem resposta
+  do prestador pode mandar o cliente a um atendimento que ninguém garantiu. Alternativas descartadas:
+  continuar esperando o professor (a spec ficaria "em validação" sem ganho), só `LIBERAR` (remove
+  funcionalidade pronta) e só `AUTOCONFIRMAR` (pior para o cliente).
+- **Baseline:** spec v0.1.14: QA-01 resolvida na §13, nota da RN-10, status ("validada pela equipe") e §15,
+  que ainda mandava fechar a QA-07, resolvida na v0.1.10. Mapa de Specs §1.6, CLAUDE.md e
+  `docs/proximos-passos.docx` atualizados.
+- **Código:** nenhuma mudança. `npm test` 480/480.
+- **Para a apresentação:** "o enunciado admitia duas leituras; entregamos as duas como política do
+  prestador, com `LIBERAR` como padrão".

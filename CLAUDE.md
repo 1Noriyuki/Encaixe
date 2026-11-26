@@ -73,12 +73,13 @@ Consequências práticas disso no dia a dia:
 O projeto seguiu o roteiro de Spec-Driven Development do professor: **mapa de Specs aprovado → uma
 Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
 
-- **Estado em 2026-11-26 (etapa 68):** spec v0.1.13. As 30 Specs estão **concluídas** (evidência na
+- **Estado em 2026-11-26 (etapa 69):** spec v0.1.14, validada pela equipe. As 30 Specs estão **concluídas** (evidência na
   §12 conferida por `grep`), inclusive a **SPEC-030** inteira: a fase 2, exclusão de conta por
   anonimização (RF-097, RF-098, estado terminal `EXCLUIDO` na §9.6), fechou a OPEN-301. As 107 issues
   estão fechadas. Resolvidas na etapa 68: a lacuna da RN-05 (a régua de horário reservado não muda
-  mais), o teste nomeado da RN-17, o período do extrato (RF-061) e a P6 (CSP). Falta só fora do
-  código: validar a QA-01 com o professor. As pendências P1 a P5 e P7 a P11 de
+  mais), o teste nomeado da RN-17, o período do extrato (RF-061) e a P6 (CSP). Na etapa 69 a equipe
+  fechou a QA-01 (as duas políticas de expiração, padrão `LIBERAR`), sem depender do professor. Não
+  há pendência aberta. As pendências P1 a P5 e P7 a P11 de
   `docs/seguranca.md` são riscos aceitos do escopo local, cada um com justificativa.
 - **Redesign do front-end (etapas 67 e 68, concluído).** O professor reprovou o visual por "parecer
   template genérico". O piloto (home, busca, página do horário) entrou pelo PR #154; a etapa 68 o
@@ -93,7 +94,7 @@ Spec por vez, aprovada antes de implementar**. Tudo vive em `docs/specs/`.
   As capturas ficam em `docs/review/redesign/` (fora do git).
 - **Mudança nova segue o mesmo rito:** regra que muda altera a `spec.md` primeiro, com linha no
   histórico de versões; bug corrigido vira teste de regressão; a etapa vai para
-  `docs/specs/registro-sdd.md` (a última é a 68; a próxima é a 69), inclusive as premissas do agente.
+  `docs/specs/registro-sdd.md` (a última é a 69; a próxima é a 70), inclusive as premissas do agente.
 - **Regra fundamental:** conflito entre código, Spec e modelagem nunca é resolvido em silêncio.
   Registra-se e escolhe-se: corrigir o código ou propor mudança na spec. A equipe autorizou atualizar
   a baseline (spec, ADRs, README, este arquivo) a cada ação; **decisões de mérito** exigem aprovação
@@ -287,7 +288,7 @@ servidor real em porta efêmera. Mudança de texto exibido pode quebrar asserç�
 
 | Arquivo | Para quê |
 |---|---|
-| `docs/spec.md` | fonte de verdade (v0.1.13): personas, requisitos EARS, regras §6, invariantes §9.8 |
+| `docs/spec.md` | fonte de verdade (v0.1.14): personas, requisitos EARS, regras §6, invariantes §9.8 |
 | `.specify/memory/constitution.md` | os dez princípios que governam o repositório |
 | `docs/adr/` | decisões técnicas: stack, modelo de dados, uso de LLM, autenticação, escopo financeiro, fonte da marca, foto e aparência |
 | `docs/specs/` | roteiro SDD: `mapa-de-specs.md` (30 Specs e todas as `OPEN-XX`), `SPEC-NNN-*.md`, `layouts/` e `registro-sdd.md` (diário de cada etapa) |

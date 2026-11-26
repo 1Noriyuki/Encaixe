@@ -101,9 +101,9 @@ Nenhum RNF virou Spec independente. Cada um foi associado às Specs em que se ap
 
 ### 1.6 Decisões que permanecem em aberto
 
-Na própria spec (§13): **QA-01** (política de expiração, validar com o professor), **QA-06** (multa
-financeira, fora do MVP), **QA-07** (régua por serviço ou por prestador) e **QA-09** (anexo real em
-evidência). As demais estão listadas na seção 3 como `OPEN-XX`.
+Na própria spec (§13): **QA-01** (política de expiração; resolvida pela equipe na spec v0.1.14), **QA-06**
+(multa financeira, fora do MVP), **QA-07** (régua por serviço ou por prestador; resolvida na v0.1.10) e
+**QA-09** (anexo real em evidência; resolvida na v0.1.11). As demais estão listadas na seção 3 como `OPEN-XX`.
 
 ### 1.7 Inconsistências, lacunas e ambiguidades
 
